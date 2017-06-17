@@ -1,2 +1,2 @@
-# network-stack-offload
-offloading network stack functions to a cloudlet
+# wifi authentication
+infrastructure-driven improvements to car internet connectivity via wifi
