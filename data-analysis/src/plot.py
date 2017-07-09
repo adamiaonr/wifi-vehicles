@@ -48,7 +48,7 @@ if __name__ == "__main__":
         args.output_dir = ""
 
     if args.case == 'base':
-        auth_analysis.analyze_sessions(args.data_file, args.output_dir)
+        auth_analysis.plot_auth_analysis(args.data_file, args.output_dir)
 
     else:
         sys.stderr.write("""%s: [ERROR] please supply a valid case\n""" % sys.argv[0]) 
