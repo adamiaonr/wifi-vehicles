@@ -80,7 +80,7 @@ def extract_median_speeds(data, session_id, median_speeds):
 
     # calculate and extract (valid) median speeds for the session
     speeds = dist_gps(lat_start[:-1], lon_start[:-1], lat_end[:-1], lon_end[:-1]) / (time_end[:-1] - time_start[:-1])
-    # print("auth_analysis::extract_median_speeds() : speeds[%s] = %s" % (session_id, str([s for s in np.sort(speeds) if not math.isnan(s)])))
+    # print("session_analysis::extract_median_speeds() : speeds[%s] = %s" % (session_id, str([s for s in np.sort(speeds) if not math.isnan(s)])))
     median_speed = float(np.nanmedian(speeds))
 
     if median_speed > 0.0 and not math.isnan(median_speed):
@@ -94,7 +94,7 @@ def extract_ap_stats(data, session_id, ap_mapping_info):
     # get data sorted by mac addr and time
     ap_data = data.sort(['encode', 'seconds'])
 
-    print("auth_analysis::extract_ap_stats() : (session_id %s) getting ap records %d macs addrs..." % (session_id, len(mac_addrs)))
+    print("session_analysis::extract_ap_stats() : (session_id %s) getting ap records %d macs addrs..." % (session_id, len(mac_addrs)))
     start = time.time()
 
     # for each unique ap mac address, extract first and last 'sensing' event
@@ -175,7 +175,7 @@ def draw_on_map(ap_mapping_info, top_networks, out_dir):
             if auth[0] == '0':
                 auth[0] = auth[1]
             else:
-                print("auth_analysis::draw_on_map() : [WARNING] (mac addr : %s) auth list w/ more than 1 value : %s" % (ap, ap_mapping_info[ap]['auth']))
+                print("session_analysis::draw_on_map() : [WARNING] (mac addr : %s) auth list w/ more than 1 value : %s" % (ap, ap_mapping_info[ap]['auth']))
                 continue
 
         # extract gps location of ap (from median of 'sensed' coords)
@@ -208,14 +208,15 @@ def draw_on_map(ap_mapping_info, top_networks, out_dir):
 
 
     # get a suitable color map for multiple bars
-    color_map = plt.get_cmap('plasma')
+    color_map = plt.get_cmap('jet')
     colors = [color_map(i) for i in np.linspace(0, 1, len(top_networks))]
 
-    gmap = gmplot.GoogleMapPlotter(porto_lat, porto_lon, 14)
     for i, network in enumerate(top_networks):
 
-        gmap.scatter(nw_gps_lats[network], nw_gps_lons[network], str(matplotlib.colors.rgb2hex(colors[i])), marker = False)
-        gmap.draw(os.path.join(out_dir, 'top_network_locations.html'))
+        gmap = gmplot.GoogleMapPlotter(porto_lat, porto_lon, 14)
+        # gmap.scatter(nw_gps_lats[network], nw_gps_lons[network], str(matplotlib.colors.rgb2hex(colors[i])), marker = False)
+        gmap.heatmap(nw_gps_lats[network], nw_gps_lons[network])
+        gmap.draw(os.path.join(out_dir, 'top_network_locations_' + network.replace(" ", "_") + '.html'))
 
     return ap_locations
 
@@ -244,7 +245,7 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
         intersection = list(session_ids & set(chunk_session_ids))
 
         if len(intersection) > 0:
-            print("auth_analysis::analyze_sessions() : found %d intersections : %s" % (len(intersection), str(intersection)))
+            print("session_analysis::analyze_sessions() : found %d intersections : %s" % (len(intersection), str(intersection)))
 
         # for each overlapping session_id, update the ds value
         for session_id in intersection:
@@ -259,12 +260,12 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
 
             # FIXME: do the same for median speeds
 
-        print("auth_analysis::analyze_sessions() : %d sessions found in chunk" % (len(chunk_session_ids)))
+        print("session_analysis::analyze_sessions() : %d sessions found in chunk" % (len(chunk_session_ids)))
 
         # for each session, find the median scanning_dist values, add it to a list
         for session_id in chunk_session_ids:
 
-            print("auth_analysis::analyze_sessions() : analyzing session_id %s" % (session_id))
+            print("session_analysis::analyze_sessions() : analyzing session_id %s" % (session_id))
 
             # add session id to visited session id list
             session_ids.add(session_id)
@@ -280,7 +281,7 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
             if (session_id in session_stats['median_speeds']) and (session_stats['median_speeds'][session_id] > median_speed_thrshld):
                 
                 # extract statistics about aps
-                print("auth_analysis::analyze_sessions() : [%s] %s" % (session_id, session_stats['median_speeds'][session_id]))
+                print("session_analysis::analyze_sessions() : [%s] %s" % (session_id, session_stats['median_speeds'][session_id]))
                 session_stats['ap_stats'] = session_stats['ap_stats'].append(extract_ap_stats(session_data, session_id, ap_mapping_info), ignore_index = True)
 
         # if 303 in session_ids:
@@ -308,7 +309,7 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
 
     session_stats['ap_locations'] = draw_on_map(ap_mapping_info, top_networks, out_dir)
 
-def plot_auth_analysis(file_name, out_dir):
+def plot(file_name, out_dir):
 
     """extracts bunch of stats from 'sense my city' sessions"""
 
@@ -331,34 +332,41 @@ def plot_auth_analysis(file_name, out_dir):
     if not (set(processed_files.values()).issubset(set([f for f in sorted(glob.glob(os.path.join(processed_dir, '*.csv')))]))):
         analyze_sessions(file_name, out_dir, session_stats, processed_files)
 
-    print("auth_analysis::plot_cdfs() : reading data from processed .csv files")
+    print("session_analysis::plot() : reading data from processed .csv files")
 
     for stat in processed_files:
         session_stats[stat] = pd.read_csv(processed_files[stat])
 
+    # get a suitable color map for multiple bars
+    color_map = plt.get_cmap('Blues')
+    colors = [color_map(i) for i in np.linspace(0, 1, 10)]
+
     # plot session ap stats histograms (per mac addr.)
-    fig_1 = plt.figure(figsize = (18, 12))
+    fig_1 = plt.figure(figsize = (18, 10))
 
     ax1 = fig_1.add_subplot(231)
-    ax1.set_title('median time within range of AP, \nover all sessions')
+    ax1.set_title('(a) median time within range \nof AP, over all sessions')
 
-    ax1.xaxis.grid(False)
+    ax1.xaxis.grid(True)
     ax1.yaxis.grid(True)
 
-    ax1.hist(session_stats['ap_stats']['coverage_time'], bins = np.arange(0, max(session_stats['ap_stats']['coverage_time']), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8)
+    ax1.hist(session_stats['ap_stats']['coverage_time'], bins = np.arange(0, max(session_stats['ap_stats']['coverage_time']), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8, color = 'darkblue')
     ax1.set_xlabel("time within range (s)")
     ax1.set_ylabel("CDF")
-    ax1.set_xticks(np.arange(0, 200 + 20, step = 20))
+    # ax1.set_xticks(np.arange(0, 200 + 20, step = 20))
+    ax1.set_xticks([0, 10, 20, 30, 40, 50, 100, 150, 200])
+    ax1.set_xticklabels([0, 10, 20, 30, 40, 50, 100, 150, 200], rotation = 45)
 
-    ax1.set_xlim(0, 160)
+
+    ax1.set_xlim(0, 150)
     ax1.set_ylim(0, 1.0)
 
     ax2 = fig_1.add_subplot(232)
-    ax2.set_title('median distance covered while within \nrange of AP, over all sessions')
+    ax2.set_title('(b) median distance covered while within \nrange of AP, over all sessions')
 
-    ax2.xaxis.grid(False)
+    ax2.xaxis.grid(True)
     ax2.yaxis.grid(True)
-    ax2.hist(session_stats['ap_stats']['coverage_dist'], bins = np.arange(0, max(session_stats['ap_stats']['coverage_dist']), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8)
+    ax2.hist(session_stats['ap_stats']['coverage_dist'], bins = np.arange(0, max(session_stats['ap_stats']['coverage_dist']), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8, color = 'darkblue')
     ax2.set_xlabel("distance (m)")
     ax2.set_ylabel("CDF")
     ax2.set_xticks(np.arange(0, 700 + 100, step = 100))
@@ -367,11 +375,11 @@ def plot_auth_analysis(file_name, out_dir):
     ax2.set_ylim(0, 1.0)
 
     ax3 = fig_1.add_subplot(233)
-    ax3.set_title('median speed while in range of AP, \nover all sessions')
+    ax3.set_title('(c) median speed while in range \nof AP, over all sessions')
 
-    ax3.xaxis.grid(False)
+    ax3.xaxis.grid(True)
     ax3.yaxis.grid(True)
-    ax3.hist(session_stats['ap_stats']['coverage_speed'], bins = np.arange(0, max(session_stats['ap_stats']['coverage_speed']), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8)
+    ax3.hist(session_stats['ap_stats']['coverage_speed'], bins = np.arange(0, max(session_stats['ap_stats']['coverage_speed']), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8, color = 'darkblue')
     ax3.set_xlabel("contact speed (m/s)")
     ax3.set_ylabel("CDF")
     ax3.set_xticks(np.arange(0, 100 + 5, step = 10))
@@ -381,28 +389,28 @@ def plot_auth_analysis(file_name, out_dir):
 
     # get unique mac addresses of aps
     ax4 = fig_1.add_subplot(234)
-    ax4.set_title('# of APs w/ authentication\nmethod x')
+    ax4.set_title('(d) # of APs w/ \nauthentication method x')
 
     ax4.xaxis.grid(False)
     ax4.yaxis.grid(True)
-    ax4.hist(session_stats['ap_locations']['auth'], bins = np.arange(0, 6 + 1, 1), histtype = 'bar', rwidth = 0.8, alpha = 0.55)
+    ax4.hist(session_stats['ap_locations']['auth'], bins = np.arange(0, 6 + 1, 1), histtype = 'bar', rwidth = 0.8, alpha = 0.55, color = 'darkblue')
     ax4.set_xlabel("authentication method")
-    ax4.set_ylabel("nr. of APs")
+    ax4.set_ylabel("# of APs")
 
     ax4.set_xticks([0.5, 1.5, 2.5, 3.5, 4.5, 5.5])
     ax4.set_xticklabels(['n/a', 'open', 'wep', 'wpa', 'wpa2', 'enter.'])
 
     # nr. of APs per WiFi network (identified by SSID)
     ax5 = fig_1.add_subplot(235)
-    ax5.set_title('# of APs per WiFi network \n(per SSID)')
+    ax5.set_title('(e) # of APs per WiFi \nnetwork (per SSID)')
 
-    ax5.xaxis.grid(False)
+    ax5.xaxis.grid(True)
     ax5.yaxis.grid(True)
 
     df = session_stats['ap_stats'].groupby('essid')['essid'].count()
 
-    ax5.hist(df, bins = np.arange(0, max(df), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8)
-    ax5.set_xlabel("nr. of APs per WiFi network")
+    ax5.hist(df, bins = np.arange(0, max(df), 1), normed = 1, histtype = 'step', cumulative = True, rwidth = 0.8, color = 'darkblue')
+    ax5.set_xlabel("# of APs per WiFi network")
     ax5.set_ylabel("CDF")
     ax5.set_xticks(np.arange(0, 50 + 5, step = 5))
 
@@ -410,7 +418,7 @@ def plot_auth_analysis(file_name, out_dir):
     ax5.set_ylim(0, 1.0)
 
     ax6 = fig_1.add_subplot(236)
-    ax6.set_title('# of APs on 10 largest \nWiFi networks')
+    ax6.set_title('(f) # of APs on 10 \nlargest WiFi networks')
 
     ax6.xaxis.grid(False)
     ax6.yaxis.grid(True)
@@ -420,14 +428,10 @@ def plot_auth_analysis(file_name, out_dir):
     # labels of top 10 wifi networks, by nr. of aps
     labels = df.iloc[-10:].index.format()
 
-    # get a suitable color map for multiple bars
-    color_map = plt.get_cmap('Blues')
-    colors = [color_map(i) for i in np.linspace(0, 1, 10)]
-
     for i in np.arange(0, 10, 1):
-        ax6.bar(i, df.iloc[len(df) - i - 1], alpha = 0.55, width = 0.75, label = labels[10 - i - 1].lower().replace("_", "-"), color = colors[i])
+        ax6.bar(i, df.iloc[len(df) - (10 - i) - 1], alpha = 0.55, width = 0.75, label = labels[i].lower().replace("_", "-"), color = colors[i])
 
-    ax6.legend(fontsize = 12, ncol = 1, loc='upper right')
+    ax6.legend(fontsize = 12, ncol = 1, loc='upper left')
 
     ax6.set_xlabel("wifi network")
     ax6.set_ylabel("# of APs")
@@ -438,7 +442,7 @@ def plot_auth_analysis(file_name, out_dir):
     # ax6.tick_params(axis = 'y', which = 'minor')
 
     ax6.set_xlim(-(0.25 / 1.0), 10)
-    # ax6.set_ylim(5, 3000)
+    ax6.set_ylim(100, 1000000)
 
     fig_1.tight_layout()
     fig_1.subplots_adjust(top = 0.95)
