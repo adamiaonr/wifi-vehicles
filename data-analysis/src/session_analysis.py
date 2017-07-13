@@ -24,13 +24,14 @@ matplotlib.rcParams.update({'font.size': 16})
 porto_lat = 41.163158
 porto_lon = -8.6127137
 
-# ds - distance travelled by the user during the scanning period
-# acc_scan - mean accuracy from the GPS during the scanning period
-# new_err - mean error related to the map matching process (was conducted by others)
-# new_lat | new_lot - location where the scan was associated
-# g_lat | g_lon - cell location
-# auth - authentication mode (0 - Unknown, 1 - Open, 2 - WEP, 3 - WPA, 4 - WPA2, 5 - Enterprise (RADIUS/.11x/Other).)
-# session_id - identifies the trip
+# info about the sense-my-city dataset
+#   ds : distance travelled by the user during the scanning period
+#   acc_scan : mean accuracy from the GPS during the scanning period
+#   new_err : mean error related to the map matching process (was conducted by others)
+#   new_lat | new_lot : location where the scan was associated
+#   g_lat | g_lon : cell location
+#   auth : authentication mode (0 - Unknown, 1 - Open, 2 - WEP, 3 - WPA, 4 - WPA2, 5 - Enterprise (RADIUS/.11x/Other).)
+#   session_id : identifies the trip
 
 def to_radians(degrees):
     return (degrees * math.pi / 180.0)
