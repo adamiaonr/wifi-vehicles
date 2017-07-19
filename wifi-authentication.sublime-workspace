@@ -519,14 +519,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "data-analysis/src/accelerometer_base.py",
-			"settings":
-			{
-				"buffer_size": 10482,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "",
 	"command_palette":
@@ -568,6 +560,7 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/accelerometer_base.py",
 		"/home/adamiaonr/workbench/accelerator/doc/final/Makefile",
 		"/home/adamiaonr/workbench/networking-sandbox/traceroute/traceroute.sublime-project",
 		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/metaframe.py",
@@ -694,8 +687,7 @@
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/fls",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f02.scn",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r10.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r05.scn"
+		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r10.scn"
 	],
 	"find":
 	{
@@ -988,37 +980,8 @@
 	"groups":
 	[
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "data-analysis/src/accelerometer_base.py",
-					"settings":
-					{
-						"buffer_size": 10482,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								296,
-								296
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				}
 			]
 		}
 	],

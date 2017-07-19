@@ -21,8 +21,14 @@ from plot_utils import *
 matplotlib.rcParams.update({'font.size': 16})
 
 # gps coords for a 'central' pin on porto, portugal
-porto_lat = 41.163158
-porto_lon = -8.6127137
+PORTO_LATITUDE = 41.163158
+PORTO_LONGITUDE = -8.6127137
+
+# for Tomas et al. trilateration technique
+PWR_TRNSMT = 17.00 # avg. transmit power
+PATH_LOSS_CONSTANT = -147.55
+PATH_LOSS_EXPONENT = 3.0
+FREQ_WIFI = (2450.0 * 1000000.0)
 
 # info about the sense-my-city dataset
 #   ds : distance travelled by the user during the scanning period
@@ -57,6 +63,11 @@ def dist_gps(lat_start, lon_start, lat_end, lon_end):
 
     return earth_radius * c
 
+def extract_rssi(data, rssi_data):
+
+    for rssi in data['snr'].values:
+        rssi_data[rssi] += 1
+
 def extract_scanning_distances(data, session_id, median_scanning_dist):
 
     # extract (valid) scanning distances
@@ -87,7 +98,46 @@ def extract_median_speeds(data, session_id, median_speeds):
     if median_speed > 0.0 and not math.isnan(median_speed):
         median_speeds[session_id] = median_speed
 
-def extract_ap_stats(data, session_id, ap_mapping_info):
+def calc_radius(measured_snrs):
+
+    e = math.log(10.0) * (PWR_TRNSMT - measured_snrs - PATH_LOSS_CONSTANT - (20.0 * math.log10(FREQ_WIFI)))
+    e = e / (10.0 * PATH_LOSS_EXPONENT)
+    radius = np.power(10, e)
+
+    # if any(x > -50 for x in measured_snrs):
+    #     print("session_analysis::calc_radius() : measured snrs = %s" % (str(measured_snrs)))
+    #     print("session_analysis::calc_radius() : exponents = %s" % (str(e)))
+    #     print("session_analysis::calc_radius() : radius = %s" % (str(radius)))
+
+    return radius
+
+def plot_radius(out_dir):
+
+    measured_snrs = np.arange(20, -100, -1)
+
+    fig = plt.figure(figsize = (6, 5))
+    ax = fig.add_subplot(111)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+
+    ax.plot(measured_snrs, calc_radius(measured_snrs), color = 'blue')
+
+    ax.set_title('log distance path loss model')
+    ax.set_xlabel("received power (dBm)")
+    ax.set_ylabel("dist. from source (m)")
+
+    # ax1.set_xticks(np.arange(0, 200 + 20, step = 20))
+    ax.set_xticks([20, 0, -20, -40, -60, -80, -100])
+    # ax1.set_xlim(0, 150)
+    # ax1.set_ylim(0, 1.0)
+    ax.set_yscale("log")
+
+    fig.tight_layout()
+    fig.subplots_adjust(top = 0.95)
+    plt.savefig(os.path.join(out_dir, "path-loss-distances.pdf"), bbox_inches = 'tight', format = 'pdf')
+
+
+def extract_ap_stats(data, session_id, ap_location_data):
 
     # get unique mac addresses of aps
     mac_addrs = data['encode'].unique()
@@ -103,9 +153,9 @@ def extract_ap_stats(data, session_id, ap_mapping_info):
 
     for mac in mac_addrs:
 
-        # get data for a specific mac address
+        # get ap data for a specific mac address
         mac_data = ap_data.loc[ap_data['encode'] == mac]
-    
+        # skip ap data with less than 2 records
         if len(mac_data) < 2:
             continue
 
@@ -113,24 +163,32 @@ def extract_ap_stats(data, session_id, ap_mapping_info):
         start_time, start_lat, start_lon = mac_data.iloc[0][['seconds', 'new_lat', 'new_lon']]
         end_time, end_lat, end_lon = mac_data.iloc[-1][['seconds', 'new_lat', 'new_lon']]
 
-        # update the ap_mapping_info table
-        if mac not in ap_mapping_info:
+        # update the ap_location_data table
+        if mac not in ap_location_data:
 
-            ap_mapping_info[mac] = defaultdict()
+            ap_location_data[mac] = defaultdict()
 
-            ap_mapping_info[mac]['auth'] = ''
-            ap_mapping_info[mac]['essid'] = str(mac_data.iloc[0]['essid']).lower().replace("_", "-")
-            ap_mapping_info[mac]['gps_lat'] = ''
-            ap_mapping_info[mac]['gps_lon'] = ''
+            ap_location_data[mac]['auth'] = ''
+            ap_location_data[mac]['essid'] = str(mac_data.iloc[0]['essid']).lower().replace("_", "-")
 
-        # build the authentication method set for this mac addr
-        auth = set(ap_mapping_info[mac]['auth'].split(':'))
+            # location data per AP includes 3 lists of variables. each i-th value of the
+            # list corresponds to the same i-th scanning record:
+            #   - list of gps coordinates where the mac addr detected (note: NOT the location of 
+            #     the ap itself), both latitude (gps_lat) and longitude (gps_lon)
+            #   - list of radius of a circle on which the ap might likely be located, derived 
+            #     from the log distance path loss formula
+            ap_location_data[mac]['data'] = {'gps_lat': [], 'gps_lon': [], 'radius': []}
+
+        # find the set of authentication methods detected on this mac addr
+        auth = set(ap_location_data[mac]['auth'].split(':'))
         for a in mac_data['auth']:
             auth.add(str(a))
-        ap_mapping_info[mac]['auth'] = ':'.join([a for a in auth])
-        # add measured gps coords to a list of observed coords
-        ap_mapping_info[mac]['gps_lat'] += ':' + ':'.join([str(l) for l in mac_data['new_lat']])
-        ap_mapping_info[mac]['gps_lon'] += ':' + ':'.join([str(l) for l in mac_data['new_lon']])
+        ap_location_data[mac]['auth'] = ':'.join([a for a in auth])
+
+        # add location data
+        ap_location_data[mac]['data']['gps_lat'] += list(mac_data['new_lat'])
+        ap_location_data[mac]['data']['gps_lon'] += list(mac_data['new_lon'])
+        ap_location_data[mac]['data']['radius']  += list(calc_radius(mac_data['snr'].values))
 
         # we use the list of dicts method to fill pandas dataframe
         coverage_dist = dist_gps(start_lat, start_lon, end_lat, end_lon)
@@ -149,7 +207,7 @@ def extract_ap_stats(data, session_id, ap_mapping_info):
 
     return pd.DataFrame(ap_stats)
 
-def draw_on_map(ap_mapping_info, top_networks, out_dir):
+def draw_on_map(ap_location_data, top_networks, out_dir):
 
     # authentication gps coordinates
     auth_gps_lats = defaultdict(list)
@@ -166,9 +224,9 @@ def draw_on_map(ap_mapping_info, top_networks, out_dir):
     ap_locations = []
     top_networks_locations = []
 
-    for ap in ap_mapping_info:
+    for ap in ap_location_data:
 
-        auth = ap_mapping_info[ap]['auth'].lstrip(':').split(':')
+        auth = ap_location_data[ap]['auth'].lstrip(':').split(':')
 
         if len(auth) > 1:
 
@@ -176,21 +234,21 @@ def draw_on_map(ap_mapping_info, top_networks, out_dir):
             if auth[0] == '0':
                 auth[0] = auth[1]
             else:
-                print("session_analysis::draw_on_map() : [WARNING] (mac addr : %s) auth list w/ more than 1 value : %s" % (ap, ap_mapping_info[ap]['auth']))
+                print("session_analysis::draw_on_map() : [WARNING] (mac addr : %s) auth list w/ more than 1 value : %s" % (ap, ap_location_data[ap]['auth']))
                 continue
 
         # extract gps location of ap (from median of 'sensed' coords)
-        gps_lat = np.median(np.array([float(l) for l in  ap_mapping_info[ap]['gps_lat'].lstrip(':').split(':')]))
-        gps_lon = np.median(np.array([float(l) for l in  ap_mapping_info[ap]['gps_lon'].lstrip(':').split(':')]))
+        gps_lat = np.median(ap_location_data[ap]['data']['gps_lat'])
+        gps_lon = np.median(ap_location_data[ap]['data']['gps_lon'])
 
         # update the gps coord arrays which will be used in the gmap plots
         auth_gps_lats[auth[0]].append(gps_lat)
         auth_gps_lons[auth[0]].append(gps_lon)
 
         # if the ap belongs to the list of top networks, add it
-        if ap_mapping_info[ap]['essid'] in top_networks:
-            nw_gps_lats[ap_mapping_info[ap]['essid']].append(gps_lat)
-            nw_gps_lons[ap_mapping_info[ap]['essid']].append(gps_lon)
+        if ap_location_data[ap]['essid'] in top_networks:
+            nw_gps_lats[ap_location_data[ap]['essid']].append(gps_lat)
+            nw_gps_lons[ap_location_data[ap]['essid']].append(gps_lon)
 
         # update ap_locations
         ap_locations.append({'mac_addr' : ap, 'auth' : auth[0], 'gps_lat' : gps_lat, 'gps_lon' : gps_lon})
@@ -203,7 +261,7 @@ def draw_on_map(ap_mapping_info, top_networks, out_dir):
     # print the ap locations on the map
     for auth in auth_gps_lats:
 
-        gmap = gmplot.GoogleMapPlotter(porto_lat, porto_lon, 14)
+        gmap = gmplot.GoogleMapPlotter(PORTO_LATITUDE, PORTO_LONGITUDE, 14)
         gmap.scatter(auth_gps_lats[auth], auth_gps_lons[auth], auth_colors[auth], marker = False)
         gmap.draw(os.path.join(out_dir, 'ap_locations_' + str(auth) + '.html'))
 
@@ -214,7 +272,7 @@ def draw_on_map(ap_mapping_info, top_networks, out_dir):
 
     for i, network in enumerate(top_networks):
 
-        gmap = gmplot.GoogleMapPlotter(porto_lat, porto_lon, 14)
+        gmap = gmplot.GoogleMapPlotter(PORTO_LATITUDE, PORTO_LONGITUDE, 14)
         # gmap.scatter(nw_gps_lats[network], nw_gps_lons[network], str(matplotlib.colors.rgb2hex(colors[i])), marker = False)
         gmap.heatmap(nw_gps_lats[network], nw_gps_lons[network])
         gmap.draw(os.path.join(out_dir, 'top_network_locations_' + network.replace(" ", "_") + '.html'))
@@ -228,9 +286,10 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
     # we use hash tables to gather data, convert them to dataframes later
     session_stats['median_scanning_dist'] = defaultdict()
     session_stats['median_speeds'] = defaultdict()
+    session_stats['rssi'] = defaultdict(int)
 
     # map on which to draw 'fast' ap locations
-    ap_mapping_info = defaultdict()
+    ap_location_data = defaultdict()
 
     # given the large size of the input data file (> 3 GB), we read the file in chunks
     chunksize = 10 ** 5
@@ -277,13 +336,14 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
             # extract scanning distances and median speeds for the session
             extract_scanning_distances(session_data, session_id, session_stats['median_scanning_dist'])
             extract_median_speeds(session_data, session_id, session_stats['median_speeds'])
+            extract_rssi(session_data, session_stats['rssi'])
 
             # stats about aps (for sessions w/ median speeds above 20 km/h)
             if (session_id in session_stats['median_speeds']) and (session_stats['median_speeds'][session_id] > median_speed_thrshld):
                 
                 # extract statistics about aps
                 print("session_analysis::analyze_sessions() : [%s] %s" % (session_id, session_stats['median_speeds'][session_id]))
-                session_stats['ap_stats'] = session_stats['ap_stats'].append(extract_ap_stats(session_data, session_id, ap_mapping_info), ignore_index = True)
+                session_stats['ap_stats'] = session_stats['ap_stats'].append(extract_ap_stats(session_data, session_id, ap_location_data), ignore_index = True)
 
         # if 303 in session_ids:
         #     break
@@ -295,11 +355,13 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
     # convert dict to pandas dataframes
     session_stats['median_scanning_dist'] = pd.DataFrame(session_stats['median_scanning_dist'].items(), columns = ['session_id', 'ds'])
     session_stats['median_speeds'] = pd.DataFrame(session_stats['median_speeds'].items(), columns = ['session_id', 'speed'])
+    session_stats['rssi'] = pd.DataFrame(session_stats['rssi'].items(), columns = ['rssi', 'nr_scans'])
 
     # save processed data in .csv files
     session_stats['median_scanning_dist'].to_csv(processed_files['median_scanning_dist'], sep = ',')
     session_stats['median_speeds'].to_csv(processed_files['median_speeds'], sep = ',')
     session_stats['ap_stats'].to_csv(processed_files['ap_stats'], sep = ',')
+    session_stats['rssi'].to_csv(processed_files['rssi'], sep = ',')
 
     # draw map in html file
 
@@ -308,11 +370,13 @@ def analyze_sessions(file_name, out_dir, session_stats, processed_files, median_
     # labels of top 10 wifi networks, by nr. of aps
     top_networks = [str(ssid.lower().replace("_", "-")) for ssid in top_networks.iloc[-10:].index.format()]
 
-    session_stats['ap_locations'] = draw_on_map(ap_mapping_info, top_networks, out_dir)
+    session_stats['ap_locations'] = draw_on_map(ap_location_data, top_networks, out_dir)
 
 def plot(file_name, out_dir):
 
     """extracts bunch of stats from 'sense my city' sessions"""
+
+    plot_radius(out_dir)
 
     # save post-processed data in dict of pandas dataframes
     session_stats = defaultdict()
@@ -325,7 +389,8 @@ def plot(file_name, out_dir):
         'median_scanning_dist' : os.path.join(processed_dir, 'session_median_scanning_dist.csv'),
         'median_speeds' : os.path.join(processed_dir, 'session_median_speeds.csv'),
         'ap_stats' : os.path.join(processed_dir, 'session_ap_stats.csv'),
-        'ap_locations' : os.path.join(processed_dir, 'ap_locations.csv')
+        'ap_locations' : os.path.join(processed_dir, 'ap_locations.csv'),
+        'rssi' : os.path.join(processed_dir, 'rssi.csv')
     }
 
     # check if .csv files already exist in out_dir/processed. if that's the case, 
@@ -343,9 +408,9 @@ def plot(file_name, out_dir):
     colors = [color_map(i) for i in np.linspace(0, 1, 10)]
 
     # plot session ap stats histograms (per mac addr.)
-    fig_1 = plt.figure(figsize = (18, 10))
+    fig_1 = plt.figure(figsize = (18, 15))
 
-    ax1 = fig_1.add_subplot(231)
+    ax1 = fig_1.add_subplot(331)
     ax1.set_title('(a) median time within range \nof AP, over all sessions')
 
     ax1.xaxis.grid(True)
@@ -362,7 +427,7 @@ def plot(file_name, out_dir):
     ax1.set_xlim(0, 150)
     ax1.set_ylim(0, 1.0)
 
-    ax2 = fig_1.add_subplot(232)
+    ax2 = fig_1.add_subplot(332)
     ax2.set_title('(b) median distance covered while within \nrange of AP, over all sessions')
 
     ax2.xaxis.grid(True)
@@ -375,7 +440,7 @@ def plot(file_name, out_dir):
     ax2.set_xlim(0, 700)
     ax2.set_ylim(0, 1.0)
 
-    ax3 = fig_1.add_subplot(233)
+    ax3 = fig_1.add_subplot(333)
     ax3.set_title('(c) median speed while in range \nof AP, over all sessions')
 
     ax3.xaxis.grid(True)
@@ -389,7 +454,7 @@ def plot(file_name, out_dir):
     ax3.set_ylim(0, 1.0)
 
     # get unique mac addresses of aps
-    ax4 = fig_1.add_subplot(234)
+    ax4 = fig_1.add_subplot(334)
     ax4.set_title('(d) # of APs w/ \nauthentication method x')
 
     ax4.xaxis.grid(False)
@@ -402,7 +467,7 @@ def plot(file_name, out_dir):
     ax4.set_xticklabels(['n/a', 'open', 'wep', 'wpa', 'wpa2', 'enter.'])
 
     # nr. of APs per WiFi network (identified by SSID)
-    ax5 = fig_1.add_subplot(235)
+    ax5 = fig_1.add_subplot(335)
     ax5.set_title('(e) # of APs per WiFi \nnetwork (per SSID)')
 
     ax5.xaxis.grid(True)
@@ -418,7 +483,7 @@ def plot(file_name, out_dir):
     ax5.set_xlim(0, 50)
     ax5.set_ylim(0, 1.0)
 
-    ax6 = fig_1.add_subplot(236)
+    ax6 = fig_1.add_subplot(336)
     ax6.set_title('(f) # of APs on 10 \nlargest WiFi networks')
 
     ax6.xaxis.grid(False)
@@ -445,7 +510,27 @@ def plot(file_name, out_dir):
     ax6.set_xlim(-(0.25 / 1.0), 10)
     ax6.set_ylim(100, 1000000)
 
+    # # distribution of scanned snrs
+    # fig_2 = plt.figure(figsize = (6, 5))
+
+    ax7 = fig_1.add_subplot(337)
+    ax7.xaxis.grid(True)
+    ax7.yaxis.grid(True)
+
+    acc = np.array(session_stats['rssi']['nr_scans'].cumsum(), dtype = float)
+    acc = acc / acc[-1]
+    ax7.plot(session_stats['rssi']['rssi'], acc, alpha = 0.5, linewidth = 1.5, color = 'darkblue')
+
+    ax7.set_title("(g) freq. of measured rssi values")
+    ax7.set_xlabel("rssi value (dBm)")
+    ax7.set_ylabel("CDF")
+
+    # fig_2.tight_layout()
+    # fig_2.subplots_adjust(top = 0.95)
+
+    # plt.savefig(os.path.join(out_dir, "rssi-distribution.pdf"), bbox_inches = 'tight', format = 'pdf')
+
     fig_1.tight_layout()
     fig_1.subplots_adjust(top = 0.95)
 
-    plt.savefig(os.path.join(out_dir, "sessions-aps.pdf"), bbox_inches = 'tight', format = 'pdf')    
+    plt.savefig(os.path.join(out_dir, "sessions-aps.pdf"), bbox_inches = 'tight', format = 'pdf')
