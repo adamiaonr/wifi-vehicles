@@ -4,6 +4,326 @@
 		"selected_items":
 		[
 			[
+				"ap",
+				"ap_locations"
+			],
+			[
+				"spee",
+				"speed_profile"
+			],
+			[
+				"ap_l",
+				"ap_location"
+			],
+			[
+				"rss",
+				"rssi_merge_and_sum"
+			],
+			[
+				"rs",
+				"rssi_data"
+			],
+			[
+				"loc",
+				"lock"
+			],
+			[
+				"exi",
+				"exist"
+			],
+			[
+				"pro",
+				"processed_files"
+			],
+			[
+				"ex",
+				"exists"
+			],
+			[
+				"med",
+				"median_speeds"
+			],
+			[
+				"ap_",
+				"ap_location"
+			],
+			[
+				"aps",
+				"ap_stats"
+			],
+			[
+				"rssi_",
+				"rssi_data"
+			],
+			[
+				"median",
+				"median_speeds"
+			],
+			[
+				"ap_loca",
+				"ap_location_data"
+			],
+			[
+				"ses",
+				"session_data"
+			],
+			[
+				"session_",
+				"session_id"
+			],
+			[
+				"han",
+				"handle_session"
+			],
+			[
+				"medi",
+				"median_speeds"
+			],
+			[
+				"sessi",
+				"session_data"
+			],
+			[
+				"sess",
+				"session_data"
+			],
+			[
+				"prev",
+				"prev_chunk"
+			],
+			[
+				"nex",
+				"next_lon"
+			],
+			[
+				"spe",
+				"speed_profile"
+			],
+			[
+				"sp",
+				"speed_profile"
+			],
+			[
+				"la",
+				"lat"
+			],
+			[
+				"min",
+				"min_radius"
+			],
+			[
+				"star",
+				"start_circle_index"
+			],
+			[
+				"pev",
+				"prev_lon"
+			],
+			[
+				"gps",
+				"gps_lat"
+			],
+			[
+				"NET",
+				"TOP_NETWORK_SSIDS"
+			],
+			[
+				"ne",
+				"newtork_ssid"
+			],
+			[
+				"cov",
+				"coverage_speed"
+			],
+			[
+				"pl",
+				"plot_coverage_dist"
+			],
+			[
+				"fig",
+				"figure"
+			],
+			[
+				"to",
+				"total"
+			],
+			[
+				"pr",
+				"profile"
+			],
+			[
+				"speed",
+				"speed_profile"
+			],
+			[
+				"db",
+				"dbm"
+			],
+			[
+				"df",
+				"df_rssi"
+			],
+			[
+				"DA",
+				"data"
+			],
+			[
+				"fi",
+				"filename_html"
+			],
+			[
+				"file",
+				"filename_html"
+			],
+			[
+				"fr",
+				"from"
+			],
+			[
+				"pd",
+				"pdfkit"
+			],
+			[
+				"sca",
+				"scan_lat"
+			],
+			[
+				"top",
+				"top_network_locations"
+			],
+			[
+				"top_",
+				"top_network_locations_"
+			],
+			[
+				"gp",
+				"gps_lon"
+			],
+			[
+				"scan_",
+				"scan_lat"
+			],
+			[
+				"def",
+				"defaultdict"
+			],
+			[
+				"cal",
+				"calc_ap_location"
+			],
+			[
+				"cu",
+				"curr_circle"
+			],
+			[
+				"cen",
+				"centroid"
+			],
+			[
+				"in",
+				"intersection"
+			],
+			[
+				"sta",
+				"start_circle"
+			],
+			[
+				"dea",
+				"delta_angle"
+			],
+			[
+				"ea",
+				"earth_radius"
+			],
+			[
+				"new",
+				"new_plot"
+			],
+			[
+				"ou",
+				"out_dir"
+			],
+			[
+				"ax",
+				"ax8"
+			],
+			[
+				"fre",
+				"freq_wifi"
+			],
+			[
+				"pa",
+				"path_loss_constant"
+			],
+			[
+				"pw",
+				"power_transmit"
+			],
+			[
+				"path_",
+				"path_loss_exponent"
+			],
+			[
+				"PA",
+				"PATH_LOSS_EXPONENT"
+			],
+			[
+				"fig_",
+				"fig_1"
+			],
+			[
+				"nr",
+				"nr_scans"
+			],
+			[
+				"sn",
+				"snr"
+			],
+			[
+				"va",
+				"values"
+			],
+			[
+				"r",
+				"rssis"
+			],
+			[
+				"de",
+				"defaultdict"
+			],
+			[
+				"col",
+				"color"
+			],
+			[
+				"men",
+				"measured_snrs"
+			],
+			[
+				"meas",
+				"measured_snrs"
+			],
+			[
+				"mea",
+				"measured_snrs"
+			],
+			[
+				"apl",
+				"ap_location_data"
+			],
+			[
+				"measu",
+				"measured"
+			],
+			[
+				"P",
+				"PATH_LOSS_EXPONENT"
+			],
+			[
+				"F",
+				"FREQ_WIFI"
+			],
+			[
 				"IPv",
 				"IPv4_Module"
 			],
@@ -44,16 +364,8 @@
 				"IPPROTO_ICMP"
 			],
 			[
-				"pro",
-				"proto"
-			],
-			[
 				"ge",
 				"get_format_str"
-			],
-			[
-				"pr",
-				"print"
 			],
 			[
 				"ar",
@@ -68,24 +380,12 @@
 				"send_dgram"
 			],
 			[
-				"ap",
-				"arp_data"
-			],
-			[
-				"pa",
-				"payload"
-			],
-			[
 				"proc",
 				"process_pckt"
 			],
 			[
 				"get",
 				"get_attr"
-			],
-			[
-				"fr",
-				"frame"
 			],
 			[
 				"pac",
@@ -172,10 +472,6 @@
 				"tap"
 			],
 			[
-				"de",
-				"def	Function"
-			],
-			[
 				"AR",
 				"ARP_REPLY"
 			],
@@ -186,10 +482,6 @@
 			[
 				"raw",
 				"raw"
-			],
-			[
-				"fi",
-				"field_exceptions"
 			],
 			[
 				"A",
@@ -222,303 +514,43 @@
 			[
 				"se",
 				"self"
-			],
-			[
-				"hw",
-				"hwaddr"
-			],
-			[
-				"print",
-				"print_tap_dev_info"
-			],
-			[
-				"u",
-				"unpack"
-			],
-			[
-				"for",
-				"format_str"
-			],
-			[
-				"re",
-				"return"
-			],
-			[
-				"ARP",
-				"ARP_IPv4_Data"
-			],
-			[
-				"e",
-				"eth_frame"
-			],
-			[
-				"eh",
-				"eth"
-			],
-			[
-				"tap",
-				"tap_dev"
-			],
-			[
-				"ne",
-				"net_addr"
-			],
-			[
-				"set",
-				"set_attr"
-			],
-			[
-				"upda",
-				"update_arp_table"
-			],
-			[
-				"AE",
-				"ARP_Daemon"
-			],
-			[
-				"me",
-				"merge_flag"
-			],
-			[
-				"0x0",
-				"0x0800"
-			],
-			[
-				"si",
-				"sip"
-			],
-			[
-				"s",
-				"state"
-			],
-			[
-				"__",
-				"__init__"
-			],
-			[
-				"daa",
-				"data_size"
-			],
-			[
-				"pack",
-				"packet"
-			],
-			[
-				"b",
-				"byte_stream"
-			],
-			[
-				"wir",
-				"wire_fmt_str"
-			],
-			[
-				"0x",
-				"0xFFFFFFFF"
-			],
-			[
-				"crc",
-				"crc_flipped"
-			],
-			[
-				"byt",
-				"byte_str"
-			],
-			[
-				"by",
-				"byte_str"
-			],
-			[
-				"cal",
-				"calc_fcs"
-			],
-			[
-				"fram",
-				"frame_bytes"
-			],
-			[
-				"eth_f",
-				"eth_frame_wired"
-			],
-			[
-				"clus",
-				"cluster_other"
-			],
-			[
-				"clu",
-				"cluster_other"
-			],
-			[
-				"di",
-				"discarded"
-			],
-			[
-				"cl",
-				"cluster"
-			],
-			[
-				"sim",
-				"similarity_score"
-			],
-			[
-				"nove",
-				"novelty_score"
-			],
-			[
-				"cluster",
-				"cluster_list"
-			],
-			[
-				"similarity_",
-				"similarity_score"
-			],
-			[
-				"gra",
-				"graph_dir"
-			],
-			[
-				"rp",
-				"rep_metric"
-			],
-			[
-				"ke",
-				"key"
-			],
-			[
-				"su",
-				"sub_keys"
-			],
-			[
-				"key",
-				"keys"
-			],
-			[
-				"tot",
-				"totals"
-			],
-			[
-				"get_",
-				"get_metric_diffs"
-			],
-			[
-				"ser",
-				"service_name"
-			],
-			[
-				"ot",
-				"other_graph"
-			],
-			[
-				"extr",
-				"extract"
-			],
-			[
-				"add",
-				"added_edges"
-			],
-			[
-				"c_",
-				"c_service"
-			],
-			[
-				"p_",
-				"p_service"
-			],
-			[
-				"ed",
-				"edge_type"
-			],
-			[
-				"edg",
-				"edge_type"
-			],
-			[
-				"do",
-				"dotted"
-			],
-			[
-				"bl",
-				"blue"
-			],
-			[
-				"gre",
-				"green"
-			],
-			[
-				"edge_",
-				"edge_color"
-			],
-			[
-				"head",
-				"head_label"
-			],
-			[
-				"dir",
-				"direction"
-			],
-			[
-				"tail",
-				"tail_label"
-			],
-			[
-				"he",
-				"head"
-			],
-			[
-				"clo",
-				"color"
-			],
-			[
-				"file",
-				"filename"
-			],
-			[
-				"nod",
-				"node_color"
-			],
-			[
-				"no",
-				"node_labels"
-			],
-			[
-				"dat",
-				"data"
-			],
-			[
-				"ad",
-				"adj_service_name"
-			],
-			[
-				"node",
-				"node_label"
-			],
-			[
-				"cap",
-				"capitalize"
-			],
-			[
-				"pri",
-				"print_label"
-			],
-			[
-				"to",
-				"to_caps"
-			],
-			[
-				"serv",
-				"service_name"
-			],
-			[
-				"rel",
-				"relevant_services"
-			],
-			[
-				"metric",
-				"metric_diffs_by_service"
 			]
 		]
 	},
 	"buffers":
 	[
+		{
+			"file": "data-analysis/src/session_analysis.py",
+			"settings":
+			{
+				"buffer_size": 36416,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/plot.py",
+			"settings":
+			{
+				"buffer_size": 1671,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/wifi_connection.py",
+			"settings":
+			{
+				"buffer_size": 10900,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/plot_utils.py",
+			"settings":
+			{
+				"buffer_size": 1722,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"command_palette":
@@ -707,6 +739,53 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"ap_location_merge",
+			"ap_location_data",
+			"newtork_ssid",
+			"rssi_data",
+			"rssi_da",
+			"ap_location_data",
+			"draw_on_map",
+			"processed_files['",
+			"ap_stats",
+			"processed_f",
+			"extract_scanning_distances",
+			"session_stats",
+			"ap_location_data",
+			"rssi",
+			"session_stats",
+			"print(",
+			"data[",
+			"csv",
+			"prev_chu",
+			"extract_ap",
+			"top_networks",
+			"top_ne",
+			"ap_location_data",
+			"calc_rad",
+			"calc_ap_loca",
+			"ap_locations",
+			"top_n",
+			"session_stats['ap_stats']",
+			"pedes",
+			".index",
+			"session_stats['rssi']",
+			"extract_ap_stats",
+			"top_networks_locations",
+			"auth_gps",
+			"nw_gps",
+			"to_degrees",
+			"dist_gps",
+			"add_subplot(23",
+			"processed_files",
+			"Ord",
+			"keys",
+			"fig_1",
+			"out_dir",
+			"ap_location_data",
+			"ap_mapping_info",
+			"porto_lon",
+			"porto_lat",
 			"proccess_icmp_ipv4_reply",
 			"raw_sckt_fd",
 			"socket(",
@@ -787,61 +866,24 @@
 			"graphs[gc_dir]",
 			"gc_dir",
 			"updated_services",
-			"max",
-			"args.mode",
-			"processing_times",
-			"723",
-			"path",
-			"Directed",
-			"TARGET_SANITY",
-			"TARGET_SENSITIVITY",
-			":03",
-			"c33.03.",
-			"distance/strong-full",
-			"SF:",
-			"data/req-sizes",
-			"distance/strong-full",
-			"distance/strong/",
-			"S:",
-			"S:3",
-			"id=\"1.0\"",
-			"id=\"2.0\"",
-			"\"2.0\"",
-			"delivery_probs",
-			"id=\"3.1\"",
-			"id=\"3.3\"",
-			"id=\"2.1\"",
-			"id=\"1.0\"",
-			"size=\"15\">1.00</fwd",
-			"\"3.1\"",
-			"                <link local=\"0\" remote=\"0\" rrouter=\"3.3\">\n                    <fwd_size_dist size=\"1\">0.90</fwd_size_dist>\n                    <fwd_size_dist size=\"2\">0.10</fwd_size_dist>",
-			"\"3.3\"",
-			"\"2.1\"",
-			"\"1.0\"",
-			"\"3.1\"",
-			"\"3.0\"",
-			"<tp iface=\"0\">15</tp>",
-			"\"3.1\"",
-			"\"2.0\"",
-			"\"3.0\"",
-			"<tp iface=",
-			"<tp iface=\"0\">15</tp>",
-			"\"3.0\"",
-			"\"3.0",
-			"get_log_fp_rates(",
-			"fp_rate",
-			"get_log_fp_rates",
-			"\"3.3\"",
-			"\"3.1\"",
-			"\"2.0\"",
-			"\"1.0\""
+			"max"
 		],
 		"highlight": true,
 		"in_selection": false,
-		"preserve_case": true,
+		"preserve_case": false,
 		"regex": false,
 		"replace_history":
 		[
+			"session_data[",
+			"session_stats",
+			"auth",
+			"top_networks",
+			"gps_to_dist",
+			"add_subplot(33",
+			"fig_2",
+			"ap_location_data",
+			"PORTO_LONGITUDE",
+			"PORTO_LATITUDE",
 			"raw_frame",
 			"ARP_Module",
 			"ARP_Dgram",
@@ -959,17 +1001,7 @@
 			"0,10,0",
 			"_real_dir",
 			"$scn_file",
-			"0,5,0",
-			"5,0",
-			"10,0",
-			"0,5,0",
-			"10,0",
-			"0,10,0",
-			"num_entries",
-			"0,10,0",
-			"0,9,0",
-			"0,8,0",
-			"0,7,0"
+			"0,5,0"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -980,8 +1012,121 @@
 	"groups":
 	[
 		{
+			"selected": 1,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "data-analysis/src/session_analysis.py",
+					"settings":
+					{
+						"buffer_size": 36416,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3599,
+								3599
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1350.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "data-analysis/src/plot.py",
+					"settings":
+					{
+						"buffer_size": 1671,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								461,
+								461
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "data-analysis/src/wifi_connection.py",
+					"settings":
+					{
+						"buffer_size": 10900,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8206,
+								8206
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "data-analysis/src/plot_utils.py",
+					"settings":
+					{
+						"buffer_size": 1722,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1676,
+								1676
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 855.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
 			]
 		}
 	],

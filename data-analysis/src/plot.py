@@ -15,6 +15,7 @@ from collections import OrderedDict
 # custom imports
 import session_analysis
 import wifi_connection
+import dhcp_capture
 import plot_utils
 
 if __name__ == "__main__":
@@ -52,6 +53,8 @@ if __name__ == "__main__":
         session_analysis.plot(args.data_file, args.output_dir)
     elif args.case == 'wifi-connections':
         wifi_connection.plot(args.data_file, args.output_dir)
+    elif args.case == 'dhcp-capture':
+        dhcp_capture.plot(args.data_file, args.output_dir)
     else:
         sys.stderr.write("""%s: [ERROR] please supply a valid case\n""" % sys.argv[0]) 
         parser.print_help()
