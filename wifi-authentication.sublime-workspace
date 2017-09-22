@@ -4,6 +4,94 @@
 		"selected_items":
 		[
 			[
+				"da",
+				"data_sorted"
+			],
+			[
+				"tim",
+				"time_values"
+			],
+			[
+				"ar",
+				"arange"
+			],
+			[
+				"last",
+				"last_dhcp_ack_network"
+			],
+			[
+				"time",
+				"time_values"
+			],
+			[
+				"netw",
+				"network_name"
+			],
+			[
+				"sub",
+				"subnets"
+			],
+			[
+				"dhc",
+				"dhcp_req"
+			],
+			[
+				"pr",
+				"print"
+			],
+			[
+				"prev",
+				"prev_dhcp_req_frame_num"
+			],
+			[
+				"con",
+				"contains"
+			],
+			[
+				"las",
+				"last_dhcp_ack_network"
+			],
+			[
+				"dhcp",
+				"dhcp_reqs"
+			],
+			[
+				"to",
+				"tolist"
+			],
+			[
+				"wi",
+				"wifi_connection"
+			],
+			[
+				"ana",
+				"analyze_dhcp_capture"
+			],
+			[
+				"wifi",
+				"wifi-connections"
+			],
+			[
+				"dh",
+				"dhcp_req_frame_nums"
+			],
+			[
+				"new",
+				"network_name"
+			],
+			[
+				"ou",
+				"output_data"
+			],
+			[
+				"fil",
+				"file_name"
+			],
+			[
+				"data",
+				"data_dir"
+			],
+			[
 				"ap",
 				"ap_locations"
 			],
@@ -88,10 +176,6 @@
 				"session_data"
 			],
 			[
-				"prev",
-				"prev_chunk"
-			],
-			[
 				"nex",
 				"next_lon"
 			],
@@ -142,14 +226,6 @@
 			[
 				"fig",
 				"figure"
-			],
-			[
-				"to",
-				"total"
-			],
-			[
-				"pr",
-				"profile"
 			],
 			[
 				"speed",
@@ -234,14 +310,6 @@
 			[
 				"ea",
 				"earth_radius"
-			],
-			[
-				"new",
-				"new_plot"
-			],
-			[
-				"ou",
-				"out_dir"
 			],
 			[
 				"ax",
@@ -368,10 +436,6 @@
 				"get_format_str"
 			],
 			[
-				"ar",
-				"arp_table"
-			],
-			[
 				"dst",
 				"dst_ip"
 			],
@@ -440,10 +504,6 @@
 				"integrity"
 			],
 			[
-				"data",
-				"datagram"
-			],
-			[
 				"frag",
 				"frag_offset"
 			],
@@ -454,84 +514,24 @@
 			[
 				"frm",
 				"frame_type"
-			],
-			[
-				"et",
-				"Ethernet"
-			],
-			[
-				"arp",
-				"arp_data"
-			],
-			[
-				"arp_",
-				"arp_table_key"
-			],
-			[
-				"ta",
-				"tap"
-			],
-			[
-				"AR",
-				"ARP_REPLY"
-			],
-			[
-				"ra",
-				"raw_data"
-			],
-			[
-				"raw",
-				"raw"
-			],
-			[
-				"A",
-				"ARP_Packet"
-			],
-			[
-				"ET",
-				"ETH_HDR_SIZE"
-			],
-			[
-				"h",
-				"hdr_size"
-			],
-			[
-				"of",
-				"offset"
-			],
-			[
-				"siz",
-				"size_of"
-			],
-			[
-				"par",
-				"parts"
-			],
-			[
-				"a",
-				"all"
-			],
-			[
-				"se",
-				"self"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "data-analysis/src/session_analysis.py",
+			"file": "data-analysis/src/plot.py",
 			"settings":
 			{
-				"buffer_size": 36416,
+				"buffer_size": 1788,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "data-analysis/src/plot.py",
+			"file": "data-analysis/src/session_analysis.py",
 			"settings":
 			{
-				"buffer_size": 1671,
+				"buffer_size": 36416,
 				"line_ending": "Unix"
 			}
 		},
@@ -544,10 +544,18 @@
 			}
 		},
 		{
+			"file": "data-analysis/src/dhcp_capture.py",
+			"settings":
+			{
+				"buffer_size": 6109,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "data-analysis/src/plot_utils.py",
 			"settings":
 			{
-				"buffer_size": 1722,
+				"buffer_size": 1723,
 				"line_ending": "Unix"
 			}
 		}
@@ -592,6 +600,7 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/handover-data/wireshark-captures/shark-eduroam-old.csv",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/accelerometer_base.py",
 		"/home/adamiaonr/workbench/accelerator/doc/final/Makefile",
 		"/home/adamiaonr/workbench/networking-sandbox/traceroute/traceroute.sublime-project",
@@ -718,8 +727,7 @@
 		"/home/adamiaonr/workbench/dns-performance/src/dns-performance.cpp",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/fls",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f02.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r10.scn"
+		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r15.scn"
 	],
 	"find":
 	{
@@ -739,6 +747,7 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"dhcp_data",
 			"ap_location_merge",
 			"ap_location_data",
 			"newtork_ssid",
@@ -865,8 +874,7 @@
 			"GC_LAGS",
 			"graphs[gc_dir]",
 			"gc_dir",
-			"updated_services",
-			"max"
+			"updated_services"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1017,6 +1025,34 @@
 			[
 				{
 					"buffer": 0,
+					"file": "data-analysis/src/plot.py",
+					"settings":
+					{
+						"buffer_size": 1788,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1624,
+								1624
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 630.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
 					"file": "data-analysis/src/session_analysis.py",
 					"settings":
 					{
@@ -1027,8 +1063,8 @@
 						"selection":
 						[
 							[
-								3599,
-								3599
+								35059,
+								35059
 							]
 						],
 						"settings":
@@ -1038,35 +1074,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1350.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "data-analysis/src/plot.py",
-					"settings":
-					{
-						"buffer_size": 1671,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								461,
-								461
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 12645.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1083,8 +1091,8 @@
 						"selection":
 						[
 							[
-								8206,
-								8206
+								8382,
+								8382
 							]
 						],
 						"settings":
@@ -1094,25 +1102,54 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1259.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "data-analysis/src/plot_utils.py",
+					"file": "data-analysis/src/dhcp_capture.py",
 					"settings":
 					{
-						"buffer_size": 1722,
+						"buffer_size": 6109,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1676,
-								1676
+								463,
+								463
+							]
+						],
+						"settings":
+						{
+							"spell_check": true,
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 945.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "data-analysis/src/plot_utils.py",
+					"settings":
+					{
+						"buffer_size": 1723,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1723,
+								1723
 							]
 						],
 						"settings":
@@ -1122,7 +1159,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 855.0,
+						"translation.y": 360.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
