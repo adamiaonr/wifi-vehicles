@@ -4,6 +4,134 @@
 		"selected_items":
 		[
 			[
+				"col",
+				"color"
+			],
+			[
+				"clo",
+				"color"
+			],
+			[
+				"colo",
+				"colors"
+			],
+			[
+				"ess",
+				"essid_large"
+			],
+			[
+				"es",
+				"essid"
+			],
+			[
+				"nr",
+				"nr_macs"
+			],
+			[
+				"to",
+				"total"
+			],
+			[
+				"ap_",
+				"ap_stats"
+			],
+			[
+				"ap",
+				"ap_stats"
+			],
+			[
+				"rg",
+				"rgb"
+			],
+			[
+				"co",
+				"colors"
+			],
+			[
+				"lon",
+				"lon-slots"
+			],
+			[
+				"ap_grid_l",
+				"ap_grid_lons"
+			],
+			[
+				"ini",
+				"init_grid"
+			],
+			[
+				"ap_gri",
+				"ap_grid"
+			],
+			[
+				"PO",
+				"PORTO_LONGITUDE_LIMIT_WEST"
+			],
+			[
+				"lo",
+				"longitudes"
+			],
+			[
+				"lat",
+				"latitude"
+			],
+			[
+				"con",
+				"continue"
+			],
+			[
+				"grd",
+				"grid_position"
+			],
+			[
+				"ne",
+				"next_lon"
+			],
+			[
+				"lon_",
+				"lon_ticks"
+			],
+			[
+				"grid",
+				"grid_side"
+			],
+			[
+				"gps_",
+				"gps_to_dist"
+			],
+			[
+				"P",
+				"PORTO_LATITUDE_LIMIT_NORTH"
+			],
+			[
+				"gri",
+				"grid_side"
+			],
+			[
+				"ses",
+				"session_data"
+			],
+			[
+				"ex",
+				"extract"
+			],
+			[
+				"med",
+				"median_speed"
+			],
+			[
+				"sess",
+				"session_ids"
+			],
+			[
+				"sim",
+				"simple_session_analysis"
+			],
+			[
+				"session",
+				"session_stats"
+			],
+			[
 				"da",
 				"data_sorted"
 			],
@@ -44,20 +172,12 @@
 				"prev_dhcp_req_frame_num"
 			],
 			[
-				"con",
-				"contains"
-			],
-			[
 				"las",
 				"last_dhcp_ack_network"
 			],
 			[
 				"dhcp",
 				"dhcp_reqs"
-			],
-			[
-				"to",
-				"tolist"
 			],
 			[
 				"wi",
@@ -92,10 +212,6 @@
 				"data_dir"
 			],
 			[
-				"ap",
-				"ap_locations"
-			],
-			[
 				"spee",
 				"speed_profile"
 			],
@@ -124,18 +240,6 @@
 				"processed_files"
 			],
 			[
-				"ex",
-				"exists"
-			],
-			[
-				"med",
-				"median_speeds"
-			],
-			[
-				"ap_",
-				"ap_location"
-			],
-			[
 				"aps",
 				"ap_stats"
 			],
@@ -152,10 +256,6 @@
 				"ap_location_data"
 			],
 			[
-				"ses",
-				"session_data"
-			],
-			[
 				"session_",
 				"session_id"
 			],
@@ -169,10 +269,6 @@
 			],
 			[
 				"sessi",
-				"session_data"
-			],
-			[
-				"sess",
 				"session_data"
 			],
 			[
@@ -210,10 +306,6 @@
 			[
 				"NET",
 				"TOP_NETWORK_SSIDS"
-			],
-			[
-				"ne",
-				"newtork_ssid"
 			],
 			[
 				"cov",
@@ -340,10 +432,6 @@
 				"fig_1"
 			],
 			[
-				"nr",
-				"nr_scans"
-			],
-			[
 				"sn",
 				"snr"
 			],
@@ -358,10 +446,6 @@
 			[
 				"de",
 				"defaultdict"
-			],
-			[
-				"col",
-				"color"
 			],
 			[
 				"men",
@@ -382,10 +466,6 @@
 			[
 				"measu",
 				"measured"
-			],
-			[
-				"P",
-				"PATH_LOSS_EXPONENT"
 			],
 			[
 				"F",
@@ -434,86 +514,6 @@
 			[
 				"ge",
 				"get_format_str"
-			],
-			[
-				"dst",
-				"dst_ip"
-			],
-			[
-				"send",
-				"send_dgram"
-			],
-			[
-				"proc",
-				"process_pckt"
-			],
-			[
-				"get",
-				"get_attr"
-			],
-			[
-				"pac",
-				"pack"
-			],
-			[
-				"ech",
-				"echo_reply"
-			],
-			[
-				"un",
-				"unpack"
-			],
-			[
-				"ICM",
-				"ICMP_Packet"
-			],
-			[
-				"icmp",
-				"icmp_pckt"
-			],
-			[
-				"I",
-				"IPv4_Daemon"
-			],
-			[
-				"Ma",
-				"MetaFrame"
-			],
-			[
-				"fo",
-				"format_str"
-			],
-			[
-				"eth",
-				"eth_frame"
-			],
-			[
-				"E",
-				"Ethernet"
-			],
-			[
-				"fa",
-				"frame_type"
-			],
-			[
-				"incl",
-				"including"
-			],
-			[
-				"inte",
-				"integrity"
-			],
-			[
-				"frag",
-				"frag_offset"
-			],
-			[
-				"fra",
-				"frag_offset"
-			],
-			[
-				"frm",
-				"frame_type"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "data-analysis/src/plot.py",
 			"settings":
 			{
-				"buffer_size": 1788,
+				"buffer_size": 1896,
 				"line_ending": "Unix"
 			}
 		},
@@ -556,6 +556,30 @@
 			"settings":
 			{
 				"buffer_size": 1723,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/example.html.bak",
+			"settings":
+			{
+				"buffer_size": 937504,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/Downloads/data.25",
+			"settings":
+			{
+				"buffer_size": 1359,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/wifi_grid.py",
+			"settings":
+			{
+				"buffer_size": 12074,
 				"line_ending": "Unix"
 			}
 		}
@@ -600,6 +624,12 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/simple_session_analysis.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/example.html.bak",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/example.html",
+		"/home/adamiaonr/Downloads/data.25",
+		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/plot_cdn.py",
+		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/plot_opportunistic.py",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/handover-data/wireshark-captures/shark-eduroam-old.csv",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/accelerometer_base.py",
 		"/home/adamiaonr/workbench/accelerator/doc/final/Makefile",
@@ -721,17 +751,11 @@
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/f01-a10-07.scn",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/f01-a20-07.scn",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f10.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f05.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f01.scn",
-		"/home/adamiaonr/workbench/dns-performance/src/dns-performance.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/fls",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f02.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/r15-events/data/request-sizes/r15.scn"
+		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f10.scn"
 	],
 	"find":
 	{
-		"height": 69.0
+		"height": 75.0
 	},
 	"find_in_files":
 	{
@@ -747,6 +771,24 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"processed_files",
+			"fillOpacity: 0.250000",
+			"==",
+			"grid_side = 50.0",
+			"color map",
+			"colors",
+			"color map",
+			"extract_median_speeds",
+			"central_angle",
+			"WIFI_AUTH",
+			"ap_grid_initialized",
+			"ap_position",
+			"feature",
+			"arange",
+			"extract_median_speeds",
+			"extract_med",
+			"median_speed_thrshld",
+			"gmpl",
 			"dhcp_data",
 			"ap_location_merge",
 			"ap_location_data",
@@ -856,25 +898,7 @@
 			"get_dot_pair_file",
 			"msu.",
 			"msu",
-			"build_de",
-			"self.clusters",
-			"add_edges(",
-			"add_edges",
-			"include",
-			"include_insignificant",
-			"updated_ser",
-			"filter_edges",
-			"get_callgraph_scores",
-			"Node(",
-			"class Node",
-			"node",
-			"egress",
-			"separate",
-			"Graph()",
-			"GC_LAGS",
-			"graphs[gc_dir]",
-			"gc_dir",
-			"updated_services"
+			"build_de"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -882,6 +906,9 @@
 		"regex": false,
 		"replace_history":
 		[
+			"fillOpacity: 0.500000",
+			"grid_side = GRID_SIZE",
+			"ap_grid",
 			"session_data[",
 			"session_stats",
 			"auth",
@@ -1006,10 +1033,7 @@
 			"0,2",
 			"0,0,3",
 			"0,3,0",
-			"0,10,0",
-			"_real_dir",
-			"$scn_file",
-			"0,5,0"
+			"0,10,0"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -1020,7 +1044,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 7,
 			"sheets":
 			[
 				{
@@ -1028,15 +1052,15 @@
 					"file": "data-analysis/src/plot.py",
 					"settings":
 					{
-						"buffer_size": 1788,
+						"buffer_size": 1896,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1624,
-								1624
+								368,
+								368
 							]
 						],
 						"settings":
@@ -1046,7 +1070,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 630.0,
+						"translation.y": 765.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1063,8 +1087,8 @@
 						"selection":
 						[
 							[
-								35059,
-								35059
+								13413,
+								13413
 							]
 						],
 						"settings":
@@ -1074,7 +1098,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 12645.0,
+						"translation.y": 5057.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1102,7 +1126,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1259.0,
+						"translation.y": 989.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1160,6 +1184,87 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 360.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "data-analysis/src/example.html.bak",
+					"settings":
+					{
+						"buffer_size": 937504,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								711,
+								711
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/home/adamiaonr/Downloads/data.25",
+					"settings":
+					{
+						"buffer_size": 1359,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1152,
+								1152
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 720.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "data-analysis/src/wifi_grid.py",
+					"settings":
+					{
+						"buffer_size": 12074,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9403,
+								9403
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3482.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

@@ -136,7 +136,7 @@ def print_grid(ap_grid, grid_side = 10.0):
     lon_ticks = np.arange(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LONGITUDE_LIMIT_EAST, 
         (PORTO_LONGITUDE_LIMIT_EAST - PORTO_LONGITUDE_LIMIT_WEST) / (gps_to_dist(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LATITUDE, PORTO_LONGITUDE_LIMIT_EAST, PORTO_LATITUDE) / grid_side))    
 
-    color_map = plt.get_cmap('Reds')
+    color_map = plt.get_cmap('Greens')
     colors = [color_map(i) for i in np.linspace(0, 1, 6)]
 
     # show the hex codes
@@ -163,7 +163,7 @@ def print_grid(ap_grid, grid_side = 10.0):
             gmap.polygon(
                 (lat_ticks[i], lat_ticks[i + 1], lat_ticks[i + 1], lat_ticks[i]), 
                 (lon_ticks[j], lon_ticks[j], lon_ticks[j + 1], lon_ticks[j + 1]),
-                edge_color = "black", edge_width = 0.5, face_color = color, face_alpha = 0.25)
+                edge_color = "black", edge_width = 0.5, face_color = color, face_alpha = 0.40)
 
     gmap.draw('example.html')
 
