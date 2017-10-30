@@ -35,22 +35,17 @@ matplotlib.rcParams.update({'font.size': 16})
 # gps coords for a 'central' pin on porto, portugal
 PORTO_LATITUDE  = 41.163158
 PORTO_LONGITUDE = -8.6127137
-
 # limits for map plotting
 PORTO_LATITUDE_LIMIT_NORTH = PORTO_LATITUDE  + 0.03
 PORTO_LATITUDE_LIMIT_SOUTH = PORTO_LATITUDE  - 0.03
 PORTO_LONGITUDE_LIMIT_EAST = PORTO_LONGITUDE + 0.06
 PORTO_LONGITUDE_LIMIT_WEST = PORTO_LONGITUDE - 0.06
-
+# size of grid (in meters)
 GRID_SIZE = 50.0
 
-# in order to save time, we save the post-processed data used in plots 
-# on .csv files 
 OUTPUT_DIR = '/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs'
 
 WIFI_AUTH = {0: 'unknown', 1: 'open', 2: 'wep', 3: 'wpa', 4: 'wpa2', 5: 'wpa2-enter'}
-
-file_lock = mp.Lock()
 
 # info about the sense-my-city dataset
 #   ds : distance travelled by the user during the scanning period
@@ -60,40 +55,6 @@ file_lock = mp.Lock()
 #   g_lat | g_lon : cell location
 #   auth : authentication mode (0 - Unknown, 1 - Open, 2 - WEP, 3 - WPA, 4 - WPA2, 5 - Enterprise (RADIUS/.11x/Other).)
 #   session_id : identifies the trip
-
-def to_radians(degrees):
-    return (degrees * math.pi / 180.0)
-
-def to_degrees(radians):
-    return (radians / (math.pi / 180.0))
-
-def gps_to_dist(lat_start, lon_start, lat_end, lon_end):
-
-    # we use the haversine formula to calculate the great-circle distance between two points. 
-    # in other words, this calculates the lenght of the shortest arch in-between 2 points, in 
-    # a 'great' circle of radius equal to 6371 (the radius of the earth) 
-    # source : http://www.movable-type.co.uk/scripts/latlong.html
-
-    # earth radius, in m
-    earth_radius = 6371000
-
-    delta_lat = to_radians(lat_end - lat_start)
-    delta_lon = to_radians(lon_end - lon_start)
-
-    lat_start = to_radians(lat_start)
-    lat_end = to_radians(lat_end)
-
-    a = (np.sin(delta_lat / 2.0) * np.sin(delta_lat / 2.0)) + (np.sin(delta_lon / 2.0) * np.sin(delta_lon / 2.0)) * np.cos(lat_start) * np.cos(lat_end)
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
-
-    return earth_radius * c
-
-def central_angle(dist):
-
-    # earth radius, in m
-    earth_radius = 6371000
-
-    return to_degrees(dist / earth_radius)
 
 def extract_median_speeds(data, session_id):
 
@@ -169,10 +130,8 @@ def print_grid(ap_grid, grid_side = 10.0):
 
 def init_grid(ap_grid, grid_side = 10.0):
 
-    lat_ticks = np.arange(PORTO_LATITUDE_LIMIT_SOUTH, PORTO_LATITUDE_LIMIT_NORTH, 
-        (PORTO_LATITUDE_LIMIT_NORTH - PORTO_LATITUDE_LIMIT_SOUTH) / (gps_to_dist(PORTO_LATITUDE_LIMIT_NORTH, 0.0, PORTO_LATITUDE_LIMIT_SOUTH, 0.0) / grid_side))
-    lon_ticks = np.arange(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LONGITUDE_LIMIT_EAST, 
-        (PORTO_LONGITUDE_LIMIT_EAST - PORTO_LONGITUDE_LIMIT_WEST) / (gps_to_dist(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LATITUDE, PORTO_LONGITUDE_LIMIT_EAST, PORTO_LATITUDE) / grid_side))
+    lat_ticks = np.arange(PORTO_LATITUDE_LIMIT_SOUTH, PORTO_LATITUDE_LIMIT_NORTH, (PORTO_LATITUDE_LIMIT_NORTH - PORTO_LATITUDE_LIMIT_SOUTH) / (gps_to_dist(PORTO_LATITUDE_LIMIT_NORTH, 0.0, PORTO_LATITUDE_LIMIT_SOUTH, 0.0) / grid_side))
+    lon_ticks = np.arange(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LONGITUDE_LIMIT_EAST, (PORTO_LONGITUDE_LIMIT_EAST - PORTO_LONGITUDE_LIMIT_WEST) / (gps_to_dist(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LATITUDE, PORTO_LONGITUDE_LIMIT_EAST, PORTO_LATITUDE) / grid_side))
 
     ap_grid['lat-slots'] = len(lat_ticks)
     ap_grid['lon-slots'] = len(lon_ticks)

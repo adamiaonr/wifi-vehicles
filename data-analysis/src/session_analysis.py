@@ -75,40 +75,6 @@ file_lock = mp.Lock()
 #   auth : authentication mode (0 - Unknown, 1 - Open, 2 - WEP, 3 - WPA, 4 - WPA2, 5 - Enterprise (RADIUS/.11x/Other).)
 #   session_id : identifies the trip
 
-def to_radians(degrees):
-    return (degrees * math.pi / 180.0)
-
-def to_degrees(radians):
-    return (radians / (math.pi / 180.0))
-
-def gps_to_dist(lat_start, lon_start, lat_end, lon_end):
-
-    # we use the haversine formula to calculate the great-circle distance between two points. 
-    # in other words, this calculates the lenght of the shortest arch in-between 2 points, in 
-    # a 'great' circle of radius equal to 6371 (the radius of the earth) 
-    # source : http://www.movable-type.co.uk/scripts/latlong.html
-
-    # earth radius, in m
-    earth_radius = 6371000
-
-    delta_lat = to_radians(lat_end - lat_start)
-    delta_lon = to_radians(lon_end - lon_start)
-
-    lat_start = to_radians(lat_start)
-    lat_end = to_radians(lat_end)
-
-    a = (np.sin(delta_lat / 2.0) * np.sin(delta_lat / 2.0)) + (np.sin(delta_lon / 2.0) * np.sin(delta_lon / 2.0)) * np.cos(lat_start) * np.cos(lat_end)
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
-
-    return earth_radius * c
-
-def central_angle(dist):
-
-    # earth radius, in m
-    earth_radius = 6371000
-
-    return to_degrees(dist / earth_radius)
-
 def ap_location_merge(a, b):
 
     for mac in b:

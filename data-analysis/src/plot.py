@@ -14,10 +14,11 @@ from collections import OrderedDict
 
 # custom imports
 import session_analysis
-import wifi_connection
+import wifi_connection_setup
 import dhcp_capture
 import wifi_grid
 import plot_utils
+import channel_switch
 
 if __name__ == "__main__":
 
@@ -34,6 +35,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--case", 
          help = """the case you want to output. e.g. 'base'.""")
+    parser.add_argument(
+        "--gps-limits", 
+         help = """limit analysis to box limited by box : --gps-limits '<north lat>,<south lat>,<west lon>,<east lon>'.""")
+    parser.add_argument(
+        "--cell-size", 
+         help = """side of cells which divide the map""")
     # parser.add_argument(
     #     "--subcase", 
     #      help = """the sub-case you want to output. e.g. 'bfs'.""")
@@ -52,12 +59,25 @@ if __name__ == "__main__":
 
     if args.case == 'session-analysis':
         session_analysis.plot(args.data_file, args.output_dir)
-    elif args.case == 'wifi-connections':
-        wifi_connection.plot(args.data_file, args.output_dir)
+    elif args.case == 'wifi-connection-setup':
+        wifi_connection_setup.plot(args.data_file, args.output_dir)
     elif args.case == 'dhcp-capture':
         dhcp_capture.plot(args.data_file, args.output_dir)
     elif args.case == 'wifi-grid':
         wifi_grid.plot(args.data_file, args.output_dir)
+    elif args.case == 'channel-switch':
+
+        if not args.cell_size:
+            args.cell_size = 10.0
+
+        gps_limits = []
+        if not args.gps_limits:
+            gps_limits = [41.152844,41.149629,-8.640344,-8.632748]
+        else:
+            gps_limits = [float(lim) for lim in args.gps_limits.split(",")]
+
+        channel_switch.plot(args.data_file, args.output_dir, args.cell_size, gps_limits)
+
     else:
         sys.stderr.write("""%s: [ERROR] please supply a valid case\n""" % sys.argv[0]) 
         parser.print_help()

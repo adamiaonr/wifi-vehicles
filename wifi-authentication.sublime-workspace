@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"exp",
+				"experiment-map"
+			],
+			[
+				"FE",
+				"FEUP_LONGITUDE"
+			],
+			[
+				"Fe",
+				"FEUP_LATITUDE"
+			],
+			[
 				"col",
 				"color"
 			],
@@ -502,60 +514,40 @@
 			[
 				"IC",
 				"IPPROTO_ICMP"
-			],
-			[
-				"sf",
-				"self"
-			],
-			[
-				"IP",
-				"IPPROTO_ICMP"
-			],
-			[
-				"ge",
-				"get_format_str"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "data-analysis/src/plot.py",
+			"file": "blind-handovers/src/experiment_map.py",
 			"settings":
 			{
-				"buffer_size": 1896,
+				"buffer_size": 526,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "data-analysis/src/session_analysis.py",
+			"file": "blind-handovers/src/plot.py",
 			"settings":
 			{
-				"buffer_size": 36416,
+				"buffer_size": 1333,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "data-analysis/src/wifi_connection.py",
+			"file": "blind-handovers/graphs/experiment-map.html",
 			"settings":
 			{
-				"buffer_size": 10900,
+				"buffer_size": 963,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "data-analysis/src/dhcp_capture.py",
+			"file": "/home/adamiaonr/workbench/machine-learning-fall-2017/hws/scripts/unzip.py",
 			"settings":
 			{
-				"buffer_size": 6109,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/plot_utils.py",
-			"settings":
-			{
-				"buffer_size": 1723,
+				"buffer_size": 0,
 				"line_ending": "Unix"
 			}
 		},
@@ -564,22 +556,6 @@
 			"settings":
 			{
 				"buffer_size": 937504,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/adamiaonr/Downloads/data.25",
-			"settings":
-			{
-				"buffer_size": 1359,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/wifi_grid.py",
-			"settings":
-			{
-				"buffer_size": 12074,
 				"line_ending": "Unix"
 			}
 		}
@@ -624,10 +600,16 @@
 	},
 	"file_history":
 	[
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/simple_session_analysis.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/example.html.bak",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/example.html",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/wifi_grid.py",
 		"/home/adamiaonr/Downloads/data.25",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/example.html.bak",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/plot_utils.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/dhcp_capture.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/wifi_connection.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/session_analysis.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/plot.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/simple_session_analysis.py",
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/example.html",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/plot_cdn.py",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/plot_opportunistic.py",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/handover-data/wireshark-captures/shark-eduroam-old.csv",
@@ -745,13 +727,7 @@
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/on-path/f01-a20-15.scn",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/on-path/f01-a10-15.scn",
 		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/pro-active/announce/f02-2.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/off-path/a33-01-15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/off-path/a33-00-15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/f01-a20-15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/f01-a10-07.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/f01-a20-07.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f15.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/f10.scn"
+		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/cache/scenarios/opportunistic/off-path/a33-01-15.scn"
 	],
 	"find":
 	{
@@ -771,6 +747,10 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"join",
+			"PORTO_",
+			"print_grid",
+			"init_grid",
 			"processed_files",
 			"fillOpacity: 0.250000",
 			"==",
@@ -894,11 +874,7 @@
 			".metrics",
 			"s_score",
 			"'nova_api', 'act",
-			"metric_differences",
-			"get_dot_pair_file",
-			"msu.",
-			"msu",
-			"build_de"
+			"metric_differences"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -906,6 +882,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"FEUP_",
 			"fillOpacity: 0.500000",
 			"grid_side = GRID_SIZE",
 			"ap_grid",
@@ -1032,8 +1009,7 @@
 			"0,1,",
 			"0,2",
 			"0,0,3",
-			"0,3,0",
-			"0,10,0"
+			"0,3,0"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -1044,23 +1020,23 @@
 	"groups":
 	[
 		{
-			"selected": 7,
+			"selected": 3,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "data-analysis/src/plot.py",
+					"file": "blind-handovers/src/experiment_map.py",
 					"settings":
 					{
-						"buffer_size": 1896,
+						"buffer_size": 526,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								368,
-								368
+								489,
+								489
 							]
 						],
 						"settings":
@@ -1070,25 +1046,25 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 765.0,
+						"translation.y": 75.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "data-analysis/src/session_analysis.py",
+					"file": "blind-handovers/src/plot.py",
 					"settings":
 					{
-						"buffer_size": 36416,
+						"buffer_size": 1333,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								13413,
-								13413
+								1154,
+								1154
 							]
 						],
 						"settings":
@@ -1098,98 +1074,66 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 5057.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "data-analysis/src/wifi_connection.py",
+					"file": "blind-handovers/graphs/experiment-map.html",
 					"settings":
 					{
-						"buffer_size": 10900,
+						"buffer_size": 963,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8382,
-								8382
+								802,
+								802
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 989.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "data-analysis/src/dhcp_capture.py",
+					"file": "/home/adamiaonr/workbench/machine-learning-fall-2017/hws/scripts/unzip.py",
 					"settings":
 					{
-						"buffer_size": 6109,
+						"buffer_size": 0,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								463,
-								463
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"spell_check": true,
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/Python/Python.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 945.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 4,
-					"file": "data-analysis/src/plot_utils.py",
-					"settings":
-					{
-						"buffer_size": 1723,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1723,
-								1723
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 360.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
 					"file": "data-analysis/src/example.html.bak",
 					"settings":
 					{
@@ -1210,61 +1154,6 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "/home/adamiaonr/Downloads/data.25",
-					"settings":
-					{
-						"buffer_size": 1359,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1152,
-								1152
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 720.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "data-analysis/src/wifi_grid.py",
-					"settings":
-					{
-						"buffer_size": 12074,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								9403,
-								9403
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3482.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1464,6 +1353,6 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 348.0,
+	"side_bar_width": 267.0,
 	"status_bar_visible": true
 }
