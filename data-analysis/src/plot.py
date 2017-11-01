@@ -36,8 +36,11 @@ if __name__ == "__main__":
         "--case", 
          help = """the case you want to output. e.g. 'base'.""")
     parser.add_argument(
-        "--gps-limits", 
-         help = """limit analysis to box limited by box : --gps-limits '<north lat>,<south lat>,<west lon>,<east lon>'.""")
+        "--cmd", 
+         help = """specialization of the case. e.g. --case 'channel-switch' --cmd 'analyze-sessions' for data analysis only.""")
+    parser.add_argument(
+        "--geo-limits", 
+         help = """limit analysis to box limited by box : --geo-limits '<north lat>,<south lat>,<west lon>,<east lon>'.""")
     parser.add_argument(
         "--cell-size", 
          help = """side of cells which divide the map""")
@@ -59,24 +62,37 @@ if __name__ == "__main__":
 
     if args.case == 'session-analysis':
         session_analysis.plot(args.data_file, args.output_dir)
+
     elif args.case == 'wifi-connection-setup':
         wifi_connection_setup.plot(args.data_file, args.output_dir)
+
     elif args.case == 'dhcp-capture':
         dhcp_capture.plot(args.data_file, args.output_dir)
+
     elif args.case == 'wifi-grid':
         wifi_grid.plot(args.data_file, args.output_dir)
+
     elif args.case == 'channel-switch':
 
+        # side of cells (in meters)
         if not args.cell_size:
             args.cell_size = 10.0
 
-        gps_limits = []
-        if not args.gps_limits:
-            gps_limits = [41.152844,41.149629,-8.640344,-8.632748]
+        # box of geo coordinates within which session analysis is ran
+        geo_limits = []
+        if not args.geo_limits:
+            geo_limits = [41.152844,41.149629,-8.640344,-8.632748]
         else:
-            gps_limits = [float(lim) for lim in args.gps_limits.split(",")]
+            geo_limits = [float(lim) for lim in args.geo_limits.split(",")]
 
-        channel_switch.plot(args.data_file, args.output_dir, args.cell_size, gps_limits)
+        # you either plot or run (a lengthy) session analysis
+        if not args.cmd:
+            args.cmd = 'plot'
+
+        if args.cmd == 'plot':
+            channel_switch.plot(args.output_dir, args.cell_size)
+        else:
+            channel_switch.analyze_sessions(args.data_file, args.output_dir, args.cell_size, geo_limits)
 
     else:
         sys.stderr.write("""%s: [ERROR] please supply a valid case\n""" % sys.argv[0]) 

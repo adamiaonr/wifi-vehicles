@@ -25,6 +25,9 @@ from shapely.geometry import Point
 # custom imports
 from plot_utils import *
 
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
 matplotlib.rcParams.update({'font.size': 16})
 
 # gps coords for a 'central' pin on porto, portugal
@@ -35,7 +38,9 @@ PORTO_LATITUDE_LIMIT_NORTH = PORTO_LATITUDE  + 0.03
 PORTO_LATITUDE_LIMIT_SOUTH = PORTO_LATITUDE  - 0.03
 PORTO_LONGITUDE_LIMIT_EAST = PORTO_LONGITUDE + 0.06
 PORTO_LONGITUDE_LIMIT_WEST = PORTO_LONGITUDE - 0.06
-# x and y span (in m) of the map, derived from geo coordinate limits
+
+# x and y span (in meters) of the map, derived from geo coordinate limits
+# NOTE : y is the vertical axis (latitude), x is the horizontal axis (longitude)
 Y_SPAN = gps_to_dist(PORTO_LATITUDE_LIMIT_NORTH, 0.0, PORTO_LATITUDE_LIMIT_SOUTH, 0.0)
 # FIXME : an x span depends on the latitude, and we're assuming a fixed latitude
 X_SPAN = gps_to_dist(PORTO_LONGITUDE_LIMIT_WEST, PORTO_LATITUDE, PORTO_LONGITUDE_LIMIT_EAST, PORTO_LATITUDE)
@@ -63,9 +68,9 @@ def get_ap_id(essid, mac_addr):
 # get (x,y) coords of cell w/ side cell_size
 def calc_cell(lat, lon, cell_size):
 
-    # calc x and y coords in cell
-    x = ((lat - PORTO_LATITUDE_LIMIT_SOUTH) / (PORTO_LATITUDE_LIMIT_NORTH - PORTO_LATITUDE_LIMIT_SOUTH)) * (X_SPAN / cell_size)
-    y = ((lon - PORTO_LONGITUDE_LIMIT_WEST) / (PORTO_LONGITUDE_LIMIT_EAST - PORTO_LONGITUDE_LIMIT_WEST)) * (Y_SPAN / cell_size)
+    # calc y (latitude) and x (longitude) coords of cell
+    y = ((lat - PORTO_LATITUDE_LIMIT_SOUTH) / (PORTO_LATITUDE_LIMIT_NORTH - PORTO_LATITUDE_LIMIT_SOUTH)) * (Y_SPAN / cell_size)
+    x = ((lon - PORTO_LONGITUDE_LIMIT_WEST) / (PORTO_LONGITUDE_LIMIT_EAST - PORTO_LONGITUDE_LIMIT_WEST)) * (X_SPAN / cell_size)
 
     return int(x), int(y)
 
@@ -128,6 +133,68 @@ def count(session_channel_snr):
 
     return time_count.fillna(0.0), switch_count
 
+# update the cell gps accuracy
+def update_gps_accuracy(out_dir, session_gps_acc):
+
+    filename = os.path.join(out_dir, "gps-accuracy.csv")
+    
+    if os.path.exists(filename):
+        gps_acc = pd.read_csv(filename)
+    else:
+        gps_acc = pd.DataFrame()
+        gps_acc = gps_acc.append({
+            'cell' : (0,0),
+            'n' : 0.0,
+            'mean' : 0.0,
+            'var' : 0.0
+            }, ignore_index = True)
+
+    for cell in session_gps_acc:
+
+        # row w/ index cell
+        if cell not in gps_acc.index:
+            gps_acc = gps_acc.append({
+                'cell' : cell,
+                'n' : 0.0,
+                'mean' : 0.0,
+                'var' : 0.0
+                }, ignore_index = True)
+
+        cell_row = gps_acc.loc[gps_acc['cell'] == cell]
+
+        # nr. of samples in-disk and in the session dataframe
+        k = len(session_gps_acc[cell])
+        n = cell_row['n']
+
+        # update mean 
+        # print("k : %f" % (k))
+        # print("n : %f" % (n))
+        # print("sum : %f" % (np.sum(session_gps_acc[cell]['gps-acc'].values)))
+        mean = ((n * cell_row['mean']) + np.sum(session_gps_acc[cell]['gps-acc'].values)) / (n + k)
+        gps_acc.loc[gps_acc['cell'] == cell, 'mean'] = mean
+        # print("mean %.3f vs running mean : %.3f" % (np.mean(session_gps_acc[cell]['gps-acc'].values), mean))
+
+        # update variance using Welford's method
+        # http://jonisalonen.com/2013/deriving-welfords-method-for-computing-variance
+        samples = session_gps_acc[cell]['gps-acc'].values
+
+        # initial values for mean and variance taken from general 
+        m = cell_row['mean']
+        v = cell_row['var']
+
+        for i, x in enumerate(samples):
+            old_m = m
+            m = m + (x - m) / (n + (i + 1.0))
+            v = v + ((x - m) * (x - old_m))
+
+        v = v / (n + k)
+        # print("var %.3f vs running var : %.3f" % (np.var(session_gps_acc[cell]['gps-acc'].values), v))
+
+        gps_acc.loc[gps_acc['cell'] == cell, 'var'] = v
+        gps_acc.loc[gps_acc['cell'] == cell, 'n'] = n + k
+
+    gps_acc.to_csv(filename, sep = ',', index = False)
+
 def update_cdf(out_dir, session_channel_snr):
 
     # transform the list of stronger channel periods into a freq. count table,
@@ -138,8 +205,8 @@ def update_cdf(out_dir, session_channel_snr):
     # 3.0            1       0       1               0
     time_count, switch_count = count(session_channel_snr)
 
-    print(time_count)
-    print(switch_count)
+    # print(time_count)
+    # print(switch_count)
 
     if not switch_count.empty:
 
@@ -169,12 +236,13 @@ def extract_stats(out_dir, session_data,  cell_size, geo_limits):
 
     nr_scans = 0
     nr_valid = 0
+    aps = set([])
 
     # we collect 2 things:
     #   - snr stats per channel (frequency)
     #   - gps error stats per region of the map
     snr_stats = defaultdict()
-    gps_error_stats = defaultdict()
+    session_gps_acc = defaultdict()
 
     for index, row in session_data.iterrows():
 
@@ -188,6 +256,7 @@ def extract_stats(out_dir, session_data,  cell_size, geo_limits):
         mac_addr = row['encode']
         # get the ap id, based on the essid and mac addr.
         ap = get_ap_id(essid, mac_addr)
+        aps.add(ap)
 
         if ap not in snr_stats:
             snr_stats[ap] = defaultdict()
@@ -209,11 +278,11 @@ def extract_stats(out_dir, session_data,  cell_size, geo_limits):
         if (x,y) not in snr_stats[ap]:
             snr_stats[ap][(x,y)] = pd.DataFrame()
 
-        if (x,y) not in gps_error_stats:
-            gps_error_stats[(x,y)] = pd.DataFrame(columns = GPS_COLUMNS)
+        if (x,y) not in session_gps_acc:
+            session_gps_acc[(x,y)] = pd.DataFrame(columns = GPS_COLUMNS)
 
         ts = row['seconds']
-        gps_error_stats[(x,y)] = gps_error_stats[(x,y)].append({
+        session_gps_acc[(x,y)] = session_gps_acc[(x,y)].append({
             'ts' : ts, 
             'gps-acc' : row['acc_scan']
             }, ignore_index = True)
@@ -229,6 +298,9 @@ def extract_stats(out_dir, session_data,  cell_size, geo_limits):
             }, ignore_index = True)
 
         nr_scans += 1
+
+    # update gps accuracy
+    update_gps_accuracy(out_dir, session_gps_acc)
 
     # after collecting the snr and gps error data for the session, update the 
     # general dataframes starting w/ aps
@@ -265,14 +337,31 @@ def extract_stats(out_dir, session_data,  cell_size, geo_limits):
 
         nr_valid += 1
 
-    return nr_scans, nr_valid
+    return aps, nr_scans, nr_valid
 
-def analyze_sessions(file_name, out_dir, cell_size, geo_limits):
+def analyze_sessions(
+    file_name, 
+    out_dir, 
+    cell_size = 10.0,
+    geo_limits = [PORTO_LATITUDE_LIMIT_NORTH, PORTO_LATITUDE_LIMIT_SOUTH, 
+                    PORTO_LONGITUDE_LIMIT_WEST, PORTO_LONGITUDE_LIMIT_EAST]):
+
+    """extracts bunch of stats from 'sense my city' sessions"""
+
+    time_cdf    = os.path.join(out_dir, "time-cdf.csv")
+    switch_cdf  = os.path.join(out_dir, "switch-cdf.csv")
+    gps_acc     = os.path.join(out_dir, "gps-accuracy.csv")
+
+    # if files do not exists, collect data
+    if (os.path.exists(time_cdf)) or (os.path.exists(switch_cdf)) or (os.path.exists(gps_acc)):
+        sys.stderr.write("""%s: [ERROR] .csv files already exist. please save existing files before re-calculation.\n""" % sys.argv[0]) 
+        sys.exit(1)
 
     # keep track of the number of stacks 
     nr_scans = 0
     nr_valid = 0
     nr_sessions = 0
+    aps = set([])
 
     # given the large size of the input data file (> 3 GB), we read the file in chunks
     chunksize = 10 ** 5
@@ -288,25 +377,107 @@ def analyze_sessions(file_name, out_dir, cell_size, geo_limits):
             print("channel_switch::analyze_sessions() : analyzing session_id %s" % (session_id))
             # to make it easier, extract session data first
             session_data = chunk.loc[chunk['session_id'] == session_id]
-
             # disregard sessions which completely fall out-of-the box defined by geo_limits
             if out_of_box(session_data, geo_limits):
                 # print("channel-switch::analyze_sessions: skipping session_id %s (out-of-box)" % (session_id))
                 continue
 
-            s, v = extract_stats(out_dir, session_data, cell_size, geo_limits)
+            # extract 'channel' statistics from dataset, for the session
+            n, s, v = extract_stats(out_dir, session_data, cell_size, geo_limits)
 
+            # FIXME : this will increase memory as script runs
+            aps = aps.union(n)
             nr_scans += s
             nr_valid += v
             nr_sessions += 1
 
-        # if nr_scans > 3000:
+        # if nr_scans > 5000:
         #     break
+
+    general_analysis = pd.DataFrame()
+    general_analysis = general_analysis.append({
+        'gps-limits' : str(geo_limits),
+        'nr-aps' : len(aps),
+        'nr-scans' : nr_scans,
+        'nr-valid' : nr_valid,
+        'nr-sessions' : nr_sessions 
+        }, ignore_index = True)
+
+    print(general_analysis)
+
+    general_filename = os.path.join(out_dir, "general-analysis.csv")
+    if os.path.exists(general_filename):
+        general_analysis.to_csv(general_filename, mode = 'a', sep = ',', header = False)
+    else:
+        general_analysis.to_csv(general_filename, sep = ',')
 
     print("channel_switch::analyze_sessions() : analyzed %d scans" % (nr_scans))
     print("channel_switch::analyze_sessions() : analyzed %d sessions (%d valid)" % (nr_sessions, nr_valid))
 
-    return nr_scans, nr_sessions
+def print_grid(out_dir, cell_size):
+
+    # gmap = gmplot.GoogleMapPlotter(
+    #     ((geo_limits[0] + geo_limits[1]) / 2.0), 
+    #     ((geo_limits[2] + geo_limits[3]) / 2.0), 14.50)
+    gmap = gmplot.GoogleMapPlotter(PORTO_LATITUDE, PORTO_LONGITUDE, 14.50)
+
+    # deltas in lat and lon equivalent to cell_size
+    delta_lat = ((PORTO_LATITUDE_LIMIT_NORTH - PORTO_LATITUDE_LIMIT_SOUTH) * cell_size) / (Y_SPAN)
+    delta_lon = ((PORTO_LONGITUDE_LIMIT_EAST - PORTO_LONGITUDE_LIMIT_WEST) * cell_size) / (X_SPAN)
+
+    print("channel_switch::print_grid() : delta_lat : %.10f" % (delta_lat))
+    print("channel_switch::print_grid() : delta_lon : %.10f" % (delta_lon))
+
+    color_map = plt.get_cmap('RdYlGn')
+    colors = [color_map(i) for i in np.linspace(0, 1, 10)]
+
+    # show the hex codes
+    for i, color in enumerate(colors):
+        print("color[%d] : %s" % (i, matplotlib.colors.rgb2hex(color[:3]).lstrip('#')))
+
+    filename = os.path.join(out_dir, "gps-accuracy.csv")    
+    gps_acc = pd.read_csv(filename)
+
+    # accuracy ranges
+    acc_range = gps_acc[['mean', 'var']].max().subtract(gps_acc[['mean', 'var']].min())
+    acc_min = gps_acc[['mean', 'var']].min()
+
+    for index, row in gps_acc.reset_index().iterrows():
+
+        cell = row['cell'].lstrip("(").rstrip(")")
+        cell = [float(e) for e in cell.split(",")]
+        # x : longitude
+        # y : latitude
+        x = float(cell[0])
+        y = float(cell[1])
+
+        # print("channel_switch::print_grid() : x : %.1f" % (x))
+        # print("channel_switch::print_grid() : y : %.1f" % (y))
+
+        # get gps accuracy values, and find the appropriate color for them
+        acc_mean = float(row['mean'])
+
+        c = int(((acc_mean - acc_min['mean']) / acc_range['mean']) * 9.0)
+        rgb = colors[c][:3]
+        color = matplotlib.colors.rgb2hex(rgb)
+
+        lats = (
+            PORTO_LATITUDE_LIMIT_SOUTH + (y) * delta_lat,
+            PORTO_LATITUDE_LIMIT_SOUTH + (y + 1) * delta_lat,
+            PORTO_LATITUDE_LIMIT_SOUTH + (y + 1) * delta_lat,
+            PORTO_LATITUDE_LIMIT_SOUTH + (y) * delta_lat)
+
+        lons = (
+            PORTO_LONGITUDE_LIMIT_WEST + (x) * delta_lon,
+            PORTO_LONGITUDE_LIMIT_WEST + (x) * delta_lon,
+            PORTO_LONGITUDE_LIMIT_WEST + (x + 1) * delta_lon,
+            PORTO_LONGITUDE_LIMIT_WEST + (x + 1) * delta_lon)
+
+        gmap.polygon(
+            lats, lons, edge_color = "black", edge_width = 0.5, face_color = color, face_alpha = 0.40)
+
+    filename = os.path.join(out_dir, "../../graphs/gps-accuracy.html")
+    gmap.draw(filename)
 
 def get_channel_metadata(channel_keys):
 
@@ -383,25 +554,21 @@ def plot_channel_switches(switch_cdf, fig,  subfig_index):
     ax1.set_xlim(1.0, 10.0)
     ax1.set_ylim(0.0, 1.0)
 
-def plot(
-    file_name, 
-    out_dir, 
-    cell_size = 10.0,
-    geo_limits = [PORTO_LATITUDE_LIMIT_NORTH, PORTO_LATITUDE_LIMIT_SOUTH, 
-                    PORTO_LONGITUDE_LIMIT_WEST, PORTO_LONGITUDE_LIMIT_EAST]):
+def plot(out_dir, cell_size = 10.0):
 
-    reload(sys)  
-    sys.setdefaultencoding('utf8')
+    """plots stats from 'sense my city' sessions"""
 
-    """extracts bunch of stats from 'sense my city' sessions"""
+    # print gps error grid
+    print_grid(out_dir, cell_size)
 
     # filenames for .csv files
     time_cdf_filename = os.path.join(out_dir, "time-cdf.csv")
     switch_cdf_filename = os.path.join(out_dir, "switch-cdf.csv")
 
-    # # if files do not exists, collect data
-    # if not os.path.exists(time_cdf_filename):
-    #     nr_scans, nr_sessions = analyze_sessions(file_name, out_dir, cell_size, geo_limits)
+    # if files do not exists, collect data
+    if (not os.path.exists(time_cdf_filename)) or (not os.path.exists(time_cdf_filename)):
+        sys.stderr.write("""%s: [ERROR] no .csv files found\n""" % sys.argv[0]) 
+        sys.exit(1)
 
     # extract raw cdfs from disk
     time_cdf    = pd.read_csv(time_cdf_filename, index_col = 'time-diff')
