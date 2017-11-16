@@ -38,7 +38,7 @@ def gps_to_dist(lat_start, lon_start, lat_end, lon_end):
     delta_lon = to_radians(lon_end - lon_start)
 
     lat_start = to_radians(lat_start)
-    lat_end = to_radians(lat_end)
+    lat_end   = to_radians(lat_end)
 
     a = (np.sin(delta_lat / 2.0) * np.sin(delta_lat / 2.0)) + (np.sin(delta_lon / 2.0) * np.sin(delta_lon / 2.0)) * np.cos(lat_start) * np.cos(lat_end)
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
