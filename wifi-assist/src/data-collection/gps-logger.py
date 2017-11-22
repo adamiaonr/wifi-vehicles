@@ -4,6 +4,7 @@ import argparse
 import os
 import time
 import datetime
+import subprocess as sp
 
 # for acessing the gps device
 from gps3 import gps3
@@ -28,7 +29,7 @@ if __name__ == "__main__":
 
     # quit if a dir w/ .tsv files hasn't been provided
     if not args.output_dir:
-        args.output_dir = '../data'
+        args.output_dir = '/home/pi/workbench/wifi-assist/data/logs'
 
     # gps log file (0 buffering)
     filename = os.path.join(args.output_dir, 'gps-log.csv')
@@ -49,6 +50,9 @@ if __name__ == "__main__":
     for new_data in gps_socket:
 
         if new_data:
+
+            print([data_stream.TPV[attr] for attr in attrs])
+
             # extract data from gps reading 
             data_stream.unpack(new_data)
             # check if data is meaningful
