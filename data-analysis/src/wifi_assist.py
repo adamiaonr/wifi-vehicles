@@ -312,11 +312,57 @@ def other(in_dir, out_dir, cell_size):
         filename = os.path.join(out_dir, in_dir.rstrip("/").split("/")[-1] + "/wifi-signal-quality.html")
         gmap[cat].draw(filename)
 
+def bgscan(in_dir, out_dir):
+
+    # collect timestamps of scans
+    scan_times = defaultdict(list)
+    with open(os.path.join(in_dir, 'wpa-supplicant.log')) as log:
+    
+        for line in log.readlines():
+            if 'bgscan simple: Request a background scan' in line:
+                scan_times['start'].append(int(line[:10]))
+            if 'wlan0: Event SCAN_RESULTS' in line:
+                scan_times['end'].append(int(line[:10]))
+
+    print(scan_times)
+
+    ping_rtts = pd.DataFrame()
+    with open(os.path.join(in_dir, 'ping.log')) as log:
+        for line in log.readlines():
+
+            ping_rtts = ping_rtts.append({
+                'ts' : int(line[1:11]),
+                'rtt' : float(line[line.find('time='):].strip().lstrip('time=').rstrip(' ms'))
+                }, ignore_index = True)
+
+    # the actual plots
+    fig = plt.figure(figsize = (12, 5))    
+
+    ax = fig.add_subplot(111)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+
+    ax.set_title("""ping rtts to www.fe.up.pt\n""")
+
+    # find min. timestamp between scan times and pings
+    start_ts = min(scan_times['start'][0], ping_rtts['ts'].iloc[0])
+    ax.plot(ping_rtts['ts'] - start_ts, ping_rtts['rtt'], color = 'blue', linewidth = 1.5)
+
+    for i in xrange(len(scan_times['end'])):
+        ax.axvspan(scan_times['start'][i] - start_ts, scan_times['end'][i] - start_ts, linewidth = 0.0, facecolor = 'pink', alpha = 0.50)
+
+    ax.set_xlabel("session time (sec)")
+    ax.set_ylabel("ping rtt (msec)")
+
+    fig.tight_layout()
+    fig.subplots_adjust(top = 0.95)
+
+    plt.savefig(os.path.join(out_dir, "ping-rtts.pdf"), bbox_inches = 'tight', format = 'pdf')
+    plt.close('all')
+
 def plot(in_dir, out_dir, cell_size, geo_limits = []):
 
     """plots stats from 'wifi-assist' sessions"""
 
-    # # print gps error grid
-    # print_map(in_dir, out_dir, cell_size)
-    other(in_dir, out_dir, cell_size)
+    bgscan(in_dir, out_dir)
 

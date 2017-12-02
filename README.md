@@ -1,2 +1,2 @@
-# wifi authentication
-infrastructure-driven improvements to car internet connectivity via wifi
+# wifi vehicles
+infrastructure-driven improvements to vehicle internet connectivity via wifi

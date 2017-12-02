@@ -64,6 +64,7 @@ def run_cmd(cmd, wait = False):
 class connection_manager:
 
     def __init__(self, ap_map = None):
+        
         # list of currently connected aps, indexed by ap id
         self.conn_list = defaultdict()
         self.current_conn = None

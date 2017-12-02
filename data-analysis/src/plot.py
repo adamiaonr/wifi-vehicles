@@ -16,8 +16,8 @@ from collections import OrderedDict
 import plot_utils
 
 import session_analysis
-import wifi_connection_setup
-import dhcp_capture
+import association
+import dhcp
 import coverage
 import channels
 import wifi_assist
@@ -66,10 +66,10 @@ if __name__ == "__main__":
         session_analysis.plot(args.data_file, args.output_dir)
 
     elif args.case == 'wifi-connection-setup':
-        wifi_connection_setup.plot(args.data_file, args.output_dir)
+        association.plot(args.data_file, args.output_dir)
 
     elif args.case == 'dhcp-capture':
-        dhcp_capture.plot(args.data_file, args.output_dir)
+        dhcp.plot(args.data_file, args.output_dir)
 
     elif args.case == 'coverage':
 
