@@ -20,6 +20,7 @@ import association
 import dhcp
 import coverage
 import channels
+import performance
 import wifi_assist
 
 if __name__ == "__main__":
@@ -65,11 +66,14 @@ if __name__ == "__main__":
     if args.case == 'session-analysis':
         session_analysis.plot(args.data_file, args.output_dir)
 
-    elif args.case == 'wifi-connection-setup':
+    elif args.case == 'association':
         association.plot(args.data_file, args.output_dir)
 
-    elif args.case == 'dhcp-capture':
+    elif args.case == 'dhcp':
         dhcp.plot(args.data_file, args.output_dir)
+
+    elif args.case == 'performance':
+        performance.plot(args.data_file, args.output_dir)
 
     elif args.case == 'coverage':
 
