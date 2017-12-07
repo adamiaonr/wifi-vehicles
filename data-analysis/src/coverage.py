@@ -178,7 +178,6 @@ def coverage(out_dir, ap_stats, cell_size, map_ctr, band = 1, segment_types = []
         limits[cat] = [coverage[cat].min(), np.nanpercentile(coverage[cat], 100)]
 
     print(limits)
-
     for index, row in coverage.iterrows():
 
         cell = [float(e) for e in row['cell'].split(":")]
@@ -264,4 +263,4 @@ def plot(out_dir, cell_size = 10.0, geo_limits = [], segment_types = []):
         ap_stats = pd.HDFStore(os.path.join(out_dir, 'ap-stats.hdf5'))
 
     #extract_coverage(out_dir, ap_stats, segment_types = [1, 2])
-    coverage(out_dir, ap_stats, cell_size, map_ctr, band = 2, segment_types = [2])
+    coverage(out_dir, ap_stats, cell_size, map_ctr, band = 2, segment_types = [])

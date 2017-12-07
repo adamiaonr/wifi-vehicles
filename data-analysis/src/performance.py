@@ -72,6 +72,9 @@ def best_ap(data, out_dir):
     # df = df[(df.tcp_bw_up.notnull()) & (df.tcp_bw_down.notnull())]
     # df = df[df.rtt_avg.notnull()]
 
+    num_switch = defaultdict()
+    diff = defaultdict()
+
     subtract = []
     loc_names = df['loc_name'].unique()
     for i, loc_name in enumerate(loc_names):
@@ -85,15 +88,15 @@ def best_ap(data, out_dir):
         prev_tcp = ('0','0')
         prev_rtt = '0'
 
-        num_switch = defaultdict()
-        num_switch['udp'] = np.array([0,0])
-        num_switch['tcp'] = np.array([0,0])
-        num_switch['rtt'] = 0
+        num_switch[loc_name] = defaultdict()
+        num_switch[loc_name]['udp'] = np.array([0.0, 0.0])
+        num_switch[loc_name]['tcp'] = np.array([0.0, 0.0])
+        num_switch[loc_name]['rtt'] = 0
 
-        diff = defaultdict()
-        diff['udp'] = defaultdict(list)
-        diff['tcp'] = defaultdict(list)
-        diff['rtt'] = defaultdict(list)
+        diff[loc_name] = defaultdict()
+        diff[loc_name]['udp'] = defaultdict(list)
+        diff[loc_name]['tcp'] = defaultdict(list)
+        diff[loc_name]['rtt'] = defaultdict(list)
 
         tss = loc_data['unixtime'].unique()
         if len(tss) < 2:
@@ -111,24 +114,24 @@ def best_ap(data, out_dir):
             _ts_data = ts_data[(ts_data.udp_bw_up.notnull()) & (ts_data.udp_bw_down.notnull())]
             if len(_ts_data['udp_bw_down']) and len(_ts_data['udp_bw_up']):
                 curr_udp = (_ts_data.ix[_ts_data['udp_bw_down'].idxmax()]['bssid'], _ts_data.ix[_ts_data['udp_bw_up'].idxmax()]['bssid'])
-                is_switch = np.array([int(curr_udp[0] != prev_udp[0]), int(curr_udp[1] != prev_udp[1])])
-                num_switch['udp'] += is_switch
+                is_switch = np.array([float(int(curr_udp[0] != prev_udp[0]))  / float(len(tss)), float(int(curr_udp[1] != prev_udp[1]))  / float(len(tss))])
+                num_switch[loc_name]['udp'] += is_switch
                 # record change in throughput
                 if j > 0:
-                    calc_change(_ts_data, 'udp', prev_udp, is_switch, diff)
+                    calc_change(_ts_data, 'udp', prev_udp, is_switch, diff[loc_name])
                 # update prev_ap
                 prev_udp = curr_udp
 
             _ts_data = ts_data[(ts_data.tcp_bw_up.notnull()) & (ts_data.tcp_bw_down.notnull())]
             if len(_ts_data['tcp_bw_down']) and len(_ts_data['tcp_bw_up']):
                 curr_tcp = (_ts_data.ix[_ts_data['tcp_bw_down'].idxmax()]['bssid'], _ts_data.ix[_ts_data['tcp_bw_up'].idxmax()]['bssid'])
-                is_switch = np.array([int(curr_tcp[0] != prev_tcp[0]), int(curr_tcp[1] != prev_tcp[1])])
-                num_switch['tcp'] += is_switch
+                is_switch = np.array([float(int(curr_tcp[0] != prev_tcp[0]))  / float(len(tss)), float(int(curr_tcp[1] != prev_tcp[1])) / float(len(tss))])
+                num_switch[loc_name]['tcp'] += is_switch
                 if j > 0:
                     # if loc_name == 'lounjin':
                     #     calc_change(_ts_data, 'tcp', prev_tcp, is_switch, diff, to_print = True)
                     # else:
-                    calc_change(_ts_data, 'tcp', prev_tcp, is_switch, diff, to_print = False)
+                    calc_change(_ts_data, 'tcp', prev_tcp, is_switch, diff[loc_name], to_print = False)
 
                 # if loc_name == 'lounjin':
                 #     print(prev_tcp)
@@ -141,51 +144,51 @@ def best_ap(data, out_dir):
             _ts_data = ts_data[ts_data.rtt_avg.notnull()]
             if len(_ts_data['rtt_avg']):
                 curr_rtt = _ts_data.ix[_ts_data['rtt_avg'].idxmax()]['bssid']
-                is_switch = int(curr_rtt != prev_rtt)
-                num_switch['rtt'] += is_switch
+                is_switch = float(int(curr_rtt != prev_rtt)) / float(len(tss))
+                num_switch[loc_name]['rtt'] += is_switch
 
                 if j > 0:
                     curr = np.amin(_ts_data['rtt_avg'])
                     prev = _ts_data[_ts_data['bssid'] == prev_rtt]['rtt_avg'].values
                     if prev and is_switch:
-                        diff['rtt']['rtt_avg'].append((-(curr - prev[0]) / prev[0]) * 100.0)
+                        diff[loc_name]['rtt']['rtt_avg'].append((-(curr - prev[0]) / prev[0]) * 100.0)
 
                 prev_rtt = curr_rtt
 
-        if count_switches(num_switch) < 1:
+        if count_switches(num_switch[loc_name]) < 1:
             subtract.append(i)
             continue
 
         ax1.bar(
-            ((i - len(subtract)) * 3) - (bw_barwidth * 3.0), float(num_switch['udp'][0]) / float(len(tss)), 
+            ((i - len(subtract)) * 3) - (bw_barwidth * 3.0), float(num_switch[loc_name]['udp'][0]), 
             alpha = .50, 
             width = bw_barwidth, 
             label = 'udp bw down',
-            color = 'lightcoral')
+            color = 'palegreen')
 
         ax1.bar(
-            ((i - len(subtract)) * 3) - (bw_barwidth * 2.0), float(num_switch['udp'][1]) / float(len(tss)), 
+            ((i - len(subtract)) * 3) - (bw_barwidth * 2.0), float(num_switch[loc_name]['udp'][1]), 
             alpha = .70, 
             width = bw_barwidth, 
             label = 'udp bw up',
-            color = 'red')
+            color = 'green')
 
         ax1.bar(
-            ((i - len(subtract)) * 3) - (bw_barwidth * .5), float(num_switch['tcp'][0]) / float(len(tss)), 
+            ((i - len(subtract)) * 3) - (bw_barwidth * .5), float(num_switch[loc_name]['tcp'][0]), 
             alpha = .50, 
             width = bw_barwidth, 
             label = 'tcp bw down',
             color = 'skyblue')
 
         ax1.bar(
-            ((i - len(subtract)) * 3) + (bw_barwidth * .5), float(num_switch['tcp'][1]) / float(len(tss)), 
+            ((i - len(subtract)) * 3) + (bw_barwidth * .5), float(num_switch[loc_name]['tcp'][1]), 
             alpha = .50, 
             width = bw_barwidth, 
             label = 'tcp bw up',
-            color = 'darkblue')
+            color = 'blue')
 
         ax1.bar(
-            ((i - len(subtract)) * 3) + (bw_barwidth * 2.0), float(num_switch['rtt']) / float(len(tss)), 
+            ((i - len(subtract)) * 3) + (bw_barwidth * 2.0), float(num_switch[loc_name]['rtt']), 
             alpha = .50, 
             width = bw_barwidth, 
             label = 'rtt',
@@ -194,35 +197,35 @@ def best_ap(data, out_dir):
         # variation vs. previous ap
 
         ax2.bar(
-            ((i - len(subtract)) * 3) - (bw_barwidth * 3.0), float(np.mean(diff['udp']['udp_bw_down'])), 
+            ((i - len(subtract)) * 3) - (bw_barwidth * 3.0), float(np.mean(diff[loc_name]['udp']['udp_bw_down'])), 
             alpha = .50, 
             width = bw_barwidth,
             label = 'udp bw down',
-            color = 'lightcoral')
+            color = 'palegreen')
 
         ax2.bar(
-            ((i - len(subtract)) * 3) - (bw_barwidth * 2.0), float(np.mean(diff['udp']['udp_bw_up'])), 
+            ((i - len(subtract)) * 3) - (bw_barwidth * 2.0), float(np.mean(diff[loc_name]['udp']['udp_bw_up'])), 
             alpha = .70, 
             width = bw_barwidth,
             label = 'udp bw up',
-            color = 'red')
+            color = 'green')
 
         ax2.bar(
-            ((i - len(subtract)) * 3) - (bw_barwidth * .5), float(np.mean(diff['tcp']['tcp_bw_down'])), 
+            ((i - len(subtract)) * 3) - (bw_barwidth * .5), float(np.mean(diff[loc_name]['tcp']['tcp_bw_down'])), 
             alpha = .50, 
             width = bw_barwidth,
             label = 'tcp bw down',
             color = 'skyblue')
 
         ax2.bar(
-            ((i - len(subtract)) * 3) + (bw_barwidth * .5), float(np.mean(diff['tcp']['tcp_bw_up'])), 
+            ((i - len(subtract)) * 3) + (bw_barwidth * .5), float(np.mean(diff[loc_name]['tcp']['tcp_bw_up'])), 
             alpha = .50, 
             width = bw_barwidth,
             label = 'tcp bw up',
-            color = 'darkblue')
+            color = 'blue')
 
         ax2.bar(
-            ((i - len(subtract)) * 3) + (bw_barwidth * 2.0), float(np.mean(diff['rtt']['rtt_avg'])), 
+            ((i - len(subtract)) * 3) + (bw_barwidth * 2.0), float(np.mean(diff[loc_name]['rtt']['rtt_avg'])), 
             alpha = .50, 
             width = bw_barwidth,
             label = 'rtt',
@@ -232,7 +235,7 @@ def best_ap(data, out_dir):
             ax1.legend(fontsize = 12, ncol = 7, loc = 'upper center')
             ax2.legend(fontsize = 12, ncol = 7, loc = 'upper center')
 
-    ax1.set_title("""# of times the best ap changes, per location""")
+    ax1.set_title("""best ap changes between meas., per location""")
     ax2.set_title("""mean improv. vs. previous best ap (%)""")
 
     ax1.set_xlabel('location')
@@ -249,15 +252,93 @@ def best_ap(data, out_dir):
     ax1.set_xlim(-1.75, (3.0 * (len(loc_names) - len(subtract))) - 1.25)
     ax2.set_xlim(-1.75, (3.0 * (len(loc_names) - len(subtract))) - 1.25)
 
-    ax1.set_ylim(0.0, 1.25)
+    ax1.set_ylim(0.0, 1.30)
+    ax1.set_yticks(np.arange(0.0, 1.2, 0.2))
     ax2.set_yscale('log', nonposx='clip')
     ax2.set_ylim(1, 1000000.0)
 
     fig.tight_layout()
     fig.subplots_adjust(top = 0.95)
+    fig.subplots_adjust(hspace = 0.45)
 
     plt.savefig(os.path.join(out_dir, "ap-switches.pdf"), bbox_inches = 'tight', format = 'pdf')
     plt.close('all')
+
+    return num_switch, diff
+
+def plot_avg_switches(out_dir, num_switch, diff):
+
+    bw_barwidth = .5
+    fig = plt.figure(figsize = (5, 6))
+
+    ax1 = fig.add_subplot(111)
+    # ax1.xaxis.grid(True)
+    ax1.yaxis.grid(True)
+
+    # ax2 = fig.add_subplot(212)
+    # # ax2.xaxis.grid(True)
+    # ax2.yaxis.grid(True)    
+
+    sw = defaultdict()
+    for loc_name in num_switch:
+        for stat in num_switch[loc_name]:
+
+            if stat not in sw:
+                sw[stat] = defaultdict(list)
+
+            if stat in ['udp', 'tcp']:
+                sw[stat][('%s_bw_down' % (stat))].append(num_switch[loc_name][stat][0])
+                sw[stat][('%s_bw_up' % (stat))].append(num_switch[loc_name][stat][1])
+            else:
+                sw[stat]['rtt'].append(num_switch[loc_name][stat])
+
+    i = 0
+    ax1.bar(
+        ((i) * 3) - (bw_barwidth * 3.0), float(np.mean(sw['udp']['udp_bw_down'])), 
+        alpha = .50, 
+        width = bw_barwidth, 
+        label = 'udp bw down',
+        color = 'palegreen')
+
+    ax1.bar(
+        ((i) * 3) - (bw_barwidth * 2.0), float(np.mean(sw['udp']['udp_bw_up'])), 
+        alpha = .70, 
+        width = bw_barwidth, 
+        label = 'udp bw up',
+        color = 'green')
+
+    ax1.bar(
+        ((i) * 3) - (bw_barwidth * .5), float(np.mean(sw['tcp']['tcp_bw_down'])), 
+        alpha = .50, 
+        width = bw_barwidth, 
+        label = 'tcp bw down',
+        color = 'skyblue')
+
+    ax1.bar(
+        ((i) * 3) + (bw_barwidth * .5), float(np.mean(sw['tcp']['tcp_bw_up'])), 
+        alpha = .50, 
+        width = bw_barwidth, 
+        label = 'tcp bw up',
+        color = 'blue')
+
+    ax1.bar(
+        ((i) * 3) + (bw_barwidth * 2.0), float(np.mean(sw['rtt']['rtt'])), 
+        alpha = .50, 
+        width = bw_barwidth, 
+        label = 'rtt',
+        color = 'gold')
+
+    ax1.set_title("""mean # of times the best ap changes, per location""")
+    ax1.set_ylabel('frac. of meas.')
+
+    ax1.set_ylim(0.0, 0.5)
+
+    fig.tight_layout()
+    fig.subplots_adjust(top = 0.95)
+
+    plt.savefig(os.path.join(out_dir, "avg-ap-switches.pdf"), bbox_inches = 'tight', format = 'pdf')
+    plt.close('all')
+
 
 def extract(in_dir, out_dir):
 
