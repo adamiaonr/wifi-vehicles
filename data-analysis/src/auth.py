@@ -69,7 +69,7 @@ def plot_netlist(output_dir):
     ax.xaxis.grid(True, ls = 'dotted', lw = 0.75)
     ax.yaxis.grid(True, ls = 'dotted', lw = 0.75)
 
-    labels = {'open' : 'Open', 'captive' : 'Captive portal', 'wep' : 'WEP', 'wpa/wpa2' : 'WPA/WPA2', '802.1x' : 'WPA Enter.'}
+    labels = {'open' : 'Open', 'captive' : 'Capt. portal', 'wep' : 'WEP', 'wpa/wpa2' : 'WPA/WPA2', '802.1x' : 'WPA Enter.'}
     for i, auth_type in enumerate(auth_types):
         # print("%s : %d" % (auth_type, auth_types[auth_type]))
         plt.bar(i, ((float(auth_types[auth_type]) / auth_total) * 100.0), alpha = 0.55, width = 0.75, label = labels[auth_type], color = 'blue')
@@ -77,7 +77,7 @@ def plot_netlist(output_dir):
     ax.set_xlabel("Authentication type")
     ax.set_ylabel("% of APs")
     ax.set_xticks([0, 1, 2, 3, 4])
-    ax.set_xticklabels(['Open', 'Captive\nportal', 'WEP', 'WPA/\nWPA2', '802.1x'])
+    ax.set_xticklabels(['Open', 'Capt.\nportal', 'WEP', 'WPA/\nWPA2', '802.1x'])
 
     ax.set_ylim(0.0, 100.0)
 
@@ -105,7 +105,7 @@ def build_netlist(input_file, output_dir):
 
     netlist.close()
     nets = pd.read_hdf(os.path.join(output_dir, "netlist.h5"), 'networks')
-    nets.drop_duplicates().to_hdf('netlist.h5', 'networks', append = False)
+    nets.drop_duplicates().to_hdf(os.path.join(output_dir, "netlist.h5"), 'networks', append = False)
 
 if __name__ == "__main__":
 
