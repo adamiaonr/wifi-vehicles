@@ -4,6 +4,186 @@
 		"selected_items":
 		[
 			[
+				"out",
+				"output_dir"
+			],
+			[
+				"ou",
+				"output_dir"
+			],
+			[
+				"da",
+				"data_file"
+			],
+			[
+				"uni",
+				"unique_grids"
+			],
+			[
+				"un",
+				"unique_grids"
+			],
+			[
+				"plot",
+				"plot_avg_switches"
+			],
+			[
+				"ud",
+				"udp_bw_down"
+			],
+			[
+				"num",
+				"num_switch"
+			],
+			[
+				"loc",
+				"loc_name"
+			],
+			[
+				"udp",
+				"udp_bw_down"
+			],
+			[
+				"con",
+				"continue"
+			],
+			[
+				"to",
+				"to_print"
+			],
+			[
+				"cu",
+				"curr_bw"
+			],
+			[
+				"pre",
+				"prev_bw"
+			],
+			[
+				"ts",
+				"ts_data"
+			],
+			[
+				"tc",
+				"tcp"
+			],
+			[
+				"s",
+				"ssids"
+			],
+			[
+				"rt",
+				"rtt_avg"
+			],
+			[
+				"sta",
+				"stat"
+			],
+			[
+				"prev",
+				"prev_udp"
+			],
+			[
+				"is",
+				"is_switch"
+			],
+			[
+				"CU",
+				"curr_bw"
+			],
+			[
+				"PR",
+				"print"
+			],
+			[
+				"bw",
+				"bw"
+			],
+			[
+				"curr",
+				"curr_bw"
+			],
+			[
+				"cur",
+				"curr_bw"
+			],
+			[
+				"dif",
+				"diff"
+			],
+			[
+				"pr",
+				"print"
+			],
+			[
+				"ts_",
+				"ts_data"
+			],
+			[
+				"set_",
+				"set_ylim"
+			],
+			[
+				"nm",
+				"num_switch"
+			],
+			[
+				"rtt",
+				"rtt_avg"
+			],
+			[
+				"r",
+				"rtt"
+			],
+			[
+				"nu",
+				"num_switch"
+			],
+			[
+				"tcp_b",
+				"tcp_bw_up"
+			],
+			[
+				"tcp",
+				"tcp_bw_down"
+			],
+			[
+				"t_",
+				"ts_days"
+			],
+			[
+				"pos",
+				"pos_final"
+			],
+			[
+				"tri",
+				"trial_days"
+			],
+			[
+				"def",
+				"defaultdict"
+			],
+			[
+				"l",
+				"limits"
+			],
+			[
+				"ap",
+				"append"
+			],
+			[
+				"lc",
+				"loc_data"
+			],
+			[
+				"loc_",
+				"loc_name"
+			],
+			[
+				"in",
+				"in_dir"
+			],
+			[
 				"med",
 				"median"
 			],
@@ -54,10 +234,6 @@
 			[
 				"ch",
 				"channels"
-			],
-			[
-				"pr",
-				"print"
 			],
 			[
 				"ess",
@@ -130,10 +306,6 @@
 			[
 				"x",
 				"xticklabels"
-			],
-			[
-				"out",
-				"out_dir"
 			],
 			[
 				"sn",
@@ -212,28 +384,12 @@
 				"session"
 			],
 			[
-				"in",
-				"interval"
-			],
-			[
-				"da",
-				"dataset"
-			],
-			[
 				"th",
 				"threshold"
 			],
 			[
 				"extract_s",
 				"extract_stationary"
-			],
-			[
-				"def",
-				"def	Function"
-			],
-			[
-				"r",
-				"row"
 			],
 			[
 				"cla",
@@ -254,10 +410,6 @@
 			[
 				"fill",
 				"fill_segment"
-			],
-			[
-				"s",
-				"segment"
 			],
 			[
 				"d",
@@ -320,10 +472,6 @@
 				"WIFI_BANDS"
 			],
 			[
-				"un",
-				"unknown"
-			],
-			[
 				"pat",
 				"pathces"
 			],
@@ -366,199 +514,16 @@
 			[
 				"tim",
 				"time"
-			],
-			[
-				"mac_",
-				"mac_addr"
-			],
-			[
-				"mac",
-				"mac_addr"
-			],
-			[
-				"ap",
-				"ap_stats"
-			],
-			[
-				"f24",
-				"f2472"
-			],
-			[
-				"plt",
-				"plot_public_vs_private"
-			],
-			[
-				"valid",
-				"valid_scans"
-			],
-			[
-				"va",
-				"valid_scans"
-			],
-			[
-				"colu",
-				"columns"
-			],
-			[
-				"ap_",
-				"ap_stats"
-			],
-			[
-				"por",
-				"porto-digital"
-			],
-			[
-				"get",
-				"get_provider"
-			],
-			[
-				"M",
-				"MEO-Wifi"
-			],
-			[
-				"for",
-				"format"
-			],
-			[
-				"sessi",
-				"session_snr"
-			],
-			[
-				"con",
-				"continue"
-			],
-			[
-				"pro",
-				"provider"
-			],
-			[
-				"sec",
-				"seconds"
-			],
-			[
-				"use",
-				"use_essid"
-			],
-			[
-				"si",
-				"signal_quality"
-			],
-			[
-				"joi",
-				"joined"
-			],
-			[
-				"wif",
-				"wifi_data"
-			],
-			[
-				"mi",
-				"min"
-			],
-			[
-				"ax",
-				"axis"
-			],
-			[
-				"qua",
-				"quantiles"
-			],
-			[
-				"e",
-				"epx"
-			],
-			[
-				"data",
-				"data_file"
-			],
-			[
-				"ep",
-				"epy"
-			],
-			[
-				"gps",
-				"gps_data"
-			],
-			[
-				"swi",
-				"switches"
-			],
-			[
-				"PO",
-				"PORTO_LONGITUDE"
-			],
-			[
-				"map",
-				"map_ctr"
-			],
-			[
-				"ge",
-				"geo"
-			],
-			[
-				"gm",
-				"gmap"
-			],
-			[
-				"c",
-				"cat"
-			],
-			[
-				"std",
-				"std-dev"
-			],
-			[
-				"gmap_",
-				"gmap_mean"
-			],
-			[
-				"acc_",
-				"acc_var_limits"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "data-analysis/src/channels.py",
+			"file": "data-analysis/src/.old/channels.py",
 			"settings":
 			{
 				"buffer_size": 40120,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/coverage.py",
-			"settings":
-			{
-				"buffer_size": 10437,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/plot.py",
-			"settings":
-			{
-				"buffer_size": 3801,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "<html>\n<head>\n<meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\" />\n<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"/>\n<title>Google Maps - pygmaps </title>\n<script type=\"text/javascript\" src=\"https://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=true_or_false\"></script>\n<script type=\"text/javascript\">\n	function initialize() {\n		var centerlatlng = new google.maps.LatLng(41.154128, -8.638391);\n		var myOptions = {\n			zoom: 16,\n			center: centerlatlng,\n			mapTypeId: google.maps.MapTypeId.ROADMAP		\n		};\n		var map = new google.maps.Map(document.getElementById(\"map_canvas\"), myOptions);\n\nvar coords = [\nnew google.maps.LatLng(41.153123, -8.644295),\nnew google.maps.LatLng(41.153213, -8.644295),\nnew google.maps.LatLng(41.153213, -8.644205),\nnew google.maps.LatLng(41.153123, -8.644205),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153303, -8.639619),\nnew google.maps.LatLng(41.153393, -8.639619),\nnew google.maps.LatLng(41.153393, -8.639529),\nnew google.maps.LatLng(41.153303, -8.639529),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153213, -8.639259),\nnew google.maps.LatLng(41.153303, -8.639259),\nnew google.maps.LatLng(41.153303, -8.639169),\nnew google.maps.LatLng(41.153213, -8.639169),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153123, -8.638809),\nnew google.maps.LatLng(41.153213, -8.638809),\nnew google.maps.LatLng(41.153213, -8.638719),\nnew google.maps.LatLng(41.153123, -8.638719),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153033, -8.638450),\nnew google.maps.LatLng(41.153123, -8.638450),\nnew google.maps.LatLng(41.153123, -8.638360),\nnew google.maps.LatLng(41.153033, -8.638360),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.638180),\nnew google.maps.LatLng(41.151234, -8.638180),\nnew google.maps.LatLng(41.151234, -8.638090),\nnew google.maps.LatLng(41.151144, -8.638090),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.637910),\nnew google.maps.LatLng(41.151144, -8.637910),\nnew google.maps.LatLng(41.151144, -8.637820),\nnew google.maps.LatLng(41.151054, -8.637820),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152853, -8.637910),\nnew google.maps.LatLng(41.152943, -8.637910),\nnew google.maps.LatLng(41.152943, -8.637820),\nnew google.maps.LatLng(41.152853, -8.637820),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.637550),\nnew google.maps.LatLng(41.151144, -8.637550),\nnew google.maps.LatLng(41.151144, -8.637460),\nnew google.maps.LatLng(41.151054, -8.637460),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.637280),\nnew google.maps.LatLng(41.151144, -8.637280),\nnew google.maps.LatLng(41.151144, -8.637190),\nnew google.maps.LatLng(41.151054, -8.637190),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.637101),\nnew google.maps.LatLng(41.151144, -8.637101),\nnew google.maps.LatLng(41.151144, -8.637011),\nnew google.maps.LatLng(41.151054, -8.637011),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.636921),\nnew google.maps.LatLng(41.151144, -8.636921),\nnew google.maps.LatLng(41.151144, -8.636831),\nnew google.maps.LatLng(41.151054, -8.636831),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.636741),\nnew google.maps.LatLng(41.151144, -8.636741),\nnew google.maps.LatLng(41.151144, -8.636651),\nnew google.maps.LatLng(41.151054, -8.636651),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.157440, -8.636651),\nnew google.maps.LatLng(41.157530, -8.636651),\nnew google.maps.LatLng(41.157530, -8.636561),\nnew google.maps.LatLng(41.157440, -8.636561),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.636561),\nnew google.maps.LatLng(41.151144, -8.636561),\nnew google.maps.LatLng(41.151144, -8.636471),\nnew google.maps.LatLng(41.151054, -8.636471),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150785, -8.636381),\nnew google.maps.LatLng(41.150875, -8.636381),\nnew google.maps.LatLng(41.150875, -8.636291),\nnew google.maps.LatLng(41.150785, -8.636291),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.636381),\nnew google.maps.LatLng(41.151054, -8.636381),\nnew google.maps.LatLng(41.151054, -8.636291),\nnew google.maps.LatLng(41.150965, -8.636291),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.636381),\nnew google.maps.LatLng(41.151144, -8.636381),\nnew google.maps.LatLng(41.151144, -8.636291),\nnew google.maps.LatLng(41.151054, -8.636291),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150875, -8.636291),\nnew google.maps.LatLng(41.150965, -8.636291),\nnew google.maps.LatLng(41.150965, -8.636201),\nnew google.maps.LatLng(41.150875, -8.636201),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.636291),\nnew google.maps.LatLng(41.152583, -8.636291),\nnew google.maps.LatLng(41.152583, -8.636201),\nnew google.maps.LatLng(41.152493, -8.636201),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150695, -8.636111),\nnew google.maps.LatLng(41.150785, -8.636111),\nnew google.maps.LatLng(41.150785, -8.636021),\nnew google.maps.LatLng(41.150695, -8.636021),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.636021),\nnew google.maps.LatLng(41.151054, -8.636021),\nnew google.maps.LatLng(41.151054, -8.635931),\nnew google.maps.LatLng(41.150965, -8.635931),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635931),\nnew google.maps.LatLng(41.152493, -8.635931),\nnew google.maps.LatLng(41.152493, -8.635842),\nnew google.maps.LatLng(41.152403, -8.635842),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150875, -8.635842),\nnew google.maps.LatLng(41.150965, -8.635842),\nnew google.maps.LatLng(41.150965, -8.635752),\nnew google.maps.LatLng(41.150875, -8.635752),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.635842),\nnew google.maps.LatLng(41.151054, -8.635842),\nnew google.maps.LatLng(41.151054, -8.635752),\nnew google.maps.LatLng(41.150965, -8.635752),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.635752),\nnew google.maps.LatLng(41.151054, -8.635752),\nnew google.maps.LatLng(41.151054, -8.635662),\nnew google.maps.LatLng(41.150965, -8.635662),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635752),\nnew google.maps.LatLng(41.151144, -8.635752),\nnew google.maps.LatLng(41.151144, -8.635662),\nnew google.maps.LatLng(41.151054, -8.635662),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150875, -8.635572),\nnew google.maps.LatLng(41.150965, -8.635572),\nnew google.maps.LatLng(41.150965, -8.635482),\nnew google.maps.LatLng(41.150875, -8.635482),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635572),\nnew google.maps.LatLng(41.151144, -8.635572),\nnew google.maps.LatLng(41.151144, -8.635482),\nnew google.maps.LatLng(41.151054, -8.635482),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635572),\nnew google.maps.LatLng(41.152493, -8.635572),\nnew google.maps.LatLng(41.152493, -8.635482),\nnew google.maps.LatLng(41.152403, -8.635482),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635482),\nnew google.maps.LatLng(41.151144, -8.635482),\nnew google.maps.LatLng(41.151144, -8.635392),\nnew google.maps.LatLng(41.151054, -8.635392),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635482),\nnew google.maps.LatLng(41.152493, -8.635482),\nnew google.maps.LatLng(41.152493, -8.635392),\nnew google.maps.LatLng(41.152403, -8.635392),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635392),\nnew google.maps.LatLng(41.151144, -8.635392),\nnew google.maps.LatLng(41.151144, -8.635302),\nnew google.maps.LatLng(41.151054, -8.635302),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635392),\nnew google.maps.LatLng(41.152493, -8.635392),\nnew google.maps.LatLng(41.152493, -8.635302),\nnew google.maps.LatLng(41.152403, -8.635302),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635302),\nnew google.maps.LatLng(41.151144, -8.635302),\nnew google.maps.LatLng(41.151144, -8.635212),\nnew google.maps.LatLng(41.151054, -8.635212),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150875, -8.635212),\nnew google.maps.LatLng(41.150965, -8.635212),\nnew google.maps.LatLng(41.150965, -8.635122),\nnew google.maps.LatLng(41.150875, -8.635122),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635212),\nnew google.maps.LatLng(41.151144, -8.635212),\nnew google.maps.LatLng(41.151144, -8.635122),\nnew google.maps.LatLng(41.151054, -8.635122),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635212),\nnew google.maps.LatLng(41.152493, -8.635212),\nnew google.maps.LatLng(41.152493, -8.635122),\nnew google.maps.LatLng(41.152403, -8.635122),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635122),\nnew google.maps.LatLng(41.151144, -8.635122),\nnew google.maps.LatLng(41.151144, -8.635032),\nnew google.maps.LatLng(41.151054, -8.635032),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635122),\nnew google.maps.LatLng(41.152493, -8.635122),\nnew google.maps.LatLng(41.152493, -8.635032),\nnew google.maps.LatLng(41.152403, -8.635032),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.635032),\nnew google.maps.LatLng(41.151144, -8.635032),\nnew google.maps.LatLng(41.151144, -8.634942),\nnew google.maps.LatLng(41.151054, -8.634942),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.635032),\nnew google.maps.LatLng(41.152493, -8.635032),\nnew google.maps.LatLng(41.152493, -8.634942),\nnew google.maps.LatLng(41.152403, -8.634942),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.634942),\nnew google.maps.LatLng(41.151054, -8.634942),\nnew google.maps.LatLng(41.151054, -8.634852),\nnew google.maps.LatLng(41.150965, -8.634852),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.634942),\nnew google.maps.LatLng(41.151144, -8.634942),\nnew google.maps.LatLng(41.151144, -8.634852),\nnew google.maps.LatLng(41.151054, -8.634852),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634942),\nnew google.maps.LatLng(41.152493, -8.634942),\nnew google.maps.LatLng(41.152493, -8.634852),\nnew google.maps.LatLng(41.152403, -8.634852),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.634852),\nnew google.maps.LatLng(41.151054, -8.634852),\nnew google.maps.LatLng(41.151054, -8.634762),\nnew google.maps.LatLng(41.150965, -8.634762),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.634852),\nnew google.maps.LatLng(41.151144, -8.634852),\nnew google.maps.LatLng(41.151144, -8.634762),\nnew google.maps.LatLng(41.151054, -8.634762),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634852),\nnew google.maps.LatLng(41.152493, -8.634852),\nnew google.maps.LatLng(41.152493, -8.634762),\nnew google.maps.LatLng(41.152403, -8.634762),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.634762),\nnew google.maps.LatLng(41.151144, -8.634762),\nnew google.maps.LatLng(41.151144, -8.634672),\nnew google.maps.LatLng(41.151054, -8.634672),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634762),\nnew google.maps.LatLng(41.152493, -8.634762),\nnew google.maps.LatLng(41.152493, -8.634672),\nnew google.maps.LatLng(41.152403, -8.634672),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.634672),\nnew google.maps.LatLng(41.151144, -8.634672),\nnew google.maps.LatLng(41.151144, -8.634582),\nnew google.maps.LatLng(41.151054, -8.634582),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634672),\nnew google.maps.LatLng(41.151234, -8.634672),\nnew google.maps.LatLng(41.151234, -8.634582),\nnew google.maps.LatLng(41.151144, -8.634582),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634672),\nnew google.maps.LatLng(41.152493, -8.634672),\nnew google.maps.LatLng(41.152493, -8.634582),\nnew google.maps.LatLng(41.152403, -8.634582),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634582),\nnew google.maps.LatLng(41.151234, -8.634582),\nnew google.maps.LatLng(41.151234, -8.634493),\nnew google.maps.LatLng(41.151144, -8.634493),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634582),\nnew google.maps.LatLng(41.152493, -8.634582),\nnew google.maps.LatLng(41.152493, -8.634493),\nnew google.maps.LatLng(41.152403, -8.634493),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634493),\nnew google.maps.LatLng(41.151234, -8.634493),\nnew google.maps.LatLng(41.151234, -8.634403),\nnew google.maps.LatLng(41.151144, -8.634403),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634493),\nnew google.maps.LatLng(41.152493, -8.634493),\nnew google.maps.LatLng(41.152493, -8.634403),\nnew google.maps.LatLng(41.152403, -8.634403),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634403),\nnew google.maps.LatLng(41.151234, -8.634403),\nnew google.maps.LatLng(41.151234, -8.634313),\nnew google.maps.LatLng(41.151144, -8.634313),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.634403),\nnew google.maps.LatLng(41.152493, -8.634403),\nnew google.maps.LatLng(41.152493, -8.634313),\nnew google.maps.LatLng(41.152403, -8.634313),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634313),\nnew google.maps.LatLng(41.151234, -8.634313),\nnew google.maps.LatLng(41.151234, -8.634223),\nnew google.maps.LatLng(41.151144, -8.634223),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153663, -8.634313),\nnew google.maps.LatLng(41.153752, -8.634313),\nnew google.maps.LatLng(41.153752, -8.634223),\nnew google.maps.LatLng(41.153663, -8.634223),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634223),\nnew google.maps.LatLng(41.151234, -8.634223),\nnew google.maps.LatLng(41.151234, -8.634133),\nnew google.maps.LatLng(41.151144, -8.634133),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.634223),\nnew google.maps.LatLng(41.152583, -8.634223),\nnew google.maps.LatLng(41.152583, -8.634133),\nnew google.maps.LatLng(41.152493, -8.634133),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150965, -8.634133),\nnew google.maps.LatLng(41.151054, -8.634133),\nnew google.maps.LatLng(41.151054, -8.634043),\nnew google.maps.LatLng(41.150965, -8.634043),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.634133),\nnew google.maps.LatLng(41.152583, -8.634133),\nnew google.maps.LatLng(41.152583, -8.634043),\nnew google.maps.LatLng(41.152493, -8.634043),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153483, -8.634133),\nnew google.maps.LatLng(41.153573, -8.634133),\nnew google.maps.LatLng(41.153573, -8.634043),\nnew google.maps.LatLng(41.153483, -8.634043),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.634133),\nnew google.maps.LatLng(41.153663, -8.634133),\nnew google.maps.LatLng(41.153663, -8.634043),\nnew google.maps.LatLng(41.153573, -8.634043),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.634043),\nnew google.maps.LatLng(41.151234, -8.634043),\nnew google.maps.LatLng(41.151234, -8.633953),\nnew google.maps.LatLng(41.151144, -8.633953),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153483, -8.634043),\nnew google.maps.LatLng(41.153573, -8.634043),\nnew google.maps.LatLng(41.153573, -8.633953),\nnew google.maps.LatLng(41.153483, -8.633953),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.633953),\nnew google.maps.LatLng(41.151144, -8.633953),\nnew google.maps.LatLng(41.151144, -8.633863),\nnew google.maps.LatLng(41.151054, -8.633863),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151144, -8.633953),\nnew google.maps.LatLng(41.151234, -8.633953),\nnew google.maps.LatLng(41.151234, -8.633863),\nnew google.maps.LatLng(41.151144, -8.633863),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.633953),\nnew google.maps.LatLng(41.152583, -8.633953),\nnew google.maps.LatLng(41.152583, -8.633863),\nnew google.maps.LatLng(41.152493, -8.633863),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153483, -8.633863),\nnew google.maps.LatLng(41.153573, -8.633863),\nnew google.maps.LatLng(41.153573, -8.633773),\nnew google.maps.LatLng(41.153483, -8.633773),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633773),\nnew google.maps.LatLng(41.153663, -8.633773),\nnew google.maps.LatLng(41.153663, -8.633683),\nnew google.maps.LatLng(41.153573, -8.633683),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.633683),\nnew google.maps.LatLng(41.152583, -8.633683),\nnew google.maps.LatLng(41.152583, -8.633593),\nnew google.maps.LatLng(41.152493, -8.633593),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633683),\nnew google.maps.LatLng(41.153663, -8.633683),\nnew google.maps.LatLng(41.153663, -8.633593),\nnew google.maps.LatLng(41.153573, -8.633593),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151054, -8.633593),\nnew google.maps.LatLng(41.151144, -8.633593),\nnew google.maps.LatLng(41.151144, -8.633503),\nnew google.maps.LatLng(41.151054, -8.633503),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633593),\nnew google.maps.LatLng(41.152673, -8.633593),\nnew google.maps.LatLng(41.152673, -8.633503),\nnew google.maps.LatLng(41.152583, -8.633503),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633593),\nnew google.maps.LatLng(41.153663, -8.633593),\nnew google.maps.LatLng(41.153663, -8.633503),\nnew google.maps.LatLng(41.153573, -8.633503),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633503),\nnew google.maps.LatLng(41.152673, -8.633503),\nnew google.maps.LatLng(41.152673, -8.633413),\nnew google.maps.LatLng(41.152583, -8.633413),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633503),\nnew google.maps.LatLng(41.153663, -8.633503),\nnew google.maps.LatLng(41.153663, -8.633413),\nnew google.maps.LatLng(41.153573, -8.633413),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151414, -8.633413),\nnew google.maps.LatLng(41.151504, -8.633413),\nnew google.maps.LatLng(41.151504, -8.633323),\nnew google.maps.LatLng(41.151414, -8.633323),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633413),\nnew google.maps.LatLng(41.152673, -8.633413),\nnew google.maps.LatLng(41.152673, -8.633323),\nnew google.maps.LatLng(41.152583, -8.633323),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633413),\nnew google.maps.LatLng(41.153663, -8.633413),\nnew google.maps.LatLng(41.153663, -8.633323),\nnew google.maps.LatLng(41.153573, -8.633323),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633323),\nnew google.maps.LatLng(41.152673, -8.633323),\nnew google.maps.LatLng(41.152673, -8.633233),\nnew google.maps.LatLng(41.152583, -8.633233),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633323),\nnew google.maps.LatLng(41.153663, -8.633323),\nnew google.maps.LatLng(41.153663, -8.633233),\nnew google.maps.LatLng(41.153573, -8.633233),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633233),\nnew google.maps.LatLng(41.152673, -8.633233),\nnew google.maps.LatLng(41.152673, -8.633144),\nnew google.maps.LatLng(41.152583, -8.633144),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153483, -8.633233),\nnew google.maps.LatLng(41.153573, -8.633233),\nnew google.maps.LatLng(41.153573, -8.633144),\nnew google.maps.LatLng(41.153483, -8.633144),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.633233),\nnew google.maps.LatLng(41.153663, -8.633233),\nnew google.maps.LatLng(41.153663, -8.633144),\nnew google.maps.LatLng(41.153573, -8.633144),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151234, -8.633144),\nnew google.maps.LatLng(41.151324, -8.633144),\nnew google.maps.LatLng(41.151324, -8.633054),\nnew google.maps.LatLng(41.151234, -8.633054),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633144),\nnew google.maps.LatLng(41.152673, -8.633144),\nnew google.maps.LatLng(41.152673, -8.633054),\nnew google.maps.LatLng(41.152583, -8.633054),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153393, -8.633144),\nnew google.maps.LatLng(41.153483, -8.633144),\nnew google.maps.LatLng(41.153483, -8.633054),\nnew google.maps.LatLng(41.153393, -8.633054),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.633054),\nnew google.maps.LatLng(41.152673, -8.633054),\nnew google.maps.LatLng(41.152673, -8.632964),\nnew google.maps.LatLng(41.152583, -8.632964),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153393, -8.633054),\nnew google.maps.LatLng(41.153483, -8.633054),\nnew google.maps.LatLng(41.153483, -8.632964),\nnew google.maps.LatLng(41.153393, -8.632964),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151684, -8.632964),\nnew google.maps.LatLng(41.151774, -8.632964),\nnew google.maps.LatLng(41.151774, -8.632874),\nnew google.maps.LatLng(41.151684, -8.632874),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632964),\nnew google.maps.LatLng(41.152673, -8.632964),\nnew google.maps.LatLng(41.152673, -8.632874),\nnew google.maps.LatLng(41.152583, -8.632874),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632874),\nnew google.maps.LatLng(41.152673, -8.632874),\nnew google.maps.LatLng(41.152673, -8.632784),\nnew google.maps.LatLng(41.152583, -8.632784),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152673, -8.632874),\nnew google.maps.LatLng(41.152763, -8.632874),\nnew google.maps.LatLng(41.152763, -8.632784),\nnew google.maps.LatLng(41.152673, -8.632784),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153303, -8.632874),\nnew google.maps.LatLng(41.153393, -8.632874),\nnew google.maps.LatLng(41.153393, -8.632784),\nnew google.maps.LatLng(41.153303, -8.632784),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153393, -8.632874),\nnew google.maps.LatLng(41.153483, -8.632874),\nnew google.maps.LatLng(41.153483, -8.632784),\nnew google.maps.LatLng(41.153393, -8.632784),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151504, -8.632784),\nnew google.maps.LatLng(41.151594, -8.632784),\nnew google.maps.LatLng(41.151594, -8.632694),\nnew google.maps.LatLng(41.151504, -8.632694),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151954, -8.632784),\nnew google.maps.LatLng(41.152044, -8.632784),\nnew google.maps.LatLng(41.152044, -8.632694),\nnew google.maps.LatLng(41.151954, -8.632694),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152224, -8.632784),\nnew google.maps.LatLng(41.152314, -8.632784),\nnew google.maps.LatLng(41.152314, -8.632694),\nnew google.maps.LatLng(41.152224, -8.632694),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632784),\nnew google.maps.LatLng(41.152673, -8.632784),\nnew google.maps.LatLng(41.152673, -8.632694),\nnew google.maps.LatLng(41.152583, -8.632694),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153303, -8.632784),\nnew google.maps.LatLng(41.153393, -8.632784),\nnew google.maps.LatLng(41.153393, -8.632694),\nnew google.maps.LatLng(41.153303, -8.632694),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151864, -8.632694),\nnew google.maps.LatLng(41.151954, -8.632694),\nnew google.maps.LatLng(41.151954, -8.632604),\nnew google.maps.LatLng(41.151864, -8.632604),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632694),\nnew google.maps.LatLng(41.152673, -8.632694),\nnew google.maps.LatLng(41.152673, -8.632604),\nnew google.maps.LatLng(41.152583, -8.632604),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152673, -8.632694),\nnew google.maps.LatLng(41.152763, -8.632694),\nnew google.maps.LatLng(41.152763, -8.632604),\nnew google.maps.LatLng(41.152673, -8.632604),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152224, -8.632604),\nnew google.maps.LatLng(41.152314, -8.632604),\nnew google.maps.LatLng(41.152314, -8.632514),\nnew google.maps.LatLng(41.152224, -8.632514),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152314, -8.632604),\nnew google.maps.LatLng(41.152403, -8.632604),\nnew google.maps.LatLng(41.152403, -8.632514),\nnew google.maps.LatLng(41.152314, -8.632514),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632604),\nnew google.maps.LatLng(41.152673, -8.632604),\nnew google.maps.LatLng(41.152673, -8.632514),\nnew google.maps.LatLng(41.152583, -8.632514),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152763, -8.632604),\nnew google.maps.LatLng(41.152853, -8.632604),\nnew google.maps.LatLng(41.152853, -8.632514),\nnew google.maps.LatLng(41.152763, -8.632514),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153303, -8.632604),\nnew google.maps.LatLng(41.153393, -8.632604),\nnew google.maps.LatLng(41.153393, -8.632514),\nnew google.maps.LatLng(41.153303, -8.632514),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152314, -8.632514),\nnew google.maps.LatLng(41.152403, -8.632514),\nnew google.maps.LatLng(41.152403, -8.632424),\nnew google.maps.LatLng(41.152314, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152403, -8.632514),\nnew google.maps.LatLng(41.152493, -8.632514),\nnew google.maps.LatLng(41.152493, -8.632424),\nnew google.maps.LatLng(41.152403, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.632514),\nnew google.maps.LatLng(41.152583, -8.632514),\nnew google.maps.LatLng(41.152583, -8.632424),\nnew google.maps.LatLng(41.152493, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632514),\nnew google.maps.LatLng(41.152673, -8.632514),\nnew google.maps.LatLng(41.152673, -8.632424),\nnew google.maps.LatLng(41.152583, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152853, -8.632514),\nnew google.maps.LatLng(41.152943, -8.632514),\nnew google.maps.LatLng(41.152943, -8.632424),\nnew google.maps.LatLng(41.152853, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152943, -8.632514),\nnew google.maps.LatLng(41.153033, -8.632514),\nnew google.maps.LatLng(41.153033, -8.632424),\nnew google.maps.LatLng(41.152943, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153393, -8.632514),\nnew google.maps.LatLng(41.153483, -8.632514),\nnew google.maps.LatLng(41.153483, -8.632424),\nnew google.maps.LatLng(41.153393, -8.632424),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632424),\nnew google.maps.LatLng(41.152673, -8.632424),\nnew google.maps.LatLng(41.152673, -8.632334),\nnew google.maps.LatLng(41.152583, -8.632334),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152673, -8.632424),\nnew google.maps.LatLng(41.152763, -8.632424),\nnew google.maps.LatLng(41.152763, -8.632334),\nnew google.maps.LatLng(41.152673, -8.632334),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152763, -8.632424),\nnew google.maps.LatLng(41.152853, -8.632424),\nnew google.maps.LatLng(41.152853, -8.632334),\nnew google.maps.LatLng(41.152763, -8.632334),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152943, -8.632424),\nnew google.maps.LatLng(41.153033, -8.632424),\nnew google.maps.LatLng(41.153033, -8.632334),\nnew google.maps.LatLng(41.152943, -8.632334),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153033, -8.632424),\nnew google.maps.LatLng(41.153123, -8.632424),\nnew google.maps.LatLng(41.153123, -8.632334),\nnew google.maps.LatLng(41.153033, -8.632334),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632334),\nnew google.maps.LatLng(41.152673, -8.632334),\nnew google.maps.LatLng(41.152673, -8.632244),\nnew google.maps.LatLng(41.152583, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152763, -8.632334),\nnew google.maps.LatLng(41.152853, -8.632334),\nnew google.maps.LatLng(41.152853, -8.632244),\nnew google.maps.LatLng(41.152763, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152853, -8.632334),\nnew google.maps.LatLng(41.152943, -8.632334),\nnew google.maps.LatLng(41.152943, -8.632244),\nnew google.maps.LatLng(41.152853, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152943, -8.632334),\nnew google.maps.LatLng(41.153033, -8.632334),\nnew google.maps.LatLng(41.153033, -8.632244),\nnew google.maps.LatLng(41.152943, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153033, -8.632334),\nnew google.maps.LatLng(41.153123, -8.632334),\nnew google.maps.LatLng(41.153123, -8.632244),\nnew google.maps.LatLng(41.153033, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153123, -8.632334),\nnew google.maps.LatLng(41.153213, -8.632334),\nnew google.maps.LatLng(41.153213, -8.632244),\nnew google.maps.LatLng(41.153123, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153303, -8.632334),\nnew google.maps.LatLng(41.153393, -8.632334),\nnew google.maps.LatLng(41.153393, -8.632244),\nnew google.maps.LatLng(41.153303, -8.632244),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632244),\nnew google.maps.LatLng(41.152673, -8.632244),\nnew google.maps.LatLng(41.152673, -8.632154),\nnew google.maps.LatLng(41.152583, -8.632154),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153213, -8.632244),\nnew google.maps.LatLng(41.153303, -8.632244),\nnew google.maps.LatLng(41.153303, -8.632154),\nnew google.maps.LatLng(41.153213, -8.632154),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153303, -8.632244),\nnew google.maps.LatLng(41.153393, -8.632244),\nnew google.maps.LatLng(41.153393, -8.632154),\nnew google.maps.LatLng(41.153303, -8.632154),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153393, -8.632244),\nnew google.maps.LatLng(41.153483, -8.632244),\nnew google.maps.LatLng(41.153483, -8.632154),\nnew google.maps.LatLng(41.153393, -8.632154),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153483, -8.632244),\nnew google.maps.LatLng(41.153573, -8.632244),\nnew google.maps.LatLng(41.153573, -8.632154),\nnew google.maps.LatLng(41.153483, -8.632154),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632154),\nnew google.maps.LatLng(41.152673, -8.632154),\nnew google.maps.LatLng(41.152673, -8.632064),\nnew google.maps.LatLng(41.152583, -8.632064),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153573, -8.632154),\nnew google.maps.LatLng(41.153663, -8.632154),\nnew google.maps.LatLng(41.153663, -8.632064),\nnew google.maps.LatLng(41.153573, -8.632064),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.632064),\nnew google.maps.LatLng(41.152673, -8.632064),\nnew google.maps.LatLng(41.152673, -8.631974),\nnew google.maps.LatLng(41.152583, -8.631974),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.631974),\nnew google.maps.LatLng(41.152673, -8.631974),\nnew google.maps.LatLng(41.152673, -8.631884),\nnew google.maps.LatLng(41.152583, -8.631884),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.631884),\nnew google.maps.LatLng(41.152673, -8.631884),\nnew google.maps.LatLng(41.152673, -8.631795),\nnew google.maps.LatLng(41.152583, -8.631795),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.631795),\nnew google.maps.LatLng(41.152673, -8.631795),\nnew google.maps.LatLng(41.152673, -8.631705),\nnew google.maps.LatLng(41.152583, -8.631705),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154022, -8.631705),\nnew google.maps.LatLng(41.154112, -8.631705),\nnew google.maps.LatLng(41.154112, -8.631615),\nnew google.maps.LatLng(41.154022, -8.631615),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152583, -8.631525),\nnew google.maps.LatLng(41.152673, -8.631525),\nnew google.maps.LatLng(41.152673, -8.631435),\nnew google.maps.LatLng(41.152583, -8.631435),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154202, -8.631525),\nnew google.maps.LatLng(41.154292, -8.631525),\nnew google.maps.LatLng(41.154292, -8.631435),\nnew google.maps.LatLng(41.154202, -8.631435),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.152493, -8.631435),\nnew google.maps.LatLng(41.152583, -8.631435),\nnew google.maps.LatLng(41.152583, -8.631345),\nnew google.maps.LatLng(41.152493, -8.631345),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154382, -8.631345),\nnew google.maps.LatLng(41.154472, -8.631345),\nnew google.maps.LatLng(41.154472, -8.631255),\nnew google.maps.LatLng(41.154382, -8.631255),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154562, -8.631075),\nnew google.maps.LatLng(41.154652, -8.631075),\nnew google.maps.LatLng(41.154652, -8.630985),\nnew google.maps.LatLng(41.154562, -8.630985),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154562, -8.630985),\nnew google.maps.LatLng(41.154652, -8.630985),\nnew google.maps.LatLng(41.154652, -8.630895),\nnew google.maps.LatLng(41.154562, -8.630895),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#006837\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154652, -8.630895),\nnew google.maps.LatLng(41.154742, -8.630895),\nnew google.maps.LatLng(41.154742, -8.630805),\nnew google.maps.LatLng(41.154652, -8.630805),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154202, -8.630805),\nnew google.maps.LatLng(41.154292, -8.630805),\nnew google.maps.LatLng(41.154292, -8.630715),\nnew google.maps.LatLng(41.154202, -8.630715),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154292, -8.630805),\nnew google.maps.LatLng(41.154382, -8.630805),\nnew google.maps.LatLng(41.154382, -8.630715),\nnew google.maps.LatLng(41.154292, -8.630715),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154382, -8.630805),\nnew google.maps.LatLng(41.154472, -8.630805),\nnew google.maps.LatLng(41.154472, -8.630715),\nnew google.maps.LatLng(41.154382, -8.630715),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154472, -8.630805),\nnew google.maps.LatLng(41.154562, -8.630805),\nnew google.maps.LatLng(41.154562, -8.630715),\nnew google.maps.LatLng(41.154472, -8.630715),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154742, -8.630805),\nnew google.maps.LatLng(41.154832, -8.630805),\nnew google.maps.LatLng(41.154832, -8.630715),\nnew google.maps.LatLng(41.154742, -8.630715),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#006837\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153663, -8.630715),\nnew google.maps.LatLng(41.153752, -8.630715),\nnew google.maps.LatLng(41.153752, -8.630625),\nnew google.maps.LatLng(41.153663, -8.630625),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.153842, -8.630715),\nnew google.maps.LatLng(41.153932, -8.630715),\nnew google.maps.LatLng(41.153932, -8.630625),\nnew google.maps.LatLng(41.153842, -8.630625),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154022, -8.630715),\nnew google.maps.LatLng(41.154112, -8.630715),\nnew google.maps.LatLng(41.154112, -8.630625),\nnew google.maps.LatLng(41.154022, -8.630625),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154832, -8.630715),\nnew google.maps.LatLng(41.154922, -8.630715),\nnew google.maps.LatLng(41.154922, -8.630625),\nnew google.maps.LatLng(41.154832, -8.630625),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.154922, -8.630625),\nnew google.maps.LatLng(41.155012, -8.630625),\nnew google.maps.LatLng(41.155012, -8.630536),\nnew google.maps.LatLng(41.154922, -8.630536),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151594, -8.630446),\nnew google.maps.LatLng(41.151684, -8.630446),\nnew google.maps.LatLng(41.151684, -8.630356),\nnew google.maps.LatLng(41.151594, -8.630356),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#006837\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155012, -8.630446),\nnew google.maps.LatLng(41.155101, -8.630446),\nnew google.maps.LatLng(41.155101, -8.630356),\nnew google.maps.LatLng(41.155012, -8.630356),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155101, -8.630356),\nnew google.maps.LatLng(41.155191, -8.630356),\nnew google.maps.LatLng(41.155191, -8.630266),\nnew google.maps.LatLng(41.155101, -8.630266),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155191, -8.630266),\nnew google.maps.LatLng(41.155281, -8.630266),\nnew google.maps.LatLng(41.155281, -8.630176),\nnew google.maps.LatLng(41.155191, -8.630176),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155191, -8.630176),\nnew google.maps.LatLng(41.155281, -8.630176),\nnew google.maps.LatLng(41.155281, -8.630086),\nnew google.maps.LatLng(41.155191, -8.630086),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155281, -8.630176),\nnew google.maps.LatLng(41.155371, -8.630176),\nnew google.maps.LatLng(41.155371, -8.630086),\nnew google.maps.LatLng(41.155281, -8.630086),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#e9f6a1\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.157260, -8.630176),\nnew google.maps.LatLng(41.157350, -8.630176),\nnew google.maps.LatLng(41.157350, -8.630086),\nnew google.maps.LatLng(41.157260, -8.630086),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#b7e075\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155371, -8.630086),\nnew google.maps.LatLng(41.155461, -8.630086),\nnew google.maps.LatLng(41.155461, -8.629996),\nnew google.maps.LatLng(41.155371, -8.629996),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155371, -8.629996),\nnew google.maps.LatLng(41.155461, -8.629996),\nnew google.maps.LatLng(41.155461, -8.629906),\nnew google.maps.LatLng(41.155371, -8.629906),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155461, -8.629996),\nnew google.maps.LatLng(41.155551, -8.629996),\nnew google.maps.LatLng(41.155551, -8.629906),\nnew google.maps.LatLng(41.155461, -8.629906),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155551, -8.629996),\nnew google.maps.LatLng(41.155641, -8.629996),\nnew google.maps.LatLng(41.155641, -8.629906),\nnew google.maps.LatLng(41.155551, -8.629906),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155641, -8.629906),\nnew google.maps.LatLng(41.155731, -8.629906),\nnew google.maps.LatLng(41.155731, -8.629816),\nnew google.maps.LatLng(41.155641, -8.629816),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155731, -8.629906),\nnew google.maps.LatLng(41.155821, -8.629906),\nnew google.maps.LatLng(41.155821, -8.629816),\nnew google.maps.LatLng(41.155731, -8.629816),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155731, -8.629816),\nnew google.maps.LatLng(41.155821, -8.629816),\nnew google.maps.LatLng(41.155821, -8.629726),\nnew google.maps.LatLng(41.155731, -8.629726),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155821, -8.629816),\nnew google.maps.LatLng(41.155911, -8.629816),\nnew google.maps.LatLng(41.155911, -8.629726),\nnew google.maps.LatLng(41.155821, -8.629726),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155911, -8.629726),\nnew google.maps.LatLng(41.156001, -8.629726),\nnew google.maps.LatLng(41.156001, -8.629636),\nnew google.maps.LatLng(41.155911, -8.629636),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156001, -8.629726),\nnew google.maps.LatLng(41.156091, -8.629726),\nnew google.maps.LatLng(41.156091, -8.629636),\nnew google.maps.LatLng(41.156001, -8.629636),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150695, -8.629636),\nnew google.maps.LatLng(41.150785, -8.629636),\nnew google.maps.LatLng(41.150785, -8.629546),\nnew google.maps.LatLng(41.150695, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.151504, -8.629636),\nnew google.maps.LatLng(41.151594, -8.629636),\nnew google.maps.LatLng(41.151594, -8.629546),\nnew google.maps.LatLng(41.151504, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155641, -8.629636),\nnew google.maps.LatLng(41.155731, -8.629636),\nnew google.maps.LatLng(41.155731, -8.629546),\nnew google.maps.LatLng(41.155641, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156001, -8.629636),\nnew google.maps.LatLng(41.156091, -8.629636),\nnew google.maps.LatLng(41.156091, -8.629546),\nnew google.maps.LatLng(41.156001, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156091, -8.629636),\nnew google.maps.LatLng(41.156181, -8.629636),\nnew google.maps.LatLng(41.156181, -8.629546),\nnew google.maps.LatLng(41.156091, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156181, -8.629636),\nnew google.maps.LatLng(41.156271, -8.629636),\nnew google.maps.LatLng(41.156271, -8.629546),\nnew google.maps.LatLng(41.156181, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#fdbf6f\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156271, -8.629636),\nnew google.maps.LatLng(41.156360, -8.629636),\nnew google.maps.LatLng(41.156360, -8.629546),\nnew google.maps.LatLng(41.156271, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156360, -8.629636),\nnew google.maps.LatLng(41.156450, -8.629636),\nnew google.maps.LatLng(41.156450, -8.629546),\nnew google.maps.LatLng(41.156360, -8.629546),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150695, -8.629546),\nnew google.maps.LatLng(41.150785, -8.629546),\nnew google.maps.LatLng(41.150785, -8.629456),\nnew google.maps.LatLng(41.150695, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150785, -8.629546),\nnew google.maps.LatLng(41.150875, -8.629546),\nnew google.maps.LatLng(41.150875, -8.629456),\nnew google.maps.LatLng(41.150785, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156360, -8.629546),\nnew google.maps.LatLng(41.156450, -8.629546),\nnew google.maps.LatLng(41.156450, -8.629456),\nnew google.maps.LatLng(41.156360, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156450, -8.629546),\nnew google.maps.LatLng(41.156540, -8.629546),\nnew google.maps.LatLng(41.156540, -8.629456),\nnew google.maps.LatLng(41.156450, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156540, -8.629546),\nnew google.maps.LatLng(41.156630, -8.629546),\nnew google.maps.LatLng(41.156630, -8.629456),\nnew google.maps.LatLng(41.156540, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156630, -8.629546),\nnew google.maps.LatLng(41.156720, -8.629546),\nnew google.maps.LatLng(41.156720, -8.629456),\nnew google.maps.LatLng(41.156630, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156720, -8.629546),\nnew google.maps.LatLng(41.156810, -8.629546),\nnew google.maps.LatLng(41.156810, -8.629456),\nnew google.maps.LatLng(41.156720, -8.629456),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.150875, -8.629456),\nnew google.maps.LatLng(41.150965, -8.629456),\nnew google.maps.LatLng(41.150965, -8.629366),\nnew google.maps.LatLng(41.150875, -8.629366),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.155371, -8.629456),\nnew google.maps.LatLng(41.155461, -8.629456),\nnew google.maps.LatLng(41.155461, -8.629366),\nnew google.maps.LatLng(41.155371, -8.629366),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\nvar coords = [\nnew google.maps.LatLng(41.156810, -8.629456),\nnew google.maps.LatLng(41.156900, -8.629456),\nnew google.maps.LatLng(41.156900, -8.629366),\nnew google.maps.LatLng(41.156810, -8.629366),\n];\n\nvar polygon = new google.maps.Polygon({\nclickable: false,\ngeodesic: true,\nfillColor: \"#a50026\",\nfillOpacity: 1.000000,\npaths: coords,\nstrokeColor: \"#000000\",\nstrokeOpacity: 1.000000,\nstrokeWeight: 0\n});\n\npolygon.setMap(map);\n\n\n	}\n</script>\n</head>\n<body style=\"margin:0px; padding:0px;\" onload=\"initialize()\">\n	<div id=\"map_canvas\" style=\"width: 100%; height: 100%;\"></div>\n</body>\n</html>\n",
-			"file": "/mnt/hgfs/adamiaonr/Downloads/coverage-n-2.html",
-			"file_size": 85082,
-			"file_write_time": 1510595130000000,
-			"settings":
-			{
-				"buffer_size": 85084,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/mnt/hgfs/adamiaonr/Downloads/coverage-ss-2.html",
-			"settings":
-			{
-				"buffer_size": 729788,
 				"line_ending": "Unix"
 			}
 		}
@@ -603,10 +568,23 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/coverage.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/session_analysis.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/coverage.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/channels.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/plot.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/wifi_grid.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/README.md",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/performance.py",
+		"/home/adamiaonr/Downloads/stuffy",
+		"/home/adamiaonr/workbench/machine-learning-fall-2017/src/hw3/ex1.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/wifi-scans/wifi-reports/README",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/wifi_assist.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/output/coverage-2.csv",
+		"/mnt/hgfs/adamiaonr/Downloads/coverage-n-2.html",
+		"/mnt/hgfs/adamiaonr/Downloads/coverage-ss-2.html",
 		"/mnt/hgfs/adamiaonr/Downloads/coverage-n.html",
 		"/mnt/hgfs/adamiaonr/Downloads/gps-accuracy-mean.html",
-		"/mnt/hgfs/adamiaonr/Downloads/coverage-ss-2.html",
-		"/mnt/hgfs/adamiaonr/Downloads/coverage-n-2.html",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/coverage.csv",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/channel-intervals.csv",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/session_analysis.py",
@@ -717,20 +695,7 @@
 		"/home/adamiaonr/workbench/fnss/core/fnss/topologies/parsers.py",
 		"/home/adamiaonr/workbench/rid-analytics/experiments/examples/rocketfuel/2914.cch",
 		"/home/adamiaonr/workbench/rid-analytics/Makefile",
-		"/home/adamiaonr/workbench/rid-analytics/scripts/plot.py",
-		"/home/adamiaonr/workbench/rid-analytics/run-dummy.sh",
-		"/home/adamiaonr/workbench/rid-analytics/run-analysis.sh",
-		"/home/adamiaonr/workbench/rid-analytics/include/path-state.h",
-		"/home/adamiaonr/workbench/rid-analytics/src/path-state.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/example/complex.scn",
-		"/home/adamiaonr/workbench/rid-analytics/include/rid-router.h",
-		"/home/adamiaonr/workbench/rid-analytics/src/rid-router.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/include/rid-analytics.h",
-		"/home/adamiaonr/workbench/rid-analytics/src/rid-analytics.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/prefix-exclusion/scenarios/cache-distance/table-sizes/c33.03.1e5.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/prefix-exclusion/scenarios/cache-distance/table-sizes/c33.04.1e5.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/prefix-exclusion/scenarios/cache-distance/table-sizes/c33.05.1e5.scn",
-		"/home/adamiaonr/workbench/rid-analytics/test/configs/evaluation/prefix-exclusion/scenarios/cache-distance/table-sizes/c33.10.1e5.scn"
+		"/home/adamiaonr/workbench/rid-analytics/scripts/plot.py"
 	],
 	"find":
 	{
@@ -750,6 +715,40 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"ap_stats",
+			"stores",
+			"ap-stats",
+			"unique_",
+			"GRID_SIZE",
+			"ap_grid['counts']",
+			"extract_grid_counts",
+			"count_switches",
+			"in_dir",
+			"switches",
+			" - len(subtract)",
+			"diff[",
+			"num_switch[",
+			"cafe-solstice",
+			"(i * 3)",
+			"lounjin",
+			"ts_data",
+			"maroon",
+			"('%s_bw_up' % (stat))",
+			"('%s_bw_down' % (stat))",
+			"alpha = .75",
+			"prev_udp['ap']",
+			"'udp'",
+			"prev_udp['ap']",
+			"_rtt",
+			"_udp",
+			"SNR",
+			"unique",
+			"unuque",
+			"groupby",
+			"wifi-connection-setup",
+			"	",
+			"\n	",
+			"	",
 			"band",
 			"extract_",
 			"join",
@@ -843,41 +842,7 @@
 			"cell_size = 20.0",
 			"cell_size = 10.0",
 			"grid",
-			"max_ge",
-			"gps_limits",
-			"OUTPUT_DIR",
-			"gps_limits",
-			"ap_stats[ap_mac]['obs'][(x,y)]",
-			"ap_grid",
-			"session_ids",
-			"last_timestamp",
-			"last-timestamp",
-			"last-channel",
-			"last_channel_frequency",
-			"prev_chunk",
-			"session_analysis::",
-			"central_angle",
-			"file_lock",
-			"to_radians",
-			"wifi con",
-			"wifi-conn",
-			"join",
-			"PORTO_",
-			"print_grid",
-			"init_grid",
-			"processed_files",
-			"fillOpacity: 0.250000",
-			"==",
-			"grid_side = 50.0",
-			"color map",
-			"colors",
-			"color map",
-			"extract_median_speeds",
-			"central_angle",
-			"WIFI_AUTH",
-			"ap_grid_initialized",
-			"ap_position",
-			"feature"
+			"max_ge"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -885,6 +850,26 @@
 		"regex": false,
 		"replace_history":
 		[
+			"sw",
+			"",
+			"diff[loc_name][",
+			"num_switch[loc_name][",
+			"lounjin",
+			"((i - len(subtract)) * 3)",
+			"((i - len(subtract) * 3)",
+			"cafe-solstice",
+			"_ts_data",
+			"red",
+			"up",
+			"down",
+			"alpha = .50",
+			"prev_udp",
+			"stat",
+			"prev_ap",
+			"_rtt",
+			"_tcp",
+			"association",
+			"    ",
 			"coverage",
 			"channels",
 			"provider_str",
@@ -992,27 +977,7 @@
 			"cache_locations",
 			"entry_sizes",
 			"EVENT_MLM",
-			"EVENT_SLM",
-			"EVENT_NLM",
-			"EVENT_LLM",
-			"this->origin_server",
-			"eh_mode",
-			"STATUS_",
-			"",
-			"fontsize = 16",
-			"req_sizes",
-			"bf_sizes",
-			"bf_lengths",
-			"output_label",
-			"OPTION_OUTPUT_LABEL",
-			"<fwd_size_dist size=\"1\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"2\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"3\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"4\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"5\">1.00</fwd_size_dist>",
-			">5</tp>",
-			">2</tp>",
-			"                    <fwd_size_dist size=\"1\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"2\">1.00</fwd_size_dist>",
-			">15</tp>",
-			"                    <fwd_size_dist size=\"1\">1.00</fwd_size_dist>\n                    <fwd_size_dist size=\"2\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"3\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"4\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"5\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"6\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"7\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"8\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"9\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"10\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"11\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"12\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"13\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"14\">0.00</fwd_size_dist>\n                    <fwd_size_dist size=\"15\">0.00</fwd_size_dist>",
-			"->eop",
-			"dfs_itr"
+			"EVENT_SLM"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -1023,12 +988,12 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "data-analysis/src/channels.py",
+					"file": "data-analysis/src/.old/channels.py",
 					"settings":
 					{
 						"buffer_size": 40120,
@@ -1038,41 +1003,8 @@
 						"selection":
 						[
 							[
-								32283,
-								32283
-							]
-						],
-						"settings":
-						{
-							"rulers":
-							[
-								80
-							],
-							"spell_check": true,
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 12572.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "data-analysis/src/coverage.py",
-					"settings":
-					{
-						"buffer_size": 10437,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6932,
-								6932
+								11417,
+								11459
 							]
 						],
 						"settings":
@@ -1082,88 +1014,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 3497.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "data-analysis/src/plot.py",
-					"settings":
-					{
-						"buffer_size": 3801,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2666,
-								2666
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/mnt/hgfs/adamiaonr/Downloads/coverage-n-2.html",
-					"settings":
-					{
-						"buffer_size": 85084,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								843,
-								843
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "/mnt/hgfs/adamiaonr/Downloads/coverage-ss-2.html",
-					"settings":
-					{
-						"buffer_size": 729788,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1115,
-								1115
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 6615.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
