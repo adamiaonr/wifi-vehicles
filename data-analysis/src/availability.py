@@ -73,15 +73,6 @@ Y_SPAN = gps_to_dist(LATN, 0.0, LATS, 0.0)
 # FIXME : an x span depends on the latitude, and we're assuming a fixed latitude
 X_SPAN = gps_to_dist(LONW, LAT, LONE, LAT)
 
-# def get_osm(output_dir, bbox = [LONW, LATS, LONE, LATN]):
-
-#     if os.path.exists(os.path.join(output_dir, "osm/porto.osm")):
-#         print('[INFO] %s already exists' % (os.path.join(output_dir, "osm/porto.osm")))
-#         return
-
-#     url = ('http://www.overpass-api.de/api/xapi_meta?*[bbox=%.2f,%.2f,%.2f,%.2f]' % (bbox[0], bbox[1], bbox[2], bbox[3]))
-#     urllib.urlretrieve(url, os.path.join(output_dir, "osm/porto.osm"))
-
 def get_roads(output_dir, bbox = [-8.650, 41.139, -8.578, 41.175], 
     tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']):
 
@@ -92,12 +83,30 @@ def get_roads(output_dir, bbox = [-8.650, 41.139, -8.578, 41.175],
 
     # concat dfs w/ tags
     roads = gp.GeoDataFrame(pd.concat(roads, ignore_index = True))
-    # plot roads
-    roads = roads[roads.type == 'LineString'][['highway', 'name', 'geometry']]
-    roads.plot()
-    plt.savefig(os.path.join(output_dir, "graphs/roads.pdf"), bbox_inches = 'tight', format = 'pdf')
 
+    # save file of roads
+    roads[roads.type == 'LineString'][['highway', 'name', 'geometry']].to_file(os.path.join(output_dir, "roads"), driver = 'ESRI Shapefile')
     return roads
+
+def get_antiroads(output_dir):
+
+    roads = gp.GeoDataFrame.from_file(os.path.join(output_dir, "roads"))
+    # create large base polygon, which covers complete map
+    base = [shapely.geometry.Polygon([(-8.650, 41.139), (-8.650, 41.175), (-8.578, 41.175), (-8.578, 41.139)])]
+    base = gp.GeoDataFrame({'geometry':base})
+    # transform LineString into Polygons, by applying a fine buffer 
+    # around the points which form the line
+    # this is necessary because gp.overlay() only works w/ polygons
+    roads['geometry'] = roads['geometry'].buffer(0.000125)
+    # find the symmetric difference between the base polygon and 
+    # the roads, i.e. geometries which are only part of one of the 
+    # geodataframes, but not both
+    # FIXME: this takes forever... 
+    start = timeit.default_timer()
+    diff = gp.overlay(base, roads, how = 'symmetric_difference')
+    print("%s::get_antiroads() : [INFO] overlay() in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
+    # save the result to a file
+    diff.to_file(os.path.join(output_dir, "anti-roads"), driver = 'ESRI Shapefile')
 
 # use only roadcells where smc has observations
 def refine_roadcells(input_file, output_dir):
@@ -243,11 +252,6 @@ def get_coverage(input_file, output_dir, threshold = -80):
 
         print("%s::get_coverage() : [INFO] spatial join in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
 
-        # if stop == 1:
-        #     break
-        # else:
-        #     stop -= 1
-
     rssis.to_hdf(os.path.join(output_dir, ('coverage/%d/rssis.h5' % (int(abs(threshold))))), 'rssis', append = False)
 
     for k in labels:
@@ -281,20 +285,33 @@ def plot_coverage(output_dir):
     ax.xaxis.grid(True, ls = 'dotted', lw = 0.75)
     ax.yaxis.grid(True, ls = 'dotted', lw = 0.75)
 
+    # load rssi data for the lowest threshold (i.e. >-80 dbm)
     rssis = pd.read_hdf(os.path.join(output_dir, 'coverage/80/rssis.h5'), 'rssis')
+    # linestyles and colors for diff. series
     linestyles = ['-', ':', '-.', '--']
     colors = ['blue', 'red']
+    # FIXME: due to a mixup when generating data, we 
+    # read indeces of rssis in the following order:
+    #   2 : 'Open'
+    #   0 : 'Captive portal op.1'
+    #   1 : 'Captive portal op.2'
+    #   (...)
     for k in [2, 0, 1, 3, 4, 5, 6]:
         
+        # list rssi values from highest to lowest rssi value
         a = rssis[labels[k]][::-1]
+        # apply a cumulative sum over the values
+        # last element contains the sum of all values in the array
         acc = np.array(a.cumsum(), dtype = float)
-        # reverse array
+        # normalize the values (last value becomes 1.0)
+        # now we have the cdf
         acc = acc / acc[-1]
-        # plot rssi cdf for labels[k]
+
+        # plot cdfs (diff. colors for 'public' and 'private' networks)
         if k > 2:
-            color = 'red'
+            color = colors[1]
         else:
-            color = 'blue'
+            color = colors[0]
 
         ax.plot(np.arange(10, len(acc), 1), acc[10:], 
             alpha = 0.75, linewidth = 1.0, color = color, label = labels_anon[k], linestyle = linestyles[(k % 4)])
@@ -313,6 +330,8 @@ def plot_coverage(output_dir):
     roadcells = gp.GeoDataFrame.from_file(os.path.join(output_dir, "roadcells-raw"))
     roadcells_num = float(len(roadcells['index'].drop_duplicates()))
     smccells = gp.GeoDataFrame.from_file(os.path.join(output_dir, "roadcells-smc"))
+    # get all spaces in-between roads as polygons
+    antiroads = gp.GeoDataFrame.from_file(os.path.join(output_dir, "anti-roads"))
 
     fig = plt.figure(figsize = (6, 4))
     ax = fig.add_subplot(111)
@@ -387,8 +406,8 @@ def plot_coverage(output_dir):
         # ax.yaxis.grid(True, ls = 'dotted', lw = 0.75)
 
         # plot base : road cells in black, smc cells in gray
-        roadcells.plot(ax = ax, facecolor = 'black')
-        smccells.plot(ax = ax, facecolor = 'lightgray')
+        roadcells.plot(ax = ax, facecolor = 'black', zorder = 0)
+        smccells.plot(ax = ax, facecolor = 'lightgray', zorder = 0)
 
         nets = []
         for i, k in enumerate(keys[s]):
@@ -399,8 +418,9 @@ def plot_coverage(output_dir):
         colors = ['r', 'yellow', 'cyan', 'lime']
         for i, n in enumerate(np.arange(1, np.amax(nets['n-ops']), 1)):
             indeces = nets[nets['n-ops'] == n]['index'].tolist()
-            p = smccells[smccells['index'].isin(indeces)].plot(ax = ax, facecolor = colors[i], linewidth = 0.1)
+            p = smccells[smccells['index'].isin(indeces)].plot(ax = ax, facecolor = colors[i], linewidth = 0.1, zorder = 0)
 
+        antiroads.plot(ax = ax, color = 'midnightblue', alpha = 1.0, zorder = 5)
         p.set_axis_bgcolor('midnightblue')
         # p.set_axis_bgcolor('mediumblue')
 
@@ -455,11 +475,12 @@ if __name__ == "__main__":
         args.output_dir = "../data/output"
 
     # roads = get_roads(args.output_dir)
+    # get_antroads(args.output_dir)
     # get_roadcells(args.output_dir, roads)
     # refine_roadcells(args.data_file, args.output_dir)
     # for t in [-80, -70, -65, -60]:
     #     get_coverage(args.data_file, args.output_dir, threshold = t)
     # get_coverage(args.data_file, args.output_dir)
-    plot_coverage(args.output_dir)
+    # plot_coverage(args.output_dir)
 
     sys.exit(0)
