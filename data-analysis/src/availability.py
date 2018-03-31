@@ -100,7 +100,10 @@ def get_antiroads(output_dir):
     roads['geometry'] = roads['geometry'].buffer(0.000125)
     # find the symmetric difference between the base polygon and 
     # the roads, i.e. geometries which are only part of one of the 
-    # geodataframes, but not both
+    # geodataframes, but not both.
+    # sources : 
+    #   - http://geopandas.org/geometric_manipulations.html
+    #   - http://geopandas.org/set_operations.html
     # FIXME: this takes forever... 
     start = timeit.default_timer()
     diff = gp.overlay(base, roads, how = 'symmetric_difference')

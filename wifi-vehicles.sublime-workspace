@@ -4,6 +4,266 @@
 		"selected_items":
 		[
 			[
+				"pl",
+				"plot"
+			],
+			[
+				"aro",
+				"antiroads"
+			],
+			[
+				"over",
+				"overlay"
+			],
+			[
+				"dif",
+				"diff"
+			],
+			[
+				"di",
+				"diff"
+			],
+			[
+				"r",
+				"roads"
+			],
+			[
+				"ba",
+				"base"
+			],
+			[
+				"diff",
+				"differences"
+			],
+			[
+				"ro",
+				"roads"
+			],
+			[
+				"ta",
+				"table"
+			],
+			[
+				"lab",
+				"labels_anon"
+			],
+			[
+				"li",
+				"lime"
+			],
+			[
+				"col",
+				"colors"
+			],
+			[
+				"in",
+				"indeces"
+			],
+			[
+				"sc",
+				"smccells"
+			],
+			[
+				"co",
+				"colors"
+			],
+			[
+				"cell",
+				"cells"
+			],
+			[
+				"sor",
+				"sort_values"
+			],
+			[
+				"res",
+				"reset_index"
+			],
+			[
+				"bar",
+				"barwidth"
+			],
+			[
+				"dri",
+				"drop_duplicates"
+			],
+			[
+				"int",
+				"intersection"
+			],
+			[
+				"lin",
+				"linestyles"
+			],
+			[
+				"labe",
+				"labels"
+			],
+			[
+				"road",
+				"roadcells"
+			],
+			[
+				"rs",
+				"rssis"
+			],
+			[
+				"rss",
+				"rssis"
+			],
+			[
+				"s",
+				"snr"
+			],
+			[
+				"_",
+				"_rssis"
+			],
+			[
+				"rssi",
+				"rssis"
+			],
+			[
+				"h",
+				"highway"
+			],
+			[
+				"tre",
+				"threshold"
+			],
+			[
+				"drop",
+				"drop_duplicates"
+			],
+			[
+				"smc",
+				"smcells"
+			],
+			[
+				"to",
+				"tolist"
+			],
+			[
+				"oth",
+				"other_nets"
+			],
+			[
+				"net",
+				"nets"
+			],
+			[
+				"ne",
+				"net"
+			],
+			[
+				"Me",
+				"MEO-WiFi"
+			],
+			[
+				"plot",
+				"plot_coverage"
+			],
+			[
+				"cel",
+				"cells"
+			],
+			[
+				"cov",
+				"coverage-zon"
+			],
+			[
+				"sh",
+				"shape"
+			],
+			[
+				"ge",
+				"geometry"
+			],
+			[
+				"dr",
+				"drop_duplicates"
+			],
+			[
+				"get_",
+				"get_coverage"
+			],
+			[
+				"inter",
+				"intersections"
+			],
+			[
+				"po",
+				"polygons"
+			],
+			[
+				"LON",
+				"LONW"
+			],
+			[
+				"LA",
+				"LATS"
+			],
+			[
+				"L",
+				"LATN"
+			],
+			[
+				"LO",
+				"LONW"
+			],
+			[
+				"LAT",
+				"LATS"
+			],
+			[
+				"get",
+				"get_roadcells"
+			],
+			[
+				"geo",
+				"geometry"
+			],
+			[
+				"ur",
+				"url"
+			],
+			[
+				"por",
+				"porto"
+			],
+			[
+				"au",
+				"auth_type"
+			],
+			[
+				"aut",
+				"auth_type"
+			],
+			[
+				"en",
+				"encode"
+			],
+			[
+				"auth",
+				"auth_types"
+			],
+			[
+				"e",
+				"encode"
+			],
+			[
+				"mac",
+				"mac_addr"
+			],
+			[
+				"n",
+				"n_chunks"
+			],
+			[
+				"chu",
+				"chunk"
+			],
+			[
 				"out",
 				"output_dir"
 			],
@@ -22,10 +282,6 @@
 			[
 				"un",
 				"unique_grids"
-			],
-			[
-				"plot",
-				"plot_avg_switches"
 			],
 			[
 				"ud",
@@ -48,10 +304,6 @@
 				"continue"
 			],
 			[
-				"to",
-				"to_print"
-			],
-			[
 				"cu",
 				"curr_bw"
 			],
@@ -66,10 +318,6 @@
 			[
 				"tc",
 				"tcp"
-			],
-			[
-				"s",
-				"ssids"
 			],
 			[
 				"rt",
@@ -108,10 +356,6 @@
 				"curr_bw"
 			],
 			[
-				"dif",
-				"diff"
-			],
-			[
 				"pr",
 				"print"
 			],
@@ -130,10 +374,6 @@
 			[
 				"rtt",
 				"rtt_avg"
-			],
-			[
-				"r",
-				"rtt"
 			],
 			[
 				"nu",
@@ -180,10 +420,6 @@
 				"loc_name"
 			],
 			[
-				"in",
-				"in_dir"
-			],
-			[
 				"med",
 				"median"
 			],
@@ -228,10 +464,6 @@
 				"essids"
 			],
 			[
-				"co",
-				"coverage"
-			],
-			[
 				"ch",
 				"channels"
 			],
@@ -254,10 +486,6 @@
 			[
 				"str",
 				"strength"
-			],
-			[
-				"get_",
-				"get_ydata"
 			],
 			[
 				"get_x",
@@ -286,244 +514,40 @@
 			[
 				"y_m",
 				"y_max"
-			],
-			[
-				"al",
-				"all"
-			],
-			[
-				"S",
-				"SEGMENT_TYPES"
-			],
-			[
-				"fi",
-				"fig"
-			],
-			[
-				"stat",
-				"stationary"
-			],
-			[
-				"x",
-				"xticklabels"
-			],
-			[
-				"sn",
-				"snrs"
-			],
-			[
-				"WIFI",
-				"WIFI_CHANNELS"
-			],
-			[
-				"cdf",
-				"cdf"
-			],
-			[
-				"col",
-				"columns"
-			],
-			[
-				"cd",
-				"cdf"
-			],
-			[
-				"fil",
-				"filename"
-			],
-			[
-				"ex",
-				"extract_channel_conditions"
-			],
-			[
-				"int",
-				"interval"
-			],
-			[
-				"inte",
-				"intervals"
-			],
-			[
-				"chann",
-				"channels"
-			],
-			[
-				"chn",
-				"channels"
-			],
-			[
-				"nr",
-				"nr_freqs"
-			],
-			[
-				"the",
-				"threshold"
-			],
-			[
-				"cel",
-				"cell"
-			],
-			[
-				"cell",
-				"cells"
-			],
-			[
-				"blo",
-				"blocks"
-			],
-			[
-				"nr_",
-				"nr_freqs"
-			],
-			[
-				"max",
-				"max_snr_interval"
-			],
-			[
-				"sess",
-				"session"
-			],
-			[
-				"th",
-				"threshold"
-			],
-			[
-				"extract_s",
-				"extract_stationary"
-			],
-			[
-				"cla",
-				"classify_segments"
-			],
-			[
-				"sp",
-				"speeds"
-			],
-			[
-				"segmen",
-				"segment_type"
-			],
-			[
-				"re",
-				"return"
-			],
-			[
-				"fill",
-				"fill_segment"
-			],
-			[
-				"d",
-				"dist"
-			],
-			[
-				"lon",
-				"lons"
-			],
-			[
-				"lat",
-				"lats"
-			],
-			[
-				"ne",
-				"new_lon"
-			],
-			[
-				"new",
-				"new_lat"
-			],
-			[
-				"de",
-				"delta_t"
-			],
-			[
-				"del",
-				"delta_t"
-			],
-			[
-				"delta_",
-				"delta_lat"
-			],
-			[
-				"gps_",
-				"gps_to_dist"
-			],
-			[
-				"di",
-				"diffs"
-			],
-			[
-				"ma",
-				"math"
-			],
-			[
-				"drop",
-				"dropna"
-			],
-			[
-				"clas",
-				"classify_session"
-			],
-			[
-				"lat_",
-				"lat_end"
-			],
-			[
-				"WIF",
-				"WIFI_BANDS"
-			],
-			[
-				"pat",
-				"pathces"
-			],
-			[
-				"pa",
-				"pathces"
-			],
-			[
-				"ligh",
-				"lightblue"
-			],
-			[
-				"su",
-				"subfig_index"
-			],
-			[
-				"sub",
-				"subfig_index"
-			],
-			[
-				"lege",
-				"legend_set"
-			],
-			[
-				"pub",
-				"public"
-			],
-			[
-				"b",
-				"boxes"
-			],
-			[
-				"val",
-				"values"
-			],
-			[
-				"acc",
-				"access"
-			],
-			[
-				"tim",
-				"time"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "data-analysis/src/.old/channels.py",
+			"file": "data-analysis/src/auth.py",
 			"settings":
 			{
-				"buffer_size": 40120,
+				"buffer_size": 4616,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/availability.py",
+			"settings":
+			{
+				"buffer_size": 19582,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/workbench/rid-analytics/src/prob.cpp",
+			"settings":
+			{
+				"buffer_size": 23470,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/workbench/rid-analytics/include/prob.h",
+			"settings":
+			{
+				"buffer_size": 6009,
 				"line_ending": "Unix"
 			}
 		}
@@ -568,9 +592,14 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/channels.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/coverage.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/session_analysis.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/session_analysis.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/connection_manager.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/coverage.py",
+		"/home/adamiaonr/workbench/machine-learning/2017/src/hw4/ex1.py",
+		"/home/adamiaonr/workbench/machine-learning/2017/src/hw1/ex1.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/session_analysis.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/channels.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/plot.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/wifi_grid.py",
@@ -690,12 +719,7 @@
 		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/dependency_graph.py",
 		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/graphs.py",
 		"/home/adamiaonr/workbench/rid-analytics/experiments/evaluation/scenarios/global-reachability/dumbbell/h01.scn",
-		"/home/adamiaonr/workbench/rid-analytics/experiments/examples/rocketfuel/1221.r0.cch",
-		"/home/adamiaonr/workbench/fnss/core/fnss/topologies/topology.py",
-		"/home/adamiaonr/workbench/fnss/core/fnss/topologies/parsers.py",
-		"/home/adamiaonr/workbench/rid-analytics/experiments/examples/rocketfuel/2914.cch",
-		"/home/adamiaonr/workbench/rid-analytics/Makefile",
-		"/home/adamiaonr/workbench/rid-analytics/scripts/plot.py"
+		"/home/adamiaonr/workbench/rid-analytics/experiments/examples/rocketfuel/1221.r0.cch"
 	],
 	"find":
 	{
@@ -715,6 +739,22 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"concat",
+			"Polygon",
+			"seaborn-white",
+			"subplots_adjust",
+			"to_li",
+			"reset_in",
+			"legend",
+			"st",
+			"dbm",
+			"cumsum",
+			"cdf",
+			"max",
+			"[['new_lon' ,'new_lat']]",
+			"row",
+			"DataF(rame",
+			"bar(",
 			"ap_stats",
 			"stores",
 			"ap-stats",
@@ -826,23 +866,7 @@
 			"iloc",
 			"gps_error_stats",
 			"bar(",
-			"bar",
-			"'channels'",
-			"obs_stats",
-			"get_ap_id",
-			"channel_cdf",
-			"SNR_COLUMNS",
-			"os.",
-			"analyzed",
-			"(x,y)",
-			"session_stats",
-			"extract_obs_stats",
-			"cell_size",
-			"cell_size = 30.0",
-			"cell_size = 20.0",
-			"cell_size = 10.0",
-			"grid",
-			"max_ge"
+			"bar"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -850,6 +874,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"",
 			"sw",
 			"",
 			"diff[loc_name][",
@@ -976,8 +1001,7 @@
 			"cache_distances",
 			"cache_locations",
 			"entry_sizes",
-			"EVENT_MLM",
-			"EVENT_SLM"
+			"EVENT_MLM"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -988,23 +1012,23 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "data-analysis/src/.old/channels.py",
+					"file": "data-analysis/src/auth.py",
 					"settings":
 					{
-						"buffer_size": 40120,
+						"buffer_size": 4616,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								11417,
-								11459
+								3829,
+								3829
 							]
 						],
 						"settings":
@@ -1014,7 +1038,91 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6615.0,
+						"translation.y": 765.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "data-analysis/src/availability.py",
+					"settings":
+					{
+						"buffer_size": 19582,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3610,
+								3610
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/adamiaonr/workbench/rid-analytics/src/prob.cpp",
+					"settings":
+					{
+						"buffer_size": 23470,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3915.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/home/adamiaonr/workbench/rid-analytics/include/prob.h",
+					"settings":
+					{
+						"buffer_size": 6009,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 810.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
