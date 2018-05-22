@@ -154,5 +154,12 @@ int main(int argc, char **argv) {
     files[0].close();
     files[1].close();
 
+    // add report file
+    std::ofstream report;
+    report.open(std::string(argv[4]) + std::string("/report.tsv"));
+    report << "payload\tpacket\ttime elapsed\tavg sleep time\tavg bitrate\n";
+    report << (sizeof(struct echo_record) * 8) << "\t" << (PACKET_SIZE * 8) << "\t" << time_elapsed << "\t" << time_elapsed / ((double) bytes_sent / (double) PACKET_SIZE) << "\t" << (double) (bytes_sent * 8) / (time_elapsed) << "\n";
+    report.close();
+
     exit(0);
 }

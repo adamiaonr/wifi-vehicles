@@ -33,11 +33,11 @@ if __name__ == "__main__":
 
     # gps log file (0 buffering)
     filename = os.path.join(args.output_dir, 'gps-log.csv')
-    if os.path.exists(filename):
-        gps_log = csv.writer(open(filename, 'a', 0))
-    else:
-        gps_log = csv.writer(open(filename, 'wb+', 0))
-        gps_log.writerow(attrs)
+    #if os.path.exists(filename):
+    #    gps_log = csv.writer(open(filename, 'a', 0))
+    #else:
+    gps_log = csv.writer(open(filename, 'wb+', 0))
+    gps_log.writerow(attrs)
 
     # start reading gps data
     gps_socket = gps3.GPSDSocket()
@@ -69,4 +69,4 @@ if __name__ == "__main__":
             # write new row to .csv log
             gps_log.writerow([data_stream.TPV[attr] for attr in attrs])
 
-        time.sleep(0.5)
+        time.sleep(3.0)
