@@ -1,0 +1,19 @@
+
+config wifi-device 'radio0'
+	option type 'mac80211'
+	option path 'platform/bcm2708_usb/usb1/1-1/1-1.4/1-1.4:1.0'
+	option channel '44'
+	option txpower '20'
+	option hwmode '11a'
+	option country 'PT'
+	option log_level '0'
+	option htmode 'HT20'
+
+config wifi-iface
+	option device 'radio0'
+	option network 'lan'
+	option mode 'ap'
+	option ssid 'nikola-tesla'
+	option encryption 'psk2'
+	option key 'xpto12x1'
+

@@ -4,6 +4,98 @@
 		"selected_items":
 		[
 			[
+				"ne",
+				"nets"
+			],
+			[
+				"cel",
+				"cell_size"
+			],
+			[
+				"con",
+				"continue"
+			],
+			[
+				"co",
+				"coords"
+			],
+			[
+				"LO",
+				"LON_LIMIT_WEST"
+			],
+			[
+				"LA",
+				"LAT_LIMIT_NORTH"
+			],
+			[
+				"ap",
+				"append"
+			],
+			[
+				"gps",
+				"gps_file"
+			],
+			[
+				"g",
+				"gps_file"
+			],
+			[
+				"cha",
+				"channel"
+			],
+			[
+				"re",
+				"return"
+			],
+			[
+				"LAT",
+				"LAT_LIMIT_SOUTH"
+			],
+			[
+				"si",
+				"signal_level_dBm"
+			],
+			[
+				"ma",
+				"mac"
+			],
+			[
+				"ce",
+				"cell_id"
+			],
+			[
+				"sl",
+				"self"
+			],
+			[
+				"sca",
+				"scan_file"
+			],
+			[
+				"loca",
+				"location_file"
+			],
+			[
+				"lo",
+				"logdir"
+			],
+			[
+				"scan",
+				"scanfile"
+			],
+			[
+				"ch",
+				"channel"
+			],
+			[
+				"up",
+				"updated_map"
+			],
+			[
+				"upda",
+				"update"
+			],
+			[
 				"pl",
 				"plot"
 			],
@@ -62,10 +154,6 @@
 			[
 				"sc",
 				"smccells"
-			],
-			[
-				"co",
-				"colors"
 			],
 			[
 				"cell",
@@ -152,20 +240,12 @@
 				"nets"
 			],
 			[
-				"ne",
-				"net"
-			],
-			[
 				"Me",
 				"MEO-WiFi"
 			],
 			[
 				"plot",
 				"plot_coverage"
-			],
-			[
-				"cel",
-				"cells"
 			],
 			[
 				"cov",
@@ -200,20 +280,8 @@
 				"LONW"
 			],
 			[
-				"LA",
-				"LATS"
-			],
-			[
 				"L",
 				"LATN"
-			],
-			[
-				"LO",
-				"LONW"
-			],
-			[
-				"LAT",
-				"LATS"
 			],
 			[
 				"get",
@@ -298,10 +366,6 @@
 			[
 				"udp",
 				"udp_bw_down"
-			],
-			[
-				"con",
-				"continue"
 			],
 			[
 				"cu",
@@ -408,10 +472,6 @@
 				"limits"
 			],
 			[
-				"ap",
-				"append"
-			],
-			[
 				"lc",
 				"loc_data"
 			],
@@ -454,100 +514,56 @@
 			[
 				"ses",
 				"session_ids"
-			],
-			[
-				"cha",
-				"channels"
-			],
-			[
-				"es",
-				"essids"
-			],
-			[
-				"ch",
-				"channels"
-			],
-			[
-				"ess",
-				"essid"
-			],
-			[
-				"ext",
-				"extract_coverage"
-			],
-			[
-				"WI",
-				"WIFI_BANDS_COLUMNS"
-			],
-			[
-				"chan",
-				"channels"
-			],
-			[
-				"str",
-				"strength"
-			],
-			[
-				"get_x",
-				"get_xticks"
-			],
-			[
-				"xt",
-				"xticks_pos"
-			],
-			[
-				"set_x",
-				"set_xticks"
-			],
-			[
-				"y_",
-				"y_max"
-			],
-			[
-				"set_yl",
-				"set_ylim"
-			],
-			[
-				"a",
-				"axes"
-			],
-			[
-				"y_m",
-				"y_max"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "data-analysis/src/auth.py",
+			"file": "wifi-assist/src/blind-handovers/covmap_example.py",
 			"settings":
 			{
-				"buffer_size": 4616,
+				"buffer_size": 4671,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "data-analysis/src/availability.py",
+			"file": "wifi-assist/src/blind-handovers/coverage_map.py",
+			"settings":
+			{
+				"buffer_size": 8012,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/blind-handovers/handoff_manager.py",
+			"settings":
+			{
+				"buffer_size": 2534,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/blind-handovers/connection_manager.py",
+			"settings":
+			{
+				"buffer_size": 3534,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/blind-handovers/network_utils.py",
+			"settings":
+			{
+				"buffer_size": 5381,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/blind-handovers/availability.py",
 			"settings":
 			{
 				"buffer_size": 19582,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/adamiaonr/workbench/rid-analytics/src/prob.cpp",
-			"settings":
-			{
-				"buffer_size": 23470,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/adamiaonr/workbench/rid-analytics/include/prob.h",
-			"settings":
-			{
-				"buffer_size": 6009,
 				"line_ending": "Unix"
 			}
 		}
@@ -592,6 +608,15 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/availability.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/auth.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/wifi-connections.py",
+		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/pytransport.py",
+		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/stack.py",
+		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/pysocket.py",
+		"/home/adamiaonr/workbench/rid-analytics/src/prob.cpp",
+		"/home/adamiaonr/workbench/rid-analytics/include/prob.h",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/channels.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/coverage.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/session_analysis.py",
@@ -710,16 +735,7 @@
 		"/home/adamiaonr/workbench/networking-sandbox/epi/README.md",
 		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/rca-evaluation-edge-diffs.dot",
 		"/mnt/hgfs/adamiaonr/workbench/rca/data/metrics/clustered/20170207000639-boot-and-delete.json/metadata.json",
-		"/mnt/hgfs/adamiaonr/workbench/rca/data/metrics/clustered/20170207002503-boot-and-delete.json/metadata.json",
-		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/neutron_server-nova_api-causality.tsv",
-		"/mnt/hgfs/adamiaonr/workbench/rca/data/metrics/dependency-graphs/20170116143626-boot-and-delete.json/haproxy-neutron_server-causality.tsv.gz",
-		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/graph_utils.py",
-		"/home/adamiaonr/workbench/encrypted-data-computing/src/example.py",
-		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/metric_str_utils.py",
-		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/dependency_graph.py",
-		"/home/adamiaonr/workbench/openstack-kolla/scripts/dependency-graph/graphs.py",
-		"/home/adamiaonr/workbench/rid-analytics/experiments/evaluation/scenarios/global-reachability/dumbbell/h01.scn",
-		"/home/adamiaonr/workbench/rid-analytics/experiments/examples/rocketfuel/1221.r0.cch"
+		"/mnt/hgfs/adamiaonr/workbench/rca/data/metrics/clustered/20170207002503-boot-and-delete.json/metadata.json"
 	],
 	"find":
 	{
@@ -739,6 +755,24 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"xtick",
+			"roadcells",
+			"roadcells-raw",
+			"gen_id",
+			"polygon",
+			"LAT",
+			"loc",
+			"plot(",
+			"get_roads",
+			"Pretty",
+			"prett",
+			"gen_id",
+			"df[",
+			"gen_id",
+			"csv",
+			"PORTO_LONGITUDE",
+			"PORTO_LATITUDE",
+			"mac_addr",
 			"concat",
 			"Polygon",
 			"seaborn-white",
@@ -848,25 +882,7 @@
 			"iwlist_cmds",
 			"scan",
 			"c[cat]",
-			"val[cat]",
-			"colors[",
-			"colors_n[cat]",
-			"regexps",
-			"	",
-			"gps_limits",
-			"geo_limits",
-			"GPS_COLUMNS",
-			"CDF_COLUMNS",
-			"calc_cell",
-			"5476.",
-			"5476",
-			"print(",
-			"set_index",
-			"update_gps_error",
-			"iloc",
-			"gps_error_stats",
-			"bar(",
-			"bar"
+			"val[cat]"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -874,6 +890,10 @@
 		"regex": false,
 		"replace_history":
 		[
+			"row[",
+			"LON",
+			"LAT",
+			"bssid",
 			"",
 			"sw",
 			"",
@@ -997,11 +1017,7 @@
 			"<tp iface=\"0\">3</tp>",
 			"ax2",
 			"bf_sizes",
-			"cache_distance",
-			"cache_distances",
-			"cache_locations",
-			"entry_sizes",
-			"EVENT_MLM"
+			"cache_distance"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -1012,23 +1028,23 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "data-analysis/src/auth.py",
+					"file": "wifi-assist/src/blind-handovers/covmap_example.py",
 					"settings":
 					{
-						"buffer_size": 4616,
+						"buffer_size": 4671,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3829,
-								3829
+								3009,
+								3009
 							]
 						],
 						"settings":
@@ -1038,14 +1054,127 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 765.0,
+						"translation.y": 855.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "data-analysis/src/availability.py",
+					"file": "wifi-assist/src/blind-handovers/coverage_map.py",
+					"settings":
+					{
+						"buffer_size": 8012,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5394,
+								5394
+							]
+						],
+						"settings":
+						{
+							"spell_check": true,
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 795.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "wifi-assist/src/blind-handovers/handoff_manager.py",
+					"settings":
+					{
+						"buffer_size": 2534,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1343,
+								1343
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 90.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "wifi-assist/src/blind-handovers/connection_manager.py",
+					"settings":
+					{
+						"buffer_size": 3534,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1170.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "wifi-assist/src/blind-handovers/network_utils.py",
+					"settings":
+					{
+						"buffer_size": 5381,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1575.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "wifi-assist/src/blind-handovers/availability.py",
 					"settings":
 					{
 						"buffer_size": 19582,
@@ -1055,8 +1184,8 @@
 						"selection":
 						[
 							[
-								3610,
-								3610
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1066,63 +1195,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "/home/adamiaonr/workbench/rid-analytics/src/prob.cpp",
-					"settings":
-					{
-						"buffer_size": 23470,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3915.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/home/adamiaonr/workbench/rid-analytics/include/prob.h",
-					"settings":
-					{
-						"buffer_size": 6009,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 810.0,
+						"translation.y": 2115.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
