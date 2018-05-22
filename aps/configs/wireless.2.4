@@ -4,13 +4,12 @@ config wifi-device  radio0
 	option hwmode	11g
 	option path	'platform/bcm2708_usb/usb1/1-1/1-1.4/1-1.4:1.0'
 	option htmode	HT20
-	# REMOVE THIS LINE TO ENABLE WIFI:
-	option disabled 1
 
 config wifi-iface
-	option device   radio0
-	option network  lan
-	option mode     ap
-	option ssid     OpenWrt
-	option encryption none
+	option device 'radio0'
+	option network 'lan'
+	option mode 'ap'
+	option ssid 'nikola-tesla'
+	option encryption 'psk2'
+	option key 'xpto12x1'
 
