@@ -142,6 +142,7 @@ int main(int argc, char **argv) {
 
     gettimeofday(&e, NULL);
 
+    std::cout << "echo_client::main() : [INFO] payload size : " << (sizeof(struct echo_record) * 8) << " bit (" << sizeof(struct echo_record) << " byte)" << std::endl;
     std::cout << "echo_client::main() : [INFO] packet size : " << (PACKET_SIZE * 8) << " bit (" << PACKET_SIZE << " byte)" << std::endl;
     double time_elapsed = (e.tv_sec - s.tv_sec) + ((e.tv_usec - s.tv_usec) / 1000000.0);
     std::cout << "echo_client::main() : [INFO] time elapsed : " << time_elapsed << " sec" << std::endl;
