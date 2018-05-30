@@ -1,0 +1,24 @@
+interface=wlan0
+
+hw_mode=a
+ieee80211n=1
+ieee80211d=1
+ieee80211ac=1         # 802.11ac support
+wmm_enabled=1         # QoS support
+ht_capab=HT40+
+channel=48
+country_code=PT
+macaddr_acl=0
+
+driver=nl80211
+
+ssid=nikola-tesla
+auth_algs=1           # 1=wpa, 2=wep, 3=both
+wpa=2                 # WPA2 only
+wpa_key_mgmt=WPA-PSK  
+rsn_pairwise=CCMP
+wpa_passphrase=xpto12x1
+ignore_broadcast_ssid=0
+
+logger_syslog=-1
+logger_syslog_level=0
