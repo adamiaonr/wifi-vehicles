@@ -6,25 +6,29 @@ import os
 import time
 import datetime
 import subprocess
+import sys
 
 def capture(iface, time, output_file):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
-    cmd = ["timeout", time, "tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
-    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    cmd = ["timeout", str(time), "tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
+    proc = subprocess.call(cmd)
 
 def set_channel(iface, channel):
     # ifconfig <iface> down
     cmd = ["ifconfig", iface, "down"]
-    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    proc = subprocess.call(cmd)
+
     # iwconfig <iface> mode monitor
     cmd = ["iwconfig", iface, "mode", "monitor"]
-    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    proc = subprocess.call(cmd)
+
     # iwconfig <iface> up
-    cmd = ["iwconfig", iface, "up"]
-    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    cmd = ["ifconfig", iface, "up"]
+    proc = subprocess.call(cmd)
+
     # iwconfig <iface> channel <channel>
-    cmd = ["iwconfig", iface, "channel", channel]
-    proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    cmd = ["iwconfig", iface, "channel", str(channel)]
+    proc = subprocess.call(cmd)
 
 if __name__ == "__main__":
 
@@ -69,6 +73,6 @@ if __name__ == "__main__":
 
     for channel in [int(c) for c in args.channels.split(',')]:
         set_channel(args.iface, channel)
-        capture(args.iface, int(args.duration), os.path.join(args.output_dir, ("eeepc-cbt-%d.pcap" % (channel))))
+        capture(args.iface, int(args.duration), os.path.join(args.output_dir, ("eeepc-cbt-%02d.pcap" % (channel))))
 
     exit(0)
