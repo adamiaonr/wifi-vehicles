@@ -1,4 +1,3 @@
-import iwlist
 import csv
 import json
 import argparse
