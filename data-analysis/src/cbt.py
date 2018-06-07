@@ -28,7 +28,7 @@ from prettytable import PrettyTable
 
 matplotlib.rcParams.update({'font.size': 16})
 
-channel_yy = {1 : 2000.0, 6 : 2000.0, 11 : 2000.0}
+channel_yy = {1 : 3000.0, 6 : 3000.0, 11 : 3000.0}
 
 def plot_cbt(cbt, frame_types, ax1, output_dir, channel = -1):
 
@@ -67,11 +67,13 @@ def plot_cbt(cbt, frame_types, ax1, output_dir, channel = -1):
         prev = 0.0
         for c, t in enumerate(types):
             v = (sel[sel['Type'] == t]['no'].values[0] if sel[sel['Type'] == t]['no'].values else 0.0)
-            y[p].append(v)
+            y[p].append(v + prev)
+            prev = v
 
     # stacked line chart for packet qtys.
     x = counts['period.no'].unique()
     y = np.array(y)
+
     ax2.fill_between(x, 0.0, y[:,0], facecolor = colors[0], label = types[0], linewidth = .25)
     ax2.fill_between(x, y[:,0], y[:,1], facecolor = colors[1], label = types[1], linewidth = .25)
     ax2.fill_between(x, y[:,1], y[:,2], facecolor = colors[2], label = types[2], linewidth = .25)
@@ -133,7 +135,7 @@ def calc_cbt(input_file):
         # get count of type / subtypes per period
         counts = chunk.groupby(['period.no', 'PHY type', 'Type', 'Type/Subtype', 'Length', 'Data rate', 'wlan_radio.duration'])['no'].agg('count').reset_index()
         frame_types = pd.concat([frame_types, counts], ignore_index = True)
-        # print(counts[['period.no', 'Type', 'Type/Subtype', 'no']])
+        print(counts[['period.no', 'Type', 'Type/Subtype', 'no']])
 
         # calc cbt per period
         for p in counts['period.no'].unique():
