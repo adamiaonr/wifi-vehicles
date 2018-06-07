@@ -53,6 +53,10 @@ if __name__ == "__main__":
         "--output-dir", 
          help = """dir to save .pcap files""")
 
+    parser.add_argument(
+        "--set-monitor-mode", 
+         help = """set 'iface' to monitor mode on channel x. e.g.: --set-monitor-mode 48""")
+
     args = parser.parse_args()
 
     if not args.channels:
@@ -66,6 +70,11 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
+    if args.set_monitor_mode:
+        set_channel(args.iface, args.set_monitor_mode)
+        sys.exit(0)
+
+
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
         parser.print_help()
@@ -75,4 +84,4 @@ if __name__ == "__main__":
         set_channel(args.iface, channel)
         capture(args.iface, int(args.duration), os.path.join(args.output_dir, ("eeepc-cbt-%02d.pcap" % (channel))))
 
-    exit(0)
+    sys.exit(0)
