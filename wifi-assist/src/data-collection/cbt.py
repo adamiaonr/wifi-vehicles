@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # options (self-explanatory)
-    #1,2,3,4,5,6,7,8,9,10,11,12,13,14,36,28,40,42,44,46,48
+    #1,6,11,36,40,44,48
     parser.add_argument(
         "--channels", 
          help = """list of channels to scan, separated by ','. e.g.: '--channels 1,6,11'""")
@@ -73,7 +73,6 @@ if __name__ == "__main__":
     if args.set_monitor_mode:
         set_channel(args.iface, args.set_monitor_mode)
         sys.exit(0)
-
 
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
