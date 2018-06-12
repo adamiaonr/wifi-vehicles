@@ -1,0 +1,10 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto wlx24050f615114
+iface wlx24050f615114 inet static
+hostapd /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/hostapd.conf
+address 10.10.10.111
+netmask 255.255.255.0
+
