@@ -1,0 +1,8 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+allow-hotplug wlx24050f9e2cb1
+iface wlx24050f9e2cb1 inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+iface default inet dhcp
