@@ -106,45 +106,42 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
 
     results = pd.DataFrame(columns = ['proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
-    # open the results .csv file
-    with open(results_file, 'a') as f:
-        # write the column names to the file
-        results.to_csv(f, index = False, index_label = False)
-        # keep iperfing till a CTRL+C is caught...
-        stop_loop = False
-        while (stop_loop == False):
-            for protocol in [p.lower() for p in args.protocols.split(',')]:
-                for bitrate in [b for b in args.bitrates.split(',')]:
+    # write the column names to the file
+    results.to_csv(results_file, index = False, index_label = False)
+    # keep iperfing till a CTRL+C is caught...
+    stop_loop = False
+    while (stop_loop == False):
+        for protocol in [p.lower() for p in args.protocols.split(',')]:
+            for bitrate in [b for b in args.bitrates.split(',')]:
 
-                    code, output = test(int(args.duration), args.ip_server, args.port, protocol, bitrate)
-                    
-                    if code < 0:
-                        continue
+                code, output = test(int(args.duration), args.ip_server, args.port, protocol, bitrate)
+                
+                if code < 0:
+                    continue
 
-                    output = json.loads(output)
+                output = json.loads(output)
 
-                    if output['start']['test_start']['protocol'] == 'UDP':
-                        results = results.append({
-                            'proto'     : output['start']['test_start']['protocol'], 
-                            'duration'  : output['end']['sum']['seconds'],
-                            'transfer'  : output['end']['sum']['bytes'], 
-                            'trgt-bw'   : float(bitrate) * 1000000.0, 
-                            'res-bw'    : output['end']['sum']['bits_per_second'],
-                            'jitter'    : output['end']['sum']['jitter_ms'],
-                            'lost'      : output['end']['sum']['lost_packets'],
-                            'total'     : output['end']['sum']['packets'],
-                            'cpu-sndr'  : output['end']['cpu_utilization_percent']['host_total'],
-                            'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}, ignore_index = True)
+                if output['start']['test_start']['protocol'] == 'UDP':
+                    results = results.append({
+                        'proto'     : output['start']['test_start']['protocol'], 
+                        'duration'  : output['end']['sum']['seconds'],
+                        'transfer'  : output['end']['sum']['bytes'], 
+                        'trgt-bw'   : float(bitrate) * 1000000.0, 
+                        'res-bw'    : output['end']['sum']['bits_per_second'],
+                        'jitter'    : output['end']['sum']['jitter_ms'],
+                        'lost'      : output['end']['sum']['lost_packets'],
+                        'total'     : output['end']['sum']['packets'],
+                        'cpu-sndr'  : output['end']['cpu_utilization_percent']['host_total'],
+                        'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}, ignore_index = True)
 
-                    else:
-                        sys.stderr.write("""%s: [ERROR] TCP is not supported (yet)\n""" % sys.argv[0]) 
-                        sys.exit(1)
+                else:
+                    sys.stderr.write("""%s: [ERROR] TCP is not supported (yet)\n""" % sys.argv[0]) 
+                    sys.exit(1)
 
-                    # append line to .csv file
-                    results.to_csv(f, header = False, index = False, index_label = False)
-                    f.flush()
-                    # clear the results dataframe
-                    results = results.iloc[0:0]
+                # append line to .csv file
+                results.to_csv(results_file, mode = 'a', header = False, index = False, index_label = False)
+                # clear the results dataframe
+                results = results.iloc[0:0]
 
     sys.exit(0)
 
