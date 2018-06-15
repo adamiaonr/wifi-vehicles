@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
 
-    results = pd.DataFrame(columns = ['proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
+    results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
     # write the column names to the file
     results.to_csv(results_file, index = False, index_label = False)
     # keep iperfing till a CTRL+C is caught...
@@ -123,6 +123,7 @@ if __name__ == "__main__":
 
                 if output['start']['test_start']['protocol'] == 'UDP':
                     results = results.append({
+                        'time'      : time.time(),
                         'proto'     : output['start']['test_start']['protocol'], 
                         'duration'  : output['end']['sum']['seconds'],
                         'transfer'  : output['end']['sum']['bytes'], 
