@@ -69,4 +69,4 @@ if __name__ == "__main__":
             # write new row to .csv log
             gps_log.writerow([data_stream.TPV[attr] for attr in attrs])
 
-        time.sleep(3.0)
+        time.sleep(1.0)

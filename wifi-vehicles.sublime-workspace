@@ -4,8 +4,96 @@
 		"selected_items":
 		[
 			[
+				"pl",
+				"plt"
+			],
+			[
+				"fo",
+				"fontsize"
+			],
+			[
+				"arg",
+				"args"
+			],
+			[
+				"res",
+				"results"
+			],
+			[
+				"le",
+				"left"
+			],
+			[
+				"cp",
+				"cpu-rcvr"
+			],
+			[
+				"yy",
+				"yy2"
+			],
+			[
+				"yy1",
+				"yy1b"
+			],
+			[
+				"fi",
+				"filename"
+			],
+			[
+				"lo",
+				"loss"
+			],
+			[
+				"rs",
+				"results_file"
+			],
+			[
+				"_",
+				"_proto"
+			],
+			[
+				"li",
+				"lines"
+			],
+			[
+				"to",
+				"total"
+			],
+			[
+				"par",
+				"parsed"
+			],
+			[
+				"pro",
+				"protocol"
+			],
+			[
+				"re",
+				"results"
+			],
+			[
+				"bit",
+				"bitrate"
+			],
+			[
 				"pr",
-				"prev"
+				"print"
+			],
+			[
+				"bi",
+				"bitrate"
+			],
+			[
+				"cl",
+				"client"
+			],
+			[
+				"ip",
+				"ip_server"
+			],
+			[
+				"po",
+				"protocols"
 			],
 			[
 				"cha",
@@ -36,10 +124,6 @@
 				"file_name"
 			],
 			[
-				"fi",
-				"fig1"
-			],
-			[
 				"ar",
 				"args"
 			],
@@ -68,10 +152,6 @@
 				"DataFrame"
 			],
 			[
-				"pl",
-				"plot_cbt"
-			],
-			[
 				"out",
 				"output"
 			],
@@ -86,10 +166,6 @@
 			[
 				"wla",
 				"wlan_radio"
-			],
-			[
-				"_",
-				"_cbt"
 			],
 			[
 				"per",
@@ -148,10 +224,6 @@
 				"gpses"
 			],
 			[
-				"re",
-				"report"
-			],
-			[
 				"print_",
 				"print_reports"
 			],
@@ -164,16 +236,8 @@
 				"reports"
 			],
 			[
-				"rs",
-				"rssis_cdf"
-			],
-			[
 				"ba",
 				"bar_width"
-			],
-			[
-				"fo",
-				"folders"
 			],
 			[
 				"se",
@@ -216,10 +280,6 @@
 				"hostname_command"
 			],
 			[
-				"cl",
-				"close"
-			],
-			[
 				"en",
 				"endl"
 			],
@@ -234,10 +294,6 @@
 			[
 				"inc",
 				"include"
-			],
-			[
-				"arg",
-				"argv"
 			],
 			[
 				"str",
@@ -316,10 +372,6 @@
 				"location_file"
 			],
 			[
-				"lo",
-				"logdir"
-			],
-			[
 				"up",
 				"updated_map"
 			],
@@ -360,10 +412,6 @@
 				"labels_anon"
 			],
 			[
-				"li",
-				"lime"
-			],
-			[
 				"sc",
 				"smccells"
 			],
@@ -374,10 +422,6 @@
 			[
 				"sor",
 				"sort_values"
-			],
-			[
-				"res",
-				"reset_index"
 			],
 			[
 				"bar",
@@ -432,10 +476,6 @@
 				"smcells"
 			],
 			[
-				"to",
-				"tolist"
-			],
-			[
 				"oth",
 				"other_nets"
 			],
@@ -474,46 +514,6 @@
 			[
 				"inter",
 				"intersections"
-			],
-			[
-				"po",
-				"polygons"
-			],
-			[
-				"LON",
-				"LONW"
-			],
-			[
-				"L",
-				"LATN"
-			],
-			[
-				"geo",
-				"geometry"
-			],
-			[
-				"ur",
-				"url"
-			],
-			[
-				"por",
-				"porto"
-			],
-			[
-				"au",
-				"auth_type"
-			],
-			[
-				"aut",
-				"auth_type"
-			],
-			[
-				"auth",
-				"auth_types"
-			],
-			[
-				"e",
-				"encode"
 			]
 		]
 	},
@@ -528,18 +528,42 @@
 			}
 		},
 		{
-			"file": "data-analysis/src/auth.py",
+			"file": "wifi-assist/src/data-collection/cbt.py",
 			"settings":
 			{
-				"buffer_size": 4616,
+				"buffer_size": 2477,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
+			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.py",
 			"settings":
 			{
-				"buffer_size": 49821,
+				"buffer_size": 5109,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/data-collection/gps-logger.py",
+			"settings":
+			{
+				"buffer_size": 2064,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
+			"settings":
+			{
+				"buffer_size": 8481,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
+			"settings":
+			{
+				"buffer_size": 14904,
 				"line_ending": "Unix"
 			}
 		},
@@ -552,34 +576,10 @@
 			}
 		},
 		{
-			"file": "wifi-assist/src/data-collection/cbt.py",
+			"file": "data-analysis/src/positioning.py",
 			"settings":
 			{
-				"buffer_size": 2266,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "wifi-assist/src/data-collection/wifi-logger.py",
-			"settings":
-			{
-				"buffer_size": 1412,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "wifi-assist/src/data-collection/iwlist.py",
-			"settings":
-			{
-				"buffer_size": 1608,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "wifi-assist/src/data-collection/gps-logger.py",
-			"settings":
-			{
-				"buffer_size": 2064,
+				"buffer_size": 9299,
 				"line_ending": "Unix"
 			}
 		}
@@ -624,8 +624,38 @@
 	},
 	"file_history":
 	[
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/positioning.py",
+		"/tmp/rsub-AHsqzt/wlan0",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/wpa_supplicant/wpa_supplicant.conf",
+		"/tmp/rsub-o55pxP/dhcpcd.conf",
+		"/tmp/rsub-a0ge9P/wlan0",
+		"/tmp/rsub-WCeDL7/interfaces",
+		"/tmp/rsub-SqsUJv/wpa_supplicant.conf",
+		"/tmp/rsub-A_HVUc/dhcpcd.conf",
+		"/tmp/rsub-nYkMwu/wlan0",
+		"/tmp/rsub-7_ACqc/wpa_supplicant.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/auth.py",
+		"/tmp/rsub-ak0JDo/dhcpcd.conf",
+		"/tmp/rsub-lGmA7O/dhcpd.conf",
+		"/tmp/rsub-es1kSY/interfaces",
+		"/home/adamiaonr/workbench/sandbox/wireless.open.40",
+		"/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/rpi-bw-tests.py",
+		"/home/adamiaonr/Downloads/jsoniperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iwlist.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/wifi-logger.py",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/cbt.py",
+		"/home/adamiaonr/Downloads/ssid=nikola-tesla",
+		"/tmp/rsub-Yyokuw/hostapd.conf",
+		"/tmp/rsub-yizH2g/hostapd.conf",
+		"/tmp/rsub-2XlnMh/hostapd.conf",
+		"/tmp/rsub-T8zx7g/hostapd.conf",
+		"/tmp/rsub-EnKnj_/hostapd.conf",
+		"/tmp/rsub-se1G4h/hostapd.conf",
+		"/tmp/rsub-2bTWXR/hostapd.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/positioning.py",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/convert_rocketfuel.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/network_utils.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/handoff_manager.py",
@@ -640,7 +670,6 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/hostapd/hostapd.conf",
 		"/home/adamiaonr/workbench/openwrt/package/kernel/mac80211/patches/621-rt2x00-ht20_40_fix.patch",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/globalr.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iwlist.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/scripts/echo-server",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/client/echo-client.cpp",
 		"/home/adamiaonr/.ssh/config",
@@ -662,8 +691,6 @@
 		"/home/adamiaonr/workbench/rid-analytics/Makefile",
 		"/home/adamiaonr/workbench/rid-analytics/include/rid-analytics.h",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/availability.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/auth.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/wifi-connections.py",
 		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/pytransport.py",
 		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/stack.py",
@@ -724,34 +751,7 @@
 		"/tmp/rsub-LNlall/wpa_supplicant.conf",
 		"/tmp/rsub-T4VmAu/ntp.conf",
 		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/time-cdf.csv",
-		"/mnt/hgfs/adamiaonr/Downloads/example.50.html",
-		"/mnt/hgfs/adamiaonr/Downloads/gps-accuracy-n.html",
-		"/mnt/hgfs/adamiaonr/Downloads/gps-accuracy-var.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/gps-accuracy-var.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/gps-accuracy-n.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/gps-accuracy-mean.html",
-		"/mnt/hgfs/adamiaonr/Downloads/gps-accuracy.html",
-		"/tmp/rsub-_nsJZd/gps-logger.py",
-		"/tmp/rsub-rYsRzx/wifi-logger.py",
-		"/tmp/rsub-ly33dd/iwlist.py",
-		"/tmp/rsub-3h4y87/client.py",
-		"/tmp/rsub-GKlHnZ/client.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/gps-accuracy.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/top_network_locations_aerf.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/gps-accuracy.html",
-		"/tmp/rsub-SUCAMy/iwlist.py",
-		"/tmp/rsub-rwPQOq/client.py",
-		"/home/adamiaonr/workbench/wifi-authentication/blind-handovers/src/client.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/switch-cdf.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/blind-handovers/src/plot.py",
-		"/home/adamiaonr/workbench/machine-learning-fall-2017/src/hw1/ex1.py",
-		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/plot_utils.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/channel-cdf.csv",
-		"/home/adamiaonr/Downloads/somethingsomething.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/processed/session_ap_stats.csv",
-		"/home/adamiaonr/workbench/rca-evaluation/scripts/dependency-graph/rca.py",
-		"/home/adamiaonr/workbench/rca-evaluation/scripts/dependency-graph/cluster.py",
-		"/home/adamiaonr/workbench/rca-evaluation/scripts/dependency-graph/granger_causality.py"
+		"/mnt/hgfs/adamiaonr/Downloads/example.50.html"
 	],
 	"find":
 	{
@@ -771,6 +771,13 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"time",
+			"wpa",
+			"bar",
+			"protocol",
+			"time",
+			"tcp",
+			"udp",
 			"print(",
 			"log",
 			"append",
@@ -891,14 +898,7 @@
 			"join",
 			",'",
 			".0",
-			"get_provider",
-			"time_cdf",
-			"out_dir",
-			"essids",
-			".loc",
-			"groupb",
-			"general_filename",
-			"file_name"
+			"get_provider"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1070,17 +1070,157 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 4907.0,
+						"translation.y": 6662.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "data-analysis/src/auth.py",
+					"file": "wifi-assist/src/data-collection/cbt.py",
 					"settings":
 					{
-						"buffer_size": 4616,
+						"buffer_size": 2477,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								285,
+								285
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 90.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.py",
+					"settings":
+					{
+						"buffer_size": 5109,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3879,
+								3879
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1472.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "wifi-assist/src/data-collection/gps-logger.py",
+					"settings":
+					{
+						"buffer_size": 2064,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2060,
+								2060
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 405.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
+					"settings":
+					{
+						"buffer_size": 8481,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1850,
+								1850
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 495.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
+					"settings":
+					{
+						"buffer_size": 14904,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11123,
+								11123
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4095.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "data-analysis/src/cbt.py",
+					"settings":
+					{
+						"buffer_size": 7317,
 						"regions":
 						{
 						},
@@ -1104,160 +1244,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
-					"settings":
-					{
-						"buffer_size": 49821,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1217,
-								1217
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 137.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "data-analysis/src/cbt.py",
-					"settings":
-					{
-						"buffer_size": 7317,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								4774,
-								4774
-							]
-						],
-						"settings":
-						{
-							"spell_check": true,
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1665.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "wifi-assist/src/data-collection/cbt.py",
-					"settings":
-					{
-						"buffer_size": 2266,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								610,
-								610
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "wifi-assist/src/data-collection/wifi-logger.py",
-					"settings":
-					{
-						"buffer_size": 1412,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1411,
-								1411
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "wifi-assist/src/data-collection/iwlist.py",
-					"settings":
-					{
-						"buffer_size": 1608,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1073,
-								1073
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
 					"buffer": 7,
-					"file": "wifi-assist/src/data-collection/gps-logger.py",
+					"file": "data-analysis/src/positioning.py",
 					"settings":
 					{
-						"buffer_size": 2064,
+						"buffer_size": 9299,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2064,
-								2064
+								7497,
+								7497
 							]
 						],
 						"settings":
@@ -1267,7 +1266,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 90.0,
+						"translation.y": 2972.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
