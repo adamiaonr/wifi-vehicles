@@ -2,7 +2,8 @@
 auto lo
 iface lo inet loopback
 
-allow-hotplug wlx24050f9e2cb1
+auto wlx24050f9e2cb1
 iface wlx24050f9e2cb1 inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-iface default inet dhcp
+dns-nameservers 1.1.1.1 8.8.8.8
+#iface default inet dhcp
