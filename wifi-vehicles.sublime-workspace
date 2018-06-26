@@ -4,6 +4,154 @@
 		"selected_items":
 		[
 			[
+				"se",
+				"set_ylim"
+			],
+			[
+				"set",
+				"set_ylim"
+			],
+			[
+				"No",
+				"None"
+			],
+			[
+				"in",
+				"interval"
+			],
+			[
+				"co",
+				"color"
+			],
+			[
+				"da",
+				"dates"
+			],
+			[
+				"plot",
+				"plot_date"
+			],
+			[
+				"ou",
+				"outer"
+			],
+			[
+				"bes",
+				"best_ap"
+			],
+			[
+				"ma",
+				"max"
+			],
+			[
+				"gro",
+				"groupby"
+			],
+			[
+				"tim",
+				"timestamp"
+			],
+			[
+				"col",
+				"columns"
+			],
+			[
+				"app",
+				"append"
+			],
+			[
+				"gr",
+				"groupby"
+			],
+			[
+				"time",
+				"timetuple"
+			],
+			[
+				"date",
+				"dates"
+			],
+			[
+				"al",
+				"already_labeled"
+			],
+			[
+				"sca",
+				"scatter"
+			],
+			[
+				"att",
+				"attrs"
+			],
+			[
+				"iper",
+				"iperf_log"
+			],
+			[
+				"set_x",
+				"set_xlim"
+			],
+			[
+				"xt",
+				"xticks"
+			],
+			[
+				"_",
+				"_timestamps"
+			],
+			[
+				"dat",
+				"dates"
+			],
+			[
+				"cl",
+				"clients"
+			],
+			[
+				"ar",
+				"array"
+			],
+			[
+				"am",
+				"amin"
+			],
+			[
+				"gps",
+				"gps_pos"
+			],
+			[
+				"gps_",
+				"gps_to_dist"
+			],
+			[
+				"gp",
+				"gps_file"
+			],
+			[
+				"Su",
+				"Subtype"
+			],
+			[
+				"cli",
+				"client_mac_addrs"
+			],
+			[
+				"mac",
+				"mac_addr"
+			],
+			[
+				"ch",
+				"chunk"
+			],
+			[
+				"ap",
+				"ap_mac_addr"
+			],
+			[
+				"chu",
+				"chunk"
+			],
+			[
 				"pl",
 				"plt"
 			],
@@ -48,10 +196,6 @@
 				"results_file"
 			],
 			[
-				"_",
-				"_proto"
-			],
-			[
 				"li",
 				"lines"
 			],
@@ -84,10 +228,6 @@
 				"bitrate"
 			],
 			[
-				"cl",
-				"client"
-			],
-			[
 				"ip",
 				"ip_server"
 			],
@@ -100,16 +240,8 @@
 				"channel_nr"
 			],
 			[
-				"ch",
-				"channel"
-			],
-			[
 				"max",
 				"max_ax2"
-			],
-			[
-				"ma",
-				"max_y2"
 			],
 			[
 				"pc",
@@ -124,16 +256,8 @@
 				"file_name"
 			],
 			[
-				"ar",
-				"args"
-			],
-			[
 				"ty",
 				"types"
-			],
-			[
-				"col",
-				"color"
 			],
 			[
 				"fra",
@@ -142,10 +266,6 @@
 			[
 				"fr",
 				"frame_types"
-			],
-			[
-				"co",
-				"counts"
 			],
 			[
 				"Da",
@@ -184,10 +304,6 @@
 				"calc_frame_duration"
 			],
 			[
-				"dat",
-				"data_rate"
-			],
-			[
 				"calc",
 				"calc_duration"
 			],
@@ -216,14 +332,6 @@
 				"print"
 			],
 			[
-				"gps",
-				"gpses"
-			],
-			[
-				"gp",
-				"gpses"
-			],
-			[
 				"print_",
 				"print_reports"
 			],
@@ -240,14 +348,6 @@
 				"bar_width"
 			],
 			[
-				"se",
-				"sent"
-			],
-			[
-				"in",
-				"input_dir"
-			],
-			[
 				"do",
 				"double"
 			],
@@ -258,14 +358,6 @@
 			[
 				"ui",
 				"unsigned"
-			],
-			[
-				"time",
-				"time_elapsed"
-			],
-			[
-				"tim",
-				"time_elapsed"
 			],
 			[
 				"by",
@@ -340,10 +432,6 @@
 				"LAT_LIMIT_NORTH"
 			],
 			[
-				"ap",
-				"append"
-			],
-			[
 				"g",
 				"gps_file"
 			],
@@ -362,10 +450,6 @@
 			[
 				"sl",
 				"self"
-			],
-			[
-				"sca",
-				"scan_file"
 			],
 			[
 				"loca",
@@ -430,90 +514,6 @@
 			[
 				"dri",
 				"drop_duplicates"
-			],
-			[
-				"int",
-				"intersection"
-			],
-			[
-				"lin",
-				"linestyles"
-			],
-			[
-				"labe",
-				"labels"
-			],
-			[
-				"road",
-				"roadcells"
-			],
-			[
-				"rss",
-				"rssis"
-			],
-			[
-				"s",
-				"snr"
-			],
-			[
-				"rssi",
-				"rssis"
-			],
-			[
-				"h",
-				"highway"
-			],
-			[
-				"tre",
-				"threshold"
-			],
-			[
-				"drop",
-				"drop_duplicates"
-			],
-			[
-				"smc",
-				"smcells"
-			],
-			[
-				"oth",
-				"other_nets"
-			],
-			[
-				"net",
-				"nets"
-			],
-			[
-				"Me",
-				"MEO-WiFi"
-			],
-			[
-				"plot",
-				"plot_coverage"
-			],
-			[
-				"cov",
-				"coverage-zon"
-			],
-			[
-				"sh",
-				"shape"
-			],
-			[
-				"ge",
-				"geometry"
-			],
-			[
-				"dr",
-				"drop_duplicates"
-			],
-			[
-				"get_",
-				"get_coverage"
-			],
-			[
-				"inter",
-				"intersections"
 			]
 		]
 	},
@@ -528,18 +528,10 @@
 			}
 		},
 		{
-			"file": "wifi-assist/src/data-collection/cbt.py",
+			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
 			"settings":
 			{
-				"buffer_size": 2477,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.py",
-			"settings":
-			{
-				"buffer_size": 5109,
+				"buffer_size": 4660,
 				"line_ending": "Unix"
 			}
 		},
@@ -560,18 +552,34 @@
 			}
 		},
 		{
-			"file": "/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
-			"settings":
-			{
-				"buffer_size": 14904,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "data-analysis/src/cbt.py",
 			"settings":
 			{
 				"buffer_size": 7317,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "data-analysis/src/trace-analysis.py",
+			"settings":
+			{
+				"buffer_size": 22044,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/workbench/iperf/src/iperf_api.c",
+			"settings":
+			{
+				"buffer_size": 120449,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
+			"settings":
+			{
+				"buffer_size": 49821,
 				"line_ending": "Unix"
 			}
 		},
@@ -624,6 +632,8 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py",
 		"/tmp/rsub-AHsqzt/wlan0",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/wpa_supplicant/wpa_supplicant.conf",
 		"/tmp/rsub-o55pxP/dhcpcd.conf",
@@ -641,7 +651,6 @@
 		"/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/rpi-bw-tests.py",
 		"/home/adamiaonr/Downloads/jsoniperf3",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iwlist.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/wifi-logger.py",
@@ -750,8 +759,7 @@
 		"/mnt/hgfs/adamiaonr/Downloads/wireless_tools.29/iwlist.c",
 		"/tmp/rsub-LNlall/wpa_supplicant.conf",
 		"/tmp/rsub-T4VmAu/ntp.conf",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/time-cdf.csv",
-		"/mnt/hgfs/adamiaonr/Downloads/example.50.html"
+		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/time-cdf.csv"
 	],
 	"find":
 	{
@@ -771,6 +779,21 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"ax4",
+			"ax3",
+			"ax2",
+			"ax1",
+			"scatter",
+			"cm",
+			"Association Req",
+			"group",
+			"csv",
+			"client_mac_addrs",
+			"empty",
+			"emptu",
+			"none",
+			"nan",
+			"group",
 			"time",
 			"wpa",
 			"bar",
@@ -883,22 +906,7 @@
 			"append",
 			"Data",
 			"band_cols",
-			"x",
-			"WIFI_BANDS",
-			"session_gps_acc",
-			"gps_to_dist",
-			"extract_median_speeds",
-			"band",
-			"get_provider",
-			"WIFI_PROVIDERS",
-			"k",
-			"legend",
-			"labels",
-			"group",
-			"join",
-			",'",
-			".0",
-			"get_provider"
+			"x"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -906,6 +914,12 @@
 		"regex": false,
 		"replace_history":
 		[
+			"ax[3]",
+			"ax[2]",
+			"ax[1]",
+			"ax[0]",
+			"bap",
+			"clients",
 			"    ",
 			"row[",
 			"LON",
@@ -1027,13 +1041,7 @@
 			"<tp iface=\"0\">10</tp>",
 			"<tp iface=\"0\">5</tp>",
 			"<tp iface=\"0\">4</tp>",
-			"<tp iface=\"0\">3</tp>",
-			"<tp iface=\"0\">10</tp>",
-			"<tp iface=\"0\">5</tp>",
-			"<tp iface=\"0\">4</tp>",
-			"<tp iface=\"0\">3</tp>",
-			"ax2",
-			"bf_sizes"
+			"<tp iface=\"0\">3</tp>"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -1044,7 +1052,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 6,
 			"sheets":
 			[
 				{
@@ -1059,8 +1067,8 @@
 						"selection":
 						[
 							[
-								14220,
-								14220
+								15659,
+								15659
 							]
 						],
 						"settings":
@@ -1070,25 +1078,25 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6662.0,
+						"translation.y": 5432.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "wifi-assist/src/data-collection/cbt.py",
+					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
 					"settings":
 					{
-						"buffer_size": 2477,
+						"buffer_size": 4660,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								285,
-								285
+								956,
+								956
 							]
 						],
 						"settings":
@@ -1098,41 +1106,13 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 90.0,
+						"translation.y": 9.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.py",
-					"settings":
-					{
-						"buffer_size": 5109,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3879,
-								3879
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1472.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
 					"file": "wifi-assist/src/data-collection/gps-logger.py",
 					"settings":
 					{
@@ -1143,92 +1123,8 @@
 						"selection":
 						[
 							[
-								2060,
-								2060
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 405.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
-					"settings":
-					{
-						"buffer_size": 8481,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1850,
-								1850
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 495.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
-					"settings":
-					{
-						"buffer_size": 14904,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								11123,
-								11123
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 4095.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "data-analysis/src/cbt.py",
-					"settings":
-					{
-						"buffer_size": 7317,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								627,
-								627
+								38,
+								38
 							]
 						],
 						"settings":
@@ -1244,7 +1140,147 @@
 					"type": "text"
 				},
 				{
+					"buffer": 3,
+					"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
+					"settings":
+					{
+						"buffer_size": 8481,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2389,
+								2389
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 564.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "data-analysis/src/cbt.py",
+					"settings":
+					{
+						"buffer_size": 7317,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2187,
+								2187
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 467.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "data-analysis/src/trace-analysis.py",
+					"settings":
+					{
+						"buffer_size": 22044,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10299,
+								10299
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3316.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/home/adamiaonr/workbench/iperf/src/iperf_api.c",
+					"settings":
+					{
+						"buffer_size": 120449,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
 					"buffer": 7,
+					"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
+					"settings":
+					{
+						"buffer_size": 49821,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								16233,
+								16233
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 5940.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
 					"file": "data-analysis/src/positioning.py",
 					"settings":
 					{
@@ -1255,8 +1291,8 @@
 						"selection":
 						[
 							[
-								7497,
-								7497
+								5634,
+								5634
 							]
 						],
 						"settings":
@@ -1266,7 +1302,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2972.0,
+						"translation.y": 2207.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
