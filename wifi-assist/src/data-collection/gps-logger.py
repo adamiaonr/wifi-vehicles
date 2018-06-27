@@ -2,6 +2,7 @@ import csv
 import json
 import argparse
 import os
+import sys
 import time
 import datetime
 import subprocess
@@ -45,7 +46,9 @@ if __name__ == "__main__":
         args.dev_file = '/dev/ttyUSB0'
 
     if not args.output_dir:
-        args.output_dir = '/home/pi/workbench/wifi-assist/data/logs'
+        sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
+        parser.print_help()
+        sys.exit(1)
 
     # gps log file (0 buffering)
     filename = os.path.join(args.output_dir, 'gps-log.csv')
