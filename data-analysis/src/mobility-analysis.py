@@ -69,6 +69,44 @@ def print_stats(data, case = 'ethernet'):
                     ])
         print(table)
 
+def get_switch_timestamps(data, start_timestamp, protocol = 'OpenVPN'):
+
+    _data = defaultdict()
+    for iface in data:
+
+        if iface not in _data:
+            _data[iface] = defaultdict()
+
+        __data = data[iface]
+        __data = __data[(__data['Epoch Time'] > start_timestamp) & (__data['Protocol'] == protocol)]
+
+        _data[iface]['sent'] = __data[__data['Source'] != '52.58.108.87'].reset_index()
+        _data[iface]['rcvd'] = __data[__data['Source'] == '52.58.108.87'].reset_index()
+
+    # find time overlaps of ping pairs between the wlan0 and wwan0 ifaces
+    # we define the following times to calculate the overlaps:
+    #   - wwan0_t1 : first ping request sent by 'wwan0'
+    #   - wwan0_t2 : last ping reply received by 'wwan0'
+    #   - wlan0_t1 : last ping reply received by 'wlan0' on its 1st round 
+    #   - wlan0_t2 : first ping request sent by 'wlan0' on its 2nd round
+    #
+    # the time order of these events should be:
+    #   wwan0_ti -> wlan0_t1 -> wlan0_t2 -> wwan0_t2
+
+    # wwan0_tx are easy to obtain
+    wwan0_t1 = _data['wwan0']['sent']['Epoch Time'].values[0]
+    wwan0_t2 = _data['wwan0']['rcvd']['Epoch Time'].values[-1]
+
+    # to identify wlan0_tx, we first calculate the time gaps between ping requests
+    _data['wlan0']['sent']['gap'] = _data['wlan0']['sent']['Epoch Time'] - _data['wlan0']['sent']['Epoch Time'].shift(1)
+    # check for gaps larger than 2 seconds : that will be wlan0_t2
+    gap_indeces = _data['wlan0']['sent'].index[_data['wlan0']['sent']['gap'] > 2.0].tolist()
+    wlan0_t2 = _data['wlan0']['sent'].iloc[gap_indeces[0]]['Epoch Time']
+    # wlan0_t1 (...)
+    wlan0_t1 = _data['wlan0']['rcvd'][_data['wlan0']['rcvd']['Epoch Time'] < wlan0_t2]['Epoch Time'].values[-1]
+
+    return _data, wwan0_t1, wwan0_t2, wlan0_t1, wlan0_t2
+
 def plot_latency(input_dir, output_dir, protocol = 'OpenVPN', start_timestamps = {}):
 
     # first, gather the RTTs after and before switch for the 'ethernet' case
@@ -88,46 +126,7 @@ def plot_latency(input_dir, output_dir, protocol = 'OpenVPN', start_timestamps =
 
         for cap_nr in data:
 
-            _data = defaultdict()
-            for iface in data[cap_nr]:
-            
-                if iface not in _data:
-                    _data[iface] = defaultdict()
-
-                __data = data[cap_nr][iface]
-                __data = __data[(__data['Epoch Time'] > start_timestamps[cap_nr]) & (__data['Protocol'] == protocol)]
-
-                _data[iface]['sent'] = __data[__data['Source'] != '52.58.108.87'].reset_index()
-                _data[iface]['rcvd'] = __data[__data['Source'] == '52.58.108.87'].reset_index()
-                # print("%s.%s.%s : len(sent) : %d vs. len(rcvd) : %d" % (
-                #     protocol, cap_nr, iface, len(_data[iface]['sent']), len(_data[iface]['rcvd'])))
-                # _data[iface]['diff'] = _data[iface]['rcvd']['Epoch Time'] - _data[iface]['sent']['Epoch Time']
-
-            # find time overlaps of ping pairs between the wlan0 and wwan0 ifaces
-            # we define the following times to calculate the overlaps:
-            #   - wwan0_t1 : first ping request sent by 'wwan0'
-            #   - wwan0_t2 : last ping reply received by 'wwan0'
-            #   - wlan0_t1 : last ping reply received by 'wlan0' on its 1st round 
-            #   - wlan0_t2 : first ping request sent by 'wlan0' on its 2nd round
-            #
-            # the time order of these events should be:
-            #   wwan0_ti -> wlan0_t1 -> wlan0_t2 -> wwan0_t2
-
-            # wwan0_tx are easy to obtain
-            wwan0_t1 = _data['wwan0']['sent']['Epoch Time'].values[0]
-            wwan0_t2 = _data['wwan0']['rcvd']['Epoch Time'].values[-1]
-            # to identify wlan0_tx, we first calculate the time gaps between ping requests
-            _data['wlan0']['sent']['gap'] = _data['wlan0']['sent']['Epoch Time'] - _data['wlan0']['sent']['Epoch Time'].shift(1)
-            # check for gaps larger than 2 seconds : that will be wlan0_t2
-            gap_indeces = _data['wlan0']['sent'].index[_data['wlan0']['sent']['gap'] > 2.0].tolist()
-            wlan0_t2 = _data['wlan0']['sent'].iloc[gap_indeces[0]]['Epoch Time']
-            # wlan0_t1 : the timestamp of the last received packet before wlan0_t2 (the 2nd round of pings)
-            wlan0_t1 = _data['wlan0']['rcvd'][_data['wlan0']['rcvd']['Epoch Time'] < wlan0_t2]['Epoch Time'].values[-1]
-
-            # print("wwan0_t1 : %f" % (wwan0_t1))
-            # print("wlan0_t1 : %f" % (wlan0_t1))
-            # print("wlan0_t2 : %f" % (wlan0_t2))
-            # print("wwan0_t2 : %f" % (wwan0_t2))
+            _data, wwan0_t1, wwan0_t2, wlan0_t1, wlan0_t2 = get_switch_timestamps(data[cap_nr], start_timestamps[cap_nr], protocol = protocol)
 
             k = 1
             # switch 1 : @ wwan0_t1
@@ -207,7 +206,7 @@ def plot_latency(input_dir, output_dir, protocol = 'OpenVPN', start_timestamps =
         print("\n\t*** %s ***" % (protocol.upper()))
         print(table)
 
-def plot_overlaps_2(input_dir, output_dir, protocol = 'OpenVPN', start_timestamps = {}):
+def plot_overlaps_proto(input_dir, output_dir, protocol = 'OpenVPN', start_timestamps = {}):
 
     last_timestamps = defaultdict()
     data, _ = read_csv(input_dir)
@@ -222,44 +221,7 @@ def plot_overlaps_2(input_dir, output_dir, protocol = 'OpenVPN', start_timestamp
 
     for cap_nr in data:
 
-        _data = defaultdict()
-        for iface in data[cap_nr]:
-
-            if iface not in _data:
-                _data[iface] = defaultdict()
-
-            __data = data[cap_nr][iface]
-            __data = __data[(__data['Epoch Time'] > start_timestamps[cap_nr]) & (__data['Protocol'] == protocol)]
-
-            _data[iface]['sent'] = __data[__data['Source'] != '52.58.108.87'].reset_index()
-            _data[iface]['rcvd'] = __data[__data['Source'] == '52.58.108.87'].reset_index()
-
-        # find time overlaps of ping pairs between the wlan0 and wwan0 ifaces
-        # we define the following times to calculate the overlaps:
-        #   - wwan0_t1 : first ping request sent by 'wwan0'
-        #   - wwan0_t2 : last ping reply received by 'wwan0'
-        #   - wlan0_t1 : last ping reply received by 'wlan0' on its 1st round 
-        #   - wlan0_t2 : first ping request sent by 'wlan0' on its 2nd round
-        #
-        # the time order of these events should be:
-        #   wwan0_ti -> wlan0_t1 -> wlan0_t2 -> wwan0_t2
-
-        # wwan0_tx are easy to obtain
-        wwan0_t1 = _data['wwan0']['sent']['Epoch Time'].values[0]
-        wwan0_t2 = _data['wwan0']['rcvd']['Epoch Time'].values[-1]
-
-        # to identify wlan0_tx, we first calculate the time gaps between ping requests
-        _data['wlan0']['sent']['gap'] = _data['wlan0']['sent']['Epoch Time'] - _data['wlan0']['sent']['Epoch Time'].shift(1)
-        # check for gaps larger than 2 seconds : that will be wlan0_t2
-        gap_indeces = _data['wlan0']['sent'].index[_data['wlan0']['sent']['gap'] > 2.0].tolist()
-        wlan0_t2 = _data['wlan0']['sent'].iloc[gap_indeces[0]]['Epoch Time']
-        # wlan0_t1 (...)
-        wlan0_t1 = _data['wlan0']['rcvd'][_data['wlan0']['rcvd']['Epoch Time'] < wlan0_t2]['Epoch Time'].values[-1]
-
-        # print("wwan0_t1 : %f" % (wwan0_t1))
-        # print("wlan0_t1 : %f" % (wlan0_t1))
-        # print("wlan0_t2 : %f" % (wlan0_t2))
-        # print("wwan0_t2 : %f" % (wwan0_t2))
+        _data, wwan0_t1, wwan0_t2, wlan0_t1, wlan0_t2 = get_switch_timestamps(data[cap_nr], start_timestamps[cap_nr], protocol = protocol)
 
         # overlaps
         #   - overlap 1 : pings sent or received over wlan0, after wwan0 started sending pings
@@ -471,9 +433,9 @@ if __name__ == "__main__":
     print("\t*** NO VPN ***")
     _start_timestamps = plot_overlaps(args.input_dir, args.output_dir)
     print("\n\t*** OPEN-VPN ***")
-    start_timestamps = plot_overlaps_2(args.input_dir, args.output_dir, protocol = 'OpenVPN', start_timestamps = _start_timestamps)
+    start_timestamps = plot_overlaps_proto(args.input_dir, args.output_dir, protocol = 'OpenVPN', start_timestamps = _start_timestamps)
     print("\n\t*** WIREGUARD ***")
-    start_timestamps = plot_overlaps_2(args.input_dir, args.output_dir, protocol = 'DCERPC', start_timestamps = start_timestamps)
+    start_timestamps = plot_overlaps_proto(args.input_dir, args.output_dir, protocol = 'DCERPC', start_timestamps = start_timestamps)
 
     print("\n**** LATENCY ANALYSIS ****")
     plot_latency(args.input_dir, args.output_dir, start_timestamps = _start_timestamps)
