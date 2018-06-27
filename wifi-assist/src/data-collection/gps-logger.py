@@ -4,12 +4,22 @@ import argparse
 import os
 import time
 import datetime
-import subprocess as sp
+import subprocess
 
 # for acessing the gps device
 from gps3 import gps3
 
 attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
+
+def reset_gpsd(dev_file = '/dev/ttyUSB0'):
+
+    # sudo killall gpsd
+    cmd = ["killall", "gpsd"]
+    proc = subprocess.call(cmd)
+
+    # sudo gpsd /dev/ttyUSB0 -F -b /var/run/gpsd.sock
+    cmd = ["gpsd", dev_file, "-F -b", "/var/run/gpsd.sock"]
+    proc = subprocess.call(cmd)
 
 def convert_to_unix(time_string):
     # 2017-11-01T16:46:52.000Z
@@ -22,12 +32,18 @@ if __name__ == "__main__":
 
     # options (self-explanatory)
     parser.add_argument(
+        "--dev-file", 
+         help = """gps device file. default is '/dev/ttyUSB0'""")
+
+    parser.add_argument(
         "--output-dir", 
-         help = """dir on which to print graphs""")
+         help = """dir on which to save .csv files""")
 
     args = parser.parse_args()
 
-    # quit if a dir w/ .tsv files hasn't been provided
+    if not args.dev_file:
+        args.dev_file = '/dev/ttyUSB0'
+
     if not args.output_dir:
         args.output_dir = '/home/pi/workbench/wifi-assist/data/logs'
 
@@ -38,6 +54,9 @@ if __name__ == "__main__":
     #else:
     gps_log = csv.writer(open(filename, 'wb+', 0))
     gps_log.writerow(attrs)
+
+    # reset gpsd, just in case...
+    reset_gpsd(args.dev_file)
 
     # start reading gps data
     gps_socket = gps3.GPSDSocket()
