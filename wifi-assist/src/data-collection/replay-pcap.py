@@ -42,4 +42,6 @@ if __name__ == "__main__":
             if (pkt.type == 0x02) and (pkt.subtype == 0x08):
                 pkt[Dot11].addr1 = 'ff:ff:ff:ff:ff'
                 pkt[Dot11].addr3 = 'ff:ff:ff:ff:ff'
+                pkt[IP].dst = '255.255.255.255'
+                pkt.show()
                 # sendp(pkt, iface = args.iface, inter = 0.1, loop = 1)
