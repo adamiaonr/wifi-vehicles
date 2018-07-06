@@ -27,6 +27,25 @@ from matplotlib.gridspec import GridSpec
 
 from prettytable import PrettyTable
 
+# list of metrics : 
+# ['no', 'Arrival Time', 'time', 'Protocol', 'src mac', 'dst mac', 
+# 'Source', 'Destination', 'Type/Subtype', 'Length', 'Retry', 'Signal strength (dBm)', 
+# 'Type', 'radiotap.length', 'wlan_radio.duration', 'Data rate', 'SSI Signal', 'PHY type', 
+# 'wlan_radio.preamble', 'wlan.duration', 'Info']
+
+# list of wlan frame types : 
+# set(['VHT NDP Announcement', 'Reassociation Response', 'QoS Data', 
+#     'Authentication', 'Action No Ack', 'Reassociation Request', 
+#     '802.11 Block Ack', 'Data + CF-Ack + CF-Poll', 'Probe Response', 
+#     '45', 'CF-Ack/Poll (No data)', 'Association Response', 'Measurement Pilot', 
+#     'QoS CF-Ack + CF-Poll (No data)', 'QoS Data + CF-Poll', 'Request-to-send', '7', 
+#     'Beamforming Report Poll', 'QoS Null function (No data)', 'Association Request', 
+#     'Data', 'CF-Poll (No data)', 'CF-End (Control-frame)', 'Power-Save poll', 'Deauthentication', 
+#     'Beacon frame', 'Action', 'Probe Request', 'Acknowledgement (No data)', '802.11 Block Ack Req', 
+#     'QoS Data + CF-Acknowledgment', 'QoS CF-Poll (No Data)', 'Disassociate', 'Data + CF-Ack', 
+#     'CF-End + CF-Ack (Control-frame)', 'ATIM', 'Null function (No data)', 'Data + CF-Poll', 
+#     'QoS Data + CF-Ack + CF-Poll', 'Service Period Request', 'Aruba Management'])
+
 matplotlib.rcParams.update({'font.size': 16})
 
 # mac address of ap
@@ -45,12 +64,12 @@ def to_degrees(radians):
 
 def gps_to_dist(lat_start, lon_start, lat_end, lon_end):
 
-    # we use the haversine formula to calculate the great-circle distance between two points. 
-    # in other words, this calculates the lenght of the shortest arch in-between 2 points, in 
-    # a 'great' circle of radius equal to 6371 (the radius of the earth) 
+    # use the Haversine formula to calculate the great-circle distance between two points on a sphere. 
+    # in other words, this calculates the lenght of the shortest arch in-between 2 points in 
+    # a 'great' circle of radius equal to 6371 km (the approximate radius of the Earth).
     # source : http://www.movable-type.co.uk/scripts/latlong.html
 
-    # earth radius, in m
+    # approx. earth radius, in meters
     earth_radius = 6371000
 
     delta_lat = to_radians(lat_end - lat_start)
@@ -59,6 +78,7 @@ def gps_to_dist(lat_start, lon_start, lat_end, lon_end):
     lat_start = to_radians(lat_start)
     lat_end   = to_radians(lat_end)
 
+    # Haversine formula
     a = (np.sin(delta_lat / 2.0) * np.sin(delta_lat / 2.0)) + (np.sin(delta_lon / 2.0) * np.sin(delta_lon / 2.0)) * np.cos(lat_start) * np.cos(lat_end)
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
 
@@ -75,32 +95,118 @@ def update_limits(limits, array):
         if np.amax(array) > limits[1]:
             limits[1] = np.amax(array)
 
-def stats(input_dir, output_dir, ap = ap, limits = None, seconds = 120):
+def get_best_ap(data, metric = 'SSI Signal'):
 
-    # ['no', 'Arrival Time', 'time', 'Protocol', 'src mac', 'dst mac', 
-    # 'Source', 'Destination', 'Type/Subtype', 'Length', 'Retry', 'Signal strength (dBm)', 
-    # 'Type', 'radiotap.length', 'wlan_radio.duration', 'Data rate', 'SSI Signal', 'PHY type', 
-    # 'wlan_radio.preamble', 'wlan.duration', 'Info']
+    # cstr : column name which identifies a client
+    # tstr : column name for timestamp
+    cstr = ''
+    tstr = ''
+    if 'src mac' in data.columns:
+        cstr = 'src mac'
+        tstr = 'timestamp'
+    else:
+        cstr = 'client'
+        tstr = 'timestamp'
 
-    # set(['VHT NDP Announcement', 'Reassociation Response', 'QoS Data', 
-    #     'Authentication', 'Action No Ack', 'Reassociation Request', 
-    #     '802.11 Block Ack', 'Data + CF-Ack + CF-Poll', 'Probe Response', 
-    #     '45', 'CF-Ack/Poll (No data)', 'Association Response', 'Measurement Pilot', 
-    #     'QoS CF-Ack + CF-Poll (No data)', 'QoS Data + CF-Poll', 'Request-to-send', '7', 
-    #     'Beamforming Report Poll', 'QoS Null function (No data)', 'Association Request', 
-    #     'Data', 'CF-Poll (No data)', 'CF-End (Control-frame)', 'Power-Save poll', 'Deauthentication', 
-    #     'Beacon frame', 'Action', 'Probe Request', 'Acknowledgement (No data)', '802.11 Block Ack Req', 
-    #     'QoS Data + CF-Acknowledgment', 'QoS CF-Poll (No Data)', 'Disassociate', 'Data + CF-Ack', 
-    #     'CF-End + CF-Ack (Control-frame)', 'ATIM', 'Null function (No data)', 'Data + CF-Poll', 
-    #     'QoS Data + CF-Ack + CF-Poll', 'Service Period Request', 'Aruba Management'])
-    scan_file = os.path.join(args.input_dir, ("link-data.csv"))
+    best_ap = pd.DataFrame(columns = [tstr])
+    for client in clients:
+        
+        # filter wlan frames sent by client
+        _bap = data[data[cstr] == client][[tstr, metric]]
+        # get 'best' metric value per timestamp (10 ms precision) 
+        _bap[client] = _bap.groupby([tstr])[metric].transform(max)
+        # merge all 'best' values of all clients
+        best_ap = pd.merge(_bap.drop_duplicates(subset = tstr)[[tstr, client]], best_ap, on = tstr, how = 'outer')
 
-    client = 'b8:27:eb:1e:2b:6a'
+    # get mac of client w/ 'best' metric value for each timestamp
+    best_ap[metric] = best_ap[[client for client in clients]].idxmax(axis = 1)
+    return best_ap[[tstr, metric]]
+
+def get_metrics(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', 'res-bw', 'jitter', 'pdr', 'cpu-sndr', 'cpu-rcvr'], ap = ap, limits = None, seconds = 120):
+
+    """extracts metrics from .csv files of traces, returns a dictionary of DataFrame"""
+
+    pcap_file   = os.path.join(args.input_dir, ("link-data.csv"))
+    gps_file    = os.path.join(args.input_dir, ("gps-log.csv"))
+
+    # best aps per timestamp, for each metric
+    # best_aps = defaultdict(pd.DataFrame)
+    # save results as .hdf5 file instead
+    best_aps = pd.HDFStore(os.path.join(input_dir, "processed/best-aps.hdf5"))
+    # aux. variable holds reference timestamp
+    the_epoch = datetime.utcfromtimestamp(0)
+
+    # 1) data from pcap files (in .csv format)
     chunksize = 10 ** 5
-    for chunk in pd.read_csv(scan_file, chunksize = chunksize):
-        # chunk = chunk[(chunk['src mac'] == client) | (chunk['dst mac'] == client)]
-        chunk = chunk[chunk['Type/Subtype'].str.contains('Beacon')]
-        print(chunk[['time', 'src mac', 'dst mac', 'Type/Subtype']])
+    for chunk in pd.read_csv(pcap_file, chunksize = chunksize):
+
+        # consider frames directed at the mobile ap only
+        chunk = chunk[chunk['dst mac'] == ap]
+        # discard empty rssi values
+        chunk = chunk[np.isfinite(chunk['SSI Signal'])]
+        # isolate UNIX timestamps w/ 10 msec precision
+        chunk['timestamp'] = chunk['Arrival Time'].map(lambda x : str((datetime.strptime(str(x)[:-12], '%b %d, %Y %H:%M:%S.%f') - the_epoch).total_seconds()))
+
+        # determine which client has the 'best' for each metric of interest
+        for metric in metrics:
+
+            if metric not in chunk.columns:
+                continue
+
+            # best_aps[metric] = pd.concat([best_aps[metric], get_best_ap(chunk, metric)], ignore_index = True)
+            baps = get_best_ap(chunk, metric).sort_values(by = ['timestamp'])
+            best_aps.append(
+                ('%s' % (metric)),
+                baps,
+                data_columns = baps.columns,
+                format = 'table')
+
+        del chunk
+
+    # 2) data from iperf3 files
+    data = pd.DataFrame()
+    for client in clients:
+
+        chunksize = 10 ** 5
+        for chunk in pd.read_csv(os.path.join(args.input_dir, ("%s/iperf3-to-mobile.csv" % (client))), chunksize = chunksize):
+            chunk['client'] = client
+            chunk['pdr'] = 1.0 - (chunk['lost'].astype(float) / chunk['total'].astype(float))
+            chunk['timestamp'] = [ float(ts[:13]) for ts in chunk['time'].astype(str) ]
+            data = pd.concat([data, chunk], ignore_index = True)
+
+    # determine 'best' client for each metric
+    for metric in metrics:
+
+        if metric not in data.columns:
+            continue
+
+        # best_aps[metric] = pd.concat([best_aps[metric], get_best_ap(data, metric)], ignore_index = True)
+        # best_aps[metric] = best_aps[metric].sort_values(by = ['timestamp'])
+        baps = get_best_ap(data, metric).sort_values(by = ['timestamp'])
+        best_aps.append(
+            ('%s' % (metric)),
+            baps,
+            data_columns = baps.columns,
+            format = 'table')
+
+    # close .hdf5 store
+    best_aps.close()
+
+def time_analysis(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', 'res-bw', 'jitter', 'pdr', 'cpu-sndr', 'cpu-rcvr'], ap = ap):
+
+    filename = os.path.join(input_dir, 'processed/best-aps.hdf5')
+
+    print(filename)
+
+    if (not os.path.exists(filename)):
+        sys.stderr.write("""%s: [ERROR] no .hdf5 files found\n""" % sys.argv[0]) 
+        sys.exit(1)
+    else:
+        best_aps = pd.HDFStore(os.path.join(input_dir, 'processed/best-aps.hdf5'))
+
+    for metric in metrics:
+        dataset = ('%s' % (metric))
+        data = best_aps.select(dataset)
 
 def plot_best_ap(input_dir, output_dir, metric = 'SSI Signal', ap = ap, limits = None, seconds = 120, interval = None):
 
@@ -542,10 +648,11 @@ if __name__ == "__main__":
     # plot_rssi(args.input_dir, args.output_dir, limits = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)], seconds = 10)
     # plot_rssi(args.input_dir, args.output_dir, limits = [datetime(2018, 6, 19, 16, 27), datetime(2018, 6, 19, 16, 49)], seconds = 60)
     # plot_iperf(args.input_dir, args.output_dir, limits = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)], seconds = 10)
-
-    plot_best_ap(
-        args.input_dir, args.output_dir, 
-        limits = [datetime(2018, 6, 19, 16, 27), datetime(2018, 6, 19, 16, 49)], 
-        interval = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)])
+    # plot_best_ap(
+    #     args.input_dir, args.output_dir, 
+    #     limits = [datetime(2018, 6, 19, 16, 27), datetime(2018, 6, 19, 16, 49)], 
+    #     interval = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)])
+    #get_metrics(args.input_dir, args.output_dir)
+    time_analysis(args.input_dir, args.output_dir)
 
     sys.exit(0)

@@ -128,7 +128,7 @@ def plot_latency(input_dir, output_dir, protocol = 'OpenVPN', start_timestamps =
 
             _data, wwan0_t1, wwan0_t2, wlan0_t1, wlan0_t2 = get_switch_timestamps(data[cap_nr], start_timestamps[cap_nr], protocol = protocol)
 
-            k = 1
+            k = 2
             # switch 1 : @ wwan0_t1
             switch = _data['wwan0']['rcvd'][(_data['wwan0']['rcvd']['Epoch Time'] >= wwan0_t1)].reset_index()['Epoch Time'][:k] - _data['wwan0']['sent'][(_data['wwan0']['sent']['Epoch Time'] >= wwan0_t1)].reset_index()['Epoch Time'][:k]
             # print("%s.%s.switch_%d :" % (protocol, cap_nr, 1))
