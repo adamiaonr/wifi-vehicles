@@ -42,6 +42,18 @@ def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
 
     return 0, output
 
+def parse_server_output(server_output_text):
+
+    # collect iperf3 server output as a dict, then convert to json
+    output = defaultdict()
+    # split into lines
+    lines = server_output_text.splitlines()
+
+    # lines of interest are from line 8 on
+    for line in lines[8:]:
+        print(line.split(" "))
+
+
 if __name__ == "__main__":
 
     # use an ArgumentParser for a nice CLI
@@ -95,7 +107,8 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile." + str(time.time()).split('.')[0] + ".csv"))
+    reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(time.time()).split('.')[0] + ".csv"))
+    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(time.time()).split('.')[0] + ".csv"))
 
     if not args.ip_server:
         sys.stderr.write("""%s: [ERROR] please supply an iperf3 server ip\n""" % sys.argv[0]) 
@@ -105,7 +118,8 @@ if __name__ == "__main__":
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
 
-    results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
+    reports = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'total'])
+    final_results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
     # write the column names to the file
     results.to_csv(results_file, index = False, index_label = False)
     # keep iperfing till a CTRL+C is caught...
@@ -114,15 +128,33 @@ if __name__ == "__main__":
         for protocol in [p.lower() for p in args.protocols.split(',')]:
             for bitrate in [b for b in args.bitrates.split(',')]:
 
+                start_timestamp = time.time()
                 code, output = test(int(args.duration), args.ip_server, args.port, protocol, bitrate)
                 
                 if code < 0:
                     continue
 
                 output = json.loads(output)
+                output_server = parse_server_output(output['server_output_text'])
 
                 if output['start']['test_start']['protocol'] == 'UDP':
-                    results = results.append({
+
+                    # 'intervals'
+                    # this assumes 1 sec intervals
+                    for i, interval in enumerate(output['intervals']):
+
+                        # rely on local output as much as possible (it may happen that server output is lost)
+                        reports = reports.append({
+                            'time'      : start_timestamp + interval['sum']['end'],
+                            'proto'     : output['start']['test_start']['protocol'], 
+                            'duration'  : interval['sum']['seconds'],
+                            'transfer'  : interval['sum']['bytes'], 
+                            'trgt-bw'   : float(bitrate) * 1000000.0, 
+                            'res-bw'    : interval['sum']['bits_per_second'],
+                            'lost'      : output_server[i]['lost_packets'],
+                            'total'     : interval['sum']['packets']}, ignore_index = True)
+
+                    final_results = final_results.append({
                         'time'      : time.time(),
                         'proto'     : output['start']['test_start']['protocol'], 
                         'duration'  : output['end']['sum']['seconds'],
@@ -139,9 +171,11 @@ if __name__ == "__main__":
                     sys.stderr.write("""%s: [ERROR] TCP is not supported (yet)\n""" % sys.argv[0]) 
                     sys.exit(1)
 
-                # append line to .csv file
-                results.to_csv(results_file, mode = 'a', header = False, index = False, index_label = False)
+                # append lines to .csv files
+                reports.to_csv(reports_file, mode = 'a', header = False, index = False, index_label = False)
+                final_results.to_csv(results_file, mode = 'a', header = False, index = False, index_label = False)
                 # clear the results dataframe
+                reports = reports.iloc[0:0]
                 results = results.iloc[0:0]
 
     sys.exit(0)
