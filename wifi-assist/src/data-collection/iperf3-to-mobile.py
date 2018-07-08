@@ -34,7 +34,7 @@ def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
 
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
-    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "0.2", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
+    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "0.5", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -176,7 +176,10 @@ if __name__ == "__main__":
                             k += 1
                             r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
 
-                        _interval.append({'loss' : (output_server[k]['lost'] / output_server[k]['total'])})
+                        loss = 0.0
+                        if output_server[k]['total'] != 0.0:
+                            loss = output_server[k]['lost'] / output_server[k]['total']
+                        _interval.append({'loss' : loss})
 
                 if output['start']['test_start']['protocol'] == 'UDP':
 
