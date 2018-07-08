@@ -25,7 +25,7 @@ def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
 
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
-    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "0.5", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
+    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "1", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
