@@ -8,7 +8,12 @@ import subprocess
 import sys
 
 def symlink(linked_filename, link_filename):
+
+    print(linked_filename)
+    print(link_filename)
+
     cmd = ["ln", "-sf", linked_filename, link_filename]
+    print(cmd)
     proc = subprocess.call(cmd)
 
 if __name__ == "__main__":
@@ -47,6 +52,9 @@ if __name__ == "__main__":
 
     if not args.bw:
         args.bw = '20'
+
+    if not args.auth:
+        args.auth = 'open'
 
     hostapd_filename = os.path.join(args.configs_dir, 'hostapd.conf.' + args.auth + '.' + args.channel + '.' + args.bw + '.conf')
     symlink(
