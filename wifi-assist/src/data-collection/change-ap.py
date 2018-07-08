@@ -11,6 +11,7 @@ def symlink(src, dst):
 
     print(src)
     print(dst)
+    os.unlink(dst)
     os.symlink(src, dst)
 
     # cmd = ["ln", "-sf", src, dst]
