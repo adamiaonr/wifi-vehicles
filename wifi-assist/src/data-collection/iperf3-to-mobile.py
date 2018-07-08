@@ -34,7 +34,7 @@ def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
 
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
-    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "1", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
+    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "0.5", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -56,8 +56,9 @@ def parse_server_output(server_output_text):
         line = line.split(' ')
 
         to_append = OrderedDict()
-        to_append['start'] = float(line[5].split('-')[0])
-        to_append['end'] = float(line[5].split('-')[1])
+
+        to_append['start'] = float(line[line.index([s for s in line if '-' in s][0])].split('-')[0])
+        to_append['end'] = float(line[line.index([s for s in line if '-' in s][0])].split('-')[1])
         
         # find index i of line element w/ '/sec' in it, the bw value is i - 1 
         to_append['bw'] = float(line[line.index([s for s in line if '/sec' in s][0]) - 1])
