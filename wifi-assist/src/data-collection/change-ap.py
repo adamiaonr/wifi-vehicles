@@ -12,11 +12,11 @@ def symlink(src, dst):
     print(src)
     print(dst)
     os.unlink(dst)
-    os.symlink(src, dst)
+    # os.symlink(src, dst)
 
-    # cmd = ["ln", "-sf", src, dst]
-    # print(cmd)
-    # proc = subprocess.call(cmd)
+    cmd = ["ln", "-sf", src, dst]
+    print(cmd)
+    proc = subprocess.call(cmd)
 
 if __name__ == "__main__":
 
