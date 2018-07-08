@@ -178,7 +178,6 @@ if __name__ == "__main__":
 
                         _interval.append({'loss' : (output_server[k]['lost'] / output_server[k]['total'])})
 
-
                 if output['start']['test_start']['protocol'] == 'UDP':
 
                     # 'intervals'
