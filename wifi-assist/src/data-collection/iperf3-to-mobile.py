@@ -19,6 +19,7 @@ from datetime import date
 from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
+from collections import namedtuple
 
 from datetime import date
 from datetime import datetime
@@ -33,7 +34,7 @@ def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
 
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
-    cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M']
+    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "0.2", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -44,14 +45,29 @@ def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
 
 def parse_server_output(server_output_text):
 
-    # collect iperf3 server output as a dict, then convert to json
-    output = defaultdict()
+    # collect iperf3 server output as a list of dictionaries
+    output = []
     # split into lines
     lines = server_output_text.splitlines()
 
     # lines of interest are from line 8 on
     for line in lines[8:]:
-        print(line.split(" "))
+        
+        line = line.split(' ')
+
+        to_append = OrderedDict()
+        to_append['start'] = float(line[5].split('-')[0])
+        to_append['end'] = float(line[5].split('-')[1])
+        
+        # find index i of line element w/ '/sec' in it, the bw value is i - 1 
+        to_append['bw'] = float(line[line.index([s for s in line if '/sec' in s][0]) - 1])
+        # find index i of second line element w/ '/' in it. split it by the '/'. 
+        to_append['lost'] = float(line[line.index([s for s in line if '/' in s][1])].split('/')[0])
+        to_append['total'] = float(line[line.index([s for s in line if '/' in s][1])].split('/')[1])
+
+        output.append(to_append)
+
+    return output
 
 
 if __name__ == "__main__":
@@ -107,8 +123,8 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(time.time()).split('.')[0] + ".csv"))
-    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(time.time()).split('.')[0] + ".csv"))
+    reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(args.bitrates) + ".csv"))
+    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(args.bitrates) + ".csv"))
 
     if not args.ip_server:
         sys.stderr.write("""%s: [ERROR] please supply an iperf3 server ip\n""" % sys.argv[0]) 
@@ -117,11 +133,15 @@ if __name__ == "__main__":
 
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
-
-    reports = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'total'])
-    final_results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
+    # columns of data frames
+    reports = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'loss', 'total'])
+    results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
     # write the column names to the file
+    reports.to_csv(reports_file, index = False, index_label = False)
     results.to_csv(results_file, index = False, index_label = False)
+    # range tuples are used to compare ranges of time
+    Range = namedtuple('Range', ['start', 'end'])
+
     # keep iperfing till a CTRL+C is caught...
     stop_loop = False
     while (stop_loop == False):
@@ -135,7 +155,29 @@ if __name__ == "__main__":
                     continue
 
                 output = json.loads(output)
-                output_server = parse_server_output(output['server_output_text'])
+                # the iperf3 server produces output every second (if the '--get-server-ouput' option is used)
+                # it needs to be parsed directly from text, as it is not provided in json format
+                output_server = []
+                if 'server_output_text' in output:
+                    output_server = parse_server_output(output['server_output_text'])
+
+                k = 0
+                _interval = []
+                for i, interval in enumerate(output['intervals']):
+
+                    if not output_server:
+                        _interval.append({'loss' : 0.0})
+                    else:
+
+                        r1 = Range(start = float(interval['sum']['start']), end = float(interval['sum']['end']))
+                        r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
+
+                        while not ((r2.end >= r1.end) or (k == (len(output_server) - 1))):
+                            k += 1
+                            r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
+
+                        _interval.append({'loss' : (output_server[k]['lost'] / output_server[k]['total'])})
+
 
                 if output['start']['test_start']['protocol'] == 'UDP':
 
@@ -151,11 +193,11 @@ if __name__ == "__main__":
                             'transfer'  : interval['sum']['bytes'], 
                             'trgt-bw'   : float(bitrate) * 1000000.0, 
                             'res-bw'    : interval['sum']['bits_per_second'],
-                            'lost'      : output_server[i]['lost_packets'],
+                            'loss'      : _interval[i]['loss'],
                             'total'     : interval['sum']['packets']}, ignore_index = True)
 
-                    final_results = final_results.append({
-                        'time'      : time.time(),
+                    results = results.append({
+                        'time'      : start_timestamp,
                         'proto'     : output['start']['test_start']['protocol'], 
                         'duration'  : output['end']['sum']['seconds'],
                         'transfer'  : output['end']['sum']['bytes'], 
@@ -173,7 +215,7 @@ if __name__ == "__main__":
 
                 # append lines to .csv files
                 reports.to_csv(reports_file, mode = 'a', header = False, index = False, index_label = False)
-                final_results.to_csv(results_file, mode = 'a', header = False, index = False, index_label = False)
+                results.to_csv(results_file, mode = 'a', header = False, index = False, index_label = False)
                 # clear the results dataframe
                 reports = reports.iloc[0:0]
                 results = results.iloc[0:0]

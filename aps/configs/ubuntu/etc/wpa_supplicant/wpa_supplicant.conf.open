@@ -4,7 +4,7 @@ freq_list=5180 5200
 network={
 	ssid="nikola-tesla"
 	key_mgmt=NONE
-	scan_freq=5180 5200
+	scan_freq=2412 2462 5180 5200
 	bgscan="simple:10:-65:60"
 }
 
