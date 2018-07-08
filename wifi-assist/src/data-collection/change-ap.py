@@ -7,14 +7,15 @@ import datetime
 import subprocess
 import sys
 
-def symlink(linked_filename, link_filename):
+def symlink(src, dst):
 
-    print(linked_filename)
-    print(link_filename)
+    print(src)
+    print(dst)
+    os.symlink(src, dst)
 
-    cmd = ["ln", "-sf", linked_filename, link_filename]
-    print(cmd)
-    proc = subprocess.call(cmd)
+    # cmd = ["ln", "-sf", src, dst]
+    # print(cmd)
+    # proc = subprocess.call(cmd)
 
 if __name__ == "__main__":
 
