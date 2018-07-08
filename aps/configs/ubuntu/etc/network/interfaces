@@ -4,7 +4,7 @@ iface lo inet loopback
 
 auto wlx24050f615114
 iface wlx24050f615114 inet static
-hostapd /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/hostapd.conf
+hostapd /etc/hostapd/hostapd.conf
 address 10.10.10.111
 netmask 255.255.255.0
-
+dns-nameservers 1.1.1.1 8.8.8.8
