@@ -114,8 +114,8 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(args.bitrates) + ".csv"))
-    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(args.bitrates) + ".csv"))
+    reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(args.bitrates) + str(time.time()).split('.')[0] + ".csv"))
+    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(args.bitrates) + str(time.time()).split('.')[0] + ".csv"))
 
     if not args.ip_server:
         sys.stderr.write("""%s: [ERROR] please supply an iperf3 server ip\n""" % sys.argv[0]) 
