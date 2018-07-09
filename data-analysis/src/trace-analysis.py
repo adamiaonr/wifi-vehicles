@@ -122,7 +122,10 @@ def get_best_ap(data, metric = 'SSI Signal'):
     best_ap[metric] = best_ap[[client for client in clients]].idxmax(axis = 1)
     return best_ap[[tstr, metric]]
 
-def get_metrics(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', 'res-bw', 'jitter', 'pdr', 'cpu-sndr', 'cpu-rcvr'], ap = ap, limits = None, seconds = 120):
+def get_metrics(input_dir, output_dir, 
+    metrics = { 'link-data' : ['SSI Signal', 'Data rate'], 'iperf3' : ['res-bw', 'loss', 'total'] }, 
+    channels = {'2.4' : ['1', '11'], '5.1' : ['36'], '5.2' : ['40']},
+    ap = ap, limits = None, seconds = 120):
 
     """extracts metrics from .csv files of traces, returns a dictionary of DataFrame"""
 
@@ -148,7 +151,7 @@ def get_metrics(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', 're
         chunk['timestamp'] = chunk['Arrival Time'].map(lambda x : str((datetime.strptime(str(x)[:-12], '%b %d, %Y %H:%M:%S.%f') - the_epoch).total_seconds()))
 
         # determine which client has the 'best' for each metric of interest
-        for metric in metrics:
+        for metric in metrics['link-data']:
 
             if metric not in chunk.columns:
                 continue
@@ -164,39 +167,60 @@ def get_metrics(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', 're
         del chunk
 
     # 2) data from iperf3 files
-    data = pd.DataFrame()
+    data = defaultdict()
     for client in clients:
+        for freq in ['2.4', '5.1', '5.2']:
 
-        chunksize = 10 ** 5
-        for chunk in pd.read_csv(os.path.join(args.input_dir, ("%s/iperf3-to-mobile.csv" % (client))), chunksize = chunksize):
-            chunk['client'] = client
-            chunk['pdr'] = 1.0 - (chunk['lost'].astype(float) / chunk['total'].astype(float))
-            chunk['timestamp'] = [ float(ts[:13]) for ts in chunk['time'].astype(str) ]
-            data = pd.concat([data, chunk], ignore_index = True)
+            if freq not in data:
+                data[freq] = defaultdict()
+
+            for channel in channels[freq]:
+
+                if channel not in data[freq]:
+                    data[freq][channel] = pd.DataFrame()
+
+                # FIXME: if the client is the raspberry pi, remove the '.' from the <freq>
+                _freq = freq
+                if client == 'b8:27:eb:1e:2b:6a':
+                    _freq = _freq.replace('.', '')
+
+                # FIXME: it's just gonna be one file per <freq.>/<channel> combination
+                for fn in sorted(glob.glob(os.path.join(os.path.join(args.input_dir, ("%s/%s/%s" % (client, _freq, channel))), 'iperf3-to-mobile.report.*.csv'))):
+
+                    chunksize = 10 ** 5
+                    for chunk in pd.read_csv(fn, chunksize = chunksize):
+                        chunk['client'] = client
+                        # chunk['pdr'] = 1.0 - (chunk['lost'].astype(float) / chunk['total'].astype(float))
+                        chunk['timestamp'] = [ float(ts[:13]) for ts in chunk['time'].astype(str) ]
+                        data[freq][channel] = pd.concat([data[freq][channel], chunk], ignore_index = True)
 
     # determine 'best' client for each metric
-    for metric in metrics:
+    for freq in data:
+        for channel in data[freq]:
+            for metric in metrics['iperf3']:
+        
+                if metric not in data[freq][channel].columns:
+                    continue
 
-        if metric not in data.columns:
-            continue
-
-        # best_aps[metric] = pd.concat([best_aps[metric], get_best_ap(data, metric)], ignore_index = True)
-        # best_aps[metric] = best_aps[metric].sort_values(by = ['timestamp'])
-        baps = get_best_ap(data, metric).sort_values(by = ['timestamp'])
-        best_aps.append(
-            ('%s' % (metric)),
-            baps,
-            data_columns = baps.columns,
-            format = 'table')
+                # best_aps[metric] = pd.concat([best_aps[metric], get_best_ap(data, metric)], ignore_index = True)
+                # best_aps[metric] = best_aps[metric].sort_values(by = ['timestamp'])
+                baps = get_best_ap(data[freq][channel], metric).sort_values(by = ['timestamp'])
+                best_aps.append(
+                    ('%s/%s/%s' % (freq, channel, metric)),
+                    baps,
+                    data_columns = baps.columns,
+                    format = 'table')
 
     # close .hdf5 store
     best_aps.close()
 
-def time_analysis(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', 'res-bw', 'jitter', 'pdr', 'cpu-sndr', 'cpu-rcvr'], ap = ap):
+def time_analysis(input_dir, output_dir, 
+    metrics = { 'link-data' : ['SSI Signal', 'Data rate'], 'iperf3' : ['res-bw', 'loss', 'total'] },
+    channels = {'2.4' : ['1', '11'], '5.1' : ['36'], '5.2' : ['40']},
+    ap = ap):
 
     filename = os.path.join(input_dir, 'processed/best-aps.hdf5')
-
-    print(filename)
+    # print(filename)
 
     if (not os.path.exists(filename)):
         sys.stderr.write("""%s: [ERROR] no .hdf5 files found\n""" % sys.argv[0]) 
@@ -204,9 +228,24 @@ def time_analysis(input_dir, output_dir, metrics = ['SSI Signal', 'Data rate', '
     else:
         best_aps = pd.HDFStore(os.path.join(input_dir, 'processed/best-aps.hdf5'))
 
-    for metric in metrics:
-        dataset = ('%s' % (metric))
+    # print(best_aps.info())
+    # print(best_aps.keys())
+
+    for metric in metrics['link-data']:
+
+        dataset = ('/%s' % (metric))
+        if dataset not in best_aps.keys():
+            continue
         data = best_aps.select(dataset)
+
+    for freq in channels:
+        for channel in channels[freq]:
+            for metric in metrics['iperf3']:
+
+                dataset = ('/%s/%s/%s' % (freq, channel, metric))
+                if dataset not in best_aps.keys():
+                    continue
+                data = best_aps.select(dataset)
 
 def plot_best_ap(input_dir, output_dir, metric = 'SSI Signal', ap = ap, limits = None, seconds = 120, interval = None):
 
@@ -652,7 +691,7 @@ if __name__ == "__main__":
     #     args.input_dir, args.output_dir, 
     #     limits = [datetime(2018, 6, 19, 16, 27), datetime(2018, 6, 19, 16, 49)], 
     #     interval = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)])
-    #get_metrics(args.input_dir, args.output_dir)
+    # get_metrics(args.input_dir, args.output_dir)
     time_analysis(args.input_dir, args.output_dir)
 
     sys.exit(0)

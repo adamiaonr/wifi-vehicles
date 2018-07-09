@@ -51,7 +51,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # gps log file (0 buffering)
-    filename = os.path.join(args.output_dir, 'gps-log.csv')
+    filename = os.path.join(args.output_dir, 'gps-log.' + str(time.time()).split('.')[0] + '.csv')
     #if os.path.exists(filename):
     #    gps_log = csv.writer(open(filename, 'a', 0))
     #else:

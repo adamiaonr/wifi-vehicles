@@ -2,12 +2,16 @@
 pkill -f iperf3-to-mobile; python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --bitrates 10 --ip-server 10.10.10.111 --port 5202 --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-003/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}') &
 
 # raspberry pi (10.10.10.52)
-sudo pkill -f iperf3-to-mobile; python /home/pi/workbench/scripts/iperf3-to-mobile.raspbian.py --bitrates 10 --ip-server 10.10.10.111 --port 5203 --output-dir /home/pi/workbench/range-tests/link-data/vehicular-traces/trace-003/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlan0 info | awk '/channel/ {print $2}') &
+sudo pkill -f iperf3-to-mobile; 
+python /home/pi/workbench/scripts/iperf3-to-mobile.raspbian.py --bitrates 10 --ip-server 10.10.10.111 --port 5203 --output-dir /home/pi/workbench/range-tests/link-data/vehicular-traces/trace-003/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlan0 info | awk '/channel/ {print $2}') &
 
 # white pi (10.10.10.214)
 pkill -f iperf3-to-mobile; python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --bitrates 10 --ip-server 10.10.10.111 --port 5204 --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-003/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050faaab5d info | awk '/channel/ {print $2}') &
 
 # maroon (10.10.10.111)
-sudo ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.open.1.20 /etc/hostapd/hostapd.conf; sudo /etc/init.d/networking restart
+sudo ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.open.1.20 /etc/hostapd/hostapd.conf
+sudo /etc/init.d/networking restart
 
 # macbook pro (monitor mode)
+
+sudo python gps-logger.py --dev-file /dev/ttyACM0 --output-dir ~/workbench/range-tests/vehicular-traces/trace-003/2.4/1
