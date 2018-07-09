@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pkill -f iperf3-to-mobile
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --bitrates $1 --ip-server 10.10.10.111 --port 5202 --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-003/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}') &
