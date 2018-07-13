@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pkill -f iperf3-to-mobile
+python /home/pi/workbench/scripts/iperf3-to-mobile.raspbian.py --bitrates $1 --ip-server 10.10.10.111 --port 5203 --output-dir /home/pi/workbench/range-tests/vehicular-traces/trace-003/$(iw wlan0 info | awk '/channel/ {print substr ($3, 2, 2) }')/$(iw wlan0 info | awk '/channel/ {print $2}') &
