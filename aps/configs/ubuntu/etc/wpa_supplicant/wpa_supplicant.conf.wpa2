@@ -3,8 +3,11 @@ update_config=1
 freq_list=2412 2462 5180 5200
 network={
     ssid="nikola-tesla"
-    key_mgmt=NONE
+    proto=RSN
+    key_mgmt=WPA-PSK
+    pairwise=CCMP TKIP
+    group=CCMP TKIP
+    psk="xpto12x1"
     scan_freq=2412 2462 5180 5200
     bgscan="simple:10:-65:60"
 }
-
