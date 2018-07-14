@@ -9,7 +9,7 @@ python /home/pi/workbench/scripts/iperf3-to-mobile.raspbian.py --bitrates 10 --i
 pkill -f iperf3-to-mobile; python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --bitrates 10 --ip-server 10.10.10.111 --port 5204 --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-003/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050faaab5d info | awk '/channel/ {print $2}') &
 
 # maroon (10.10.10.111)
-sudo ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.open.1.20 /etc/hostapd/hostapd.conf
+sudo ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.open.1.20 /etc/hostapd/hostapd.configs
 sudo /etc/init.d/networking restart
 
 # macbook pro (monitor mode)

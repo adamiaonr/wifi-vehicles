@@ -6,16 +6,37 @@ import sys
 import time
 import datetime
 import subprocess
+import errno
+import threading
 
 # for acessing the gps device
+from gps import *
 from gps3 import gps3
+from socket import error as socket_error
+
+gpsd = None # setting the global variable
 
 attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
+
+# taken from https://gist.githubusercontent.com/wolfg1969/4653340/raw/142eb5746619257b0cd4e317fd8f5fd63ddf2022/gpsdData.py
+class GpsPoller(threading.Thread):
+    
+    def __init__(self):
+        threading.Thread.__init__(self)
+        global gpsd # bring it in scope
+        gpsd = gps(mode = WATCH_ENABLE) # starting the stream of info
+        self.current_value = None
+        self.running = True # setting the thread running to true
+
+    def run(self):
+        global gpsd
+        while gpsp.running:
+            gpsd.next() # this will continue to loop and grab EACH set of gpsd info to clear the buffer
 
 def reset_gpsd(dev_file = '/dev/ttyUSB0'):
 
     # sudo killall gpsd
-    cmd = ["killall", "gpsd"]
+    cmd = ["pkill", "-f", "gpsd"]
     proc = subprocess.call(cmd)
 
     # sudo gpsd /dev/ttyUSB0 -F -b /var/run/gpsd.sock
@@ -40,6 +61,11 @@ if __name__ == "__main__":
         "--output-dir", 
          help = """dir on which to save .csv files""")
 
+    parser.add_argument(
+        "--restart-gpsd", 
+         help = """restart gpsd daemon (use carefully)""",
+         action = 'store_true')
+
     args = parser.parse_args()
 
     if not args.dev_file:
@@ -59,36 +85,95 @@ if __name__ == "__main__":
     gps_log.writerow(attrs)
 
     # reset gpsd, just in case...
-    reset_gpsd(args.dev_file)
+    if args.restart_gpsd:
+        reset_gpsd(args.dev_file)
+
+    # # this code uses the gps module (not gps3)
+    # gpsp = GpsPoller() # create the thread
+    
+    # try:
+    #     gpsp.start() # start it up
+    
+    #     while True:
+    #         # it may take a second or two to get good data
+    #         # print
+    #         # print ' GPS reading'
+    #         # print '----------------------------------------'
+    #         # print 'latitude    ' , gpsd.fix.latitude
+    #         # print 'longitude   ' , gpsd.fix.longitude
+    #         # print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
+    #         # print 'altitude (m)' , gpsd.fix.altitude
+    #         # print 'eps         ' , gpsd.fix.eps
+    #         # print 'epx         ' , gpsd.fix.epx
+    #         # print 'epv         ' , gpsd.fix.epv
+    #         # print 'ept         ' , gpsd.fix.ept
+    #         # print 'speed (m/s) ' , gpsd.fix.speed
+    #         # print 'climb       ' , gpsd.fix.climb
+    #         # print 'track       ' , gpsd.fix.track
+    #         # print 'mode        ' , gpsd.fix.mode
+    #         # print
+    #         # print 'sats        ' , gpsd.satellites
+
+    #         # attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
+    #         if not (gpsd.utc).encode("utf-8"):
+    #             continue
+
+    #         gpsr = {
+    #             'time' : convert_to_unix((gpsd.utc).encode("utf-8")),
+    #             'lon' : gpsd.fix.longitude,
+    #             'lat' : gpsd.fix.latitude,
+    #             'alt' : gpsd.fix.altitude,
+    #             'speed' : gpsd.fix.speed,
+    #             'epx' : gpsd.fix.epx,
+    #             'epy' : gpsd.fix.epy,
+    #             'epv' : gpsd.fix.epv,
+    #             'eps' : gpsd.fix.eps
+    #         }
+
+    #         if not gpsr['lon']:
+    #             continue
+
+    #         print(gpsr)
+    #         time.sleep(1.0) # set to whatever
+
+    # except (KeyboardInterrupt, SystemExit): # when you press ctrl+c
+    #     print "\nkilling thread..."
+    #     gpsp.running = False
+    #     gpsp.join() # wait for the thread to finish what it's doing
 
     # start reading gps data
     gps_socket = gps3.GPSDSocket()
     data_stream = gps3.DataStream()
+
     # connect to gps device and start listening
     gps_socket.connect()
     gps_socket.watch()
 
-    last_timestamp = 0
-    for new_data in gps_socket:
+    try:
+        last_timestamp = 0
+        for new_data in gps_socket:
 
-        if new_data:
+            if new_data:
 
-            print([data_stream.TPV[attr] for attr in attrs])
+                # extract data from gps reading 
+                data_stream.unpack(new_data)
 
-            # extract data from gps reading 
-            data_stream.unpack(new_data)
-            # check if data is meaningful
-            if data_stream.TPV['speed'] == 'n/a':
-                continue
+                # check if data is meaningful
+                if data_stream.TPV['lon'] == 'n/a':
+                    continue
 
-            # convert time to unix timestamp format
-            if data_stream.TPV['time'] == last_timestamp:
-                continue
+                # convert time to unix timestamp format
+                if data_stream.TPV['time'] == last_timestamp:
+                    continue
 
-            data_stream.TPV['time'] = convert_to_unix(data_stream.TPV['time'])
-            last_timestamp = data_stream.TPV['time']
+                print([data_stream.TPV[attr] for attr in attrs])
+                data_stream.TPV['time'] = convert_to_unix(data_stream.TPV['time'])
+                last_timestamp = data_stream.TPV['time']
 
-            # write new row to .csv log
-            gps_log.writerow([data_stream.TPV[attr] for attr in attrs])
+                # write new row to .csv log
+                gps_log.writerow([data_stream.TPV[attr] for attr in attrs])
 
-        time.sleep(1.0)
+            time.sleep(1.0)
+
+    except (KeyboardInterrupt, SystemExit):
+        sys.exit(0)
