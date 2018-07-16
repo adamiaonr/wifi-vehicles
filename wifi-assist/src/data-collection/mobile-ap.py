@@ -51,11 +51,11 @@ def capture(iface, output_file, mode = 'ap'):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
     cmd = ''
     if mode == 'ap':
-        cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file, "&"]
+        cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
     elif mode == 'monitor':
-        cmd = ["tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file, '&']
+        cmd = ["tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
 
-    proc = subprocess.call(cmd)
+    proc = subprocess.Popen(cmd)
 
 if __name__ == "__main__":
 

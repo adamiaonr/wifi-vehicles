@@ -32,9 +32,9 @@ def signal_handler(signal, frame):
 
 def capture(iface, output_file):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
-    cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file, "&"]
-    proc = subprocess.call(cmd)
-
+    cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
+    proc = subprocess.Popen(cmd)
+    
 def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5):
 
     output = "N/A"
