@@ -35,7 +35,7 @@ def capture(iface, output_file):
     cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file, "&"]
     proc = subprocess.call(cmd)
 
-def start_iperf3(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
+def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5):
 
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     while (stop_loop == False):
 
         start_timestamp = time.time()
-        code, output = start_iperf3(int(args.duration), args.ip_server, args.port, protocol, args.bitrate)
+        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate)
         
         if code < 0:
             continue
