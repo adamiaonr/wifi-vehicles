@@ -531,7 +531,47 @@
 			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
 			"settings":
 			{
-				"buffer_size": 4660,
+				"buffer_size": 8628,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/wireless",
+			"settings":
+			{
+				"buffer_size": 339,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.11.20",
+			"settings":
+			{
+				"buffer_size": 353,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.36.40",
+			"settings":
+			{
+				"buffer_size": 353,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.11.20",
+			"settings":
+			{
+				"buffer_size": 379,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.36.40",
+			"settings":
+			{
+				"buffer_size": 339,
 				"line_ending": "Unix"
 			}
 		},
@@ -539,7 +579,7 @@
 			"file": "wifi-assist/src/data-collection/gps-logger.py",
 			"settings":
 			{
-				"buffer_size": 2064,
+				"buffer_size": 5775,
 				"line_ending": "Unix"
 			}
 		},
@@ -547,7 +587,7 @@
 			"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
 			"settings":
 			{
-				"buffer_size": 8481,
+				"buffer_size": 0,
 				"line_ending": "Unix"
 			}
 		},
@@ -563,15 +603,18 @@
 			"file": "data-analysis/src/trace-analysis.py",
 			"settings":
 			{
-				"buffer_size": 22044,
+				"buffer_size": 49024,
 				"line_ending": "Unix"
 			}
 		},
 		{
+			"contents": "",
 			"file": "/home/adamiaonr/workbench/iperf/src/iperf_api.c",
+			"file_size": -1,
+			"file_write_time": -1,
 			"settings":
 			{
-				"buffer_size": 120449,
+				"buffer_size": 0,
 				"line_ending": "Unix"
 			}
 		},
@@ -579,7 +622,7 @@
 			"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
 			"settings":
 			{
-				"buffer_size": 49821,
+				"buffer_size": 0,
 				"line_ending": "Unix"
 			}
 		},
@@ -1088,15 +1131,15 @@
 					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
 					"settings":
 					{
-						"buffer_size": 4660,
+						"buffer_size": 8628,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								956,
-								956
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1106,25 +1149,160 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 9.0,
+						"translation.y": 189.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "wifi-assist/src/data-collection/gps-logger.py",
+					"file": "aps/configs/openwrt/unifi-ac-lite/wireless",
 					"settings":
 					{
-						"buffer_size": 2064,
+						"buffer_size": 339,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								38,
-								38
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.11.20",
+					"settings":
+					{
+						"buffer_size": 353,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.36.40",
+					"settings":
+					{
+						"buffer_size": 353,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.11.20",
+					"settings":
+					{
+						"buffer_size": 379,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.36.40",
+					"settings":
+					{
+						"buffer_size": 339,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "wifi-assist/src/data-collection/gps-logger.py",
+					"settings":
+					{
+						"buffer_size": 5775,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1140,19 +1318,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 8,
 					"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
 					"settings":
 					{
-						"buffer_size": 8481,
+						"buffer_size": 0,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2389,
-								2389
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1168,7 +1346,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 9,
 					"file": "data-analysis/src/cbt.py",
 					"settings":
 					{
@@ -1196,19 +1374,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 10,
 					"file": "data-analysis/src/trace-analysis.py",
 					"settings":
 					{
-						"buffer_size": 22044,
+						"buffer_size": 49024,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								10299,
-								10299
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1224,11 +1402,11 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 11,
 					"file": "/home/adamiaonr/workbench/iperf/src/iperf_api.c",
 					"settings":
 					{
-						"buffer_size": 120449,
+						"buffer_size": 0,
 						"regions":
 						{
 						},
@@ -1252,19 +1430,19 @@
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 12,
 					"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
 					"settings":
 					{
-						"buffer_size": 49821,
+						"buffer_size": 0,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								16233,
-								16233
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1280,7 +1458,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 13,
 					"file": "data-analysis/src/positioning.py",
 					"settings":
 					{
