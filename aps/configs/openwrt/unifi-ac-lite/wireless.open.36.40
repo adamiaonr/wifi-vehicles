@@ -1,6 +1,6 @@
-config wifi-device  radio0
+config wifi-device  radio1
 	option type mac80211
-	option path 'platform/qca956x_wmac'
+	option path 'pci0000:00/0000:00:00.0'
 	option channel '36'
 	option hwmode '11a'
 	option htmode 'HT40'
@@ -9,8 +9,8 @@ config wifi-device  radio0
 	option log_level '0'
 
 config wifi-iface
-	option device 'radio0'
+	option device 'radio1'
 	option network 'lan'
 	option mode 'ap'
-	option ssid 'thomas-edison'
+	option ssid 'george-westinghouse'
 	option encryption none
