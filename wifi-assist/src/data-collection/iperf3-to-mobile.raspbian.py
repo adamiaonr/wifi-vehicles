@@ -21,11 +21,16 @@ def signal_handler(signal, frame):
     global stop_loop
     stop_loop = True
 
-def test(time, ip_server, port = 5201, proto = 'udp', bitrate = '54'):
+def capture(iface, output_file):
+    # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
+    cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
+    proc = subprocess.Popen(cmd)
+
+def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5):
 
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
-    cmd = ["iperf3", "-V", "-J", "-O", "1", "-i", "0.5", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
+    cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -68,16 +73,16 @@ if __name__ == "__main__":
 
     # options (self-explanatory)
     parser.add_argument(
-        "--bitrates", 
-         help = """list of iperf3 bitrates (in Mbps) to try out, separated by ','. e.g.: '--bitrates 11,54,72'""")
+        "--bitrate", 
+         help = """iperf3 bitrate (in Mbps) to use in test. e.g.: '--bitrate 11'""")
 
-    parser.add_argument(
-        "--protocols", 
-         help = """list of protocols (UDP or TCP), separated by ','. e.g.: '--protocols UDP,TCP'""")
+    # parser.add_argument(
+    #     "--protocols", 
+    #      help = """list of protocols (UDP or TCP), separated by ','. e.g.: '--protocols UDP,TCP'""")
 
-    parser.add_argument(
-        "--duration", 
-         help = """duration of the test (in seconds). e.g.: '--duration 120'""")
+    # parser.add_argument(
+    #     "--duration", 
+    #      help = """duration of the test (in seconds). e.g.: '--duration 120'""")
 
     parser.add_argument(
         "--ip-server", 
@@ -87,35 +92,41 @@ if __name__ == "__main__":
         "--port", 
          help = """port used by iperf3 server. e.g.: '--port 5204'""")
 
+    # parser.add_argument(
+    #     "--rounds", 
+    #      help = """number of rounds for each parameter combination. e.g.: '--rounds 5'""")
+
     parser.add_argument(
-        "--rounds", 
-         help = """number of rounds for each parameter combination. e.g.: '--rounds 5'""")
+        "--iface", 
+         help = """wifi iface on which to capture packets. e.g.: '--iface wlx24050f9e2cb1'""")
 
     parser.add_argument(
         "--output-dir", 
          help = """dir to save .csv files""")
 
+    parser.add_argument(
+        "--no-log", 
+         help = """do not save any .csv files""",
+         action = 'store_true')
+
     args = parser.parse_args()
 
-    if not args.bitrates:
-        args.bitrates = "54"
+    if not args.bitrate:
+        args.bitrate = "54"
 
-    if not args.duration:
-        args.duration = "5"
+    # if not args.duration:
+    #     args.duration = "5"
 
-    if not args.rounds:
-        args.rounds = "5"
+    # if not args.rounds:
+    #     args.rounds = "5"
 
-    if not args.protocols:
-        args.protocols = "udp"
+    # if not args.protocols:
+    #     args.protocols = "udp"
 
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
-
-    reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(args.bitrates) + str(time.time()).split('.')[0] + ".csv"))
-    results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(args.bitrates) + str(time.time()).split('.')[0] + ".csv"))
 
     if not args.ip_server:
         sys.stderr.write("""%s: [ERROR] please supply an iperf3 server ip\n""" % sys.argv[0]) 
@@ -125,13 +136,27 @@ if __name__ == "__main__":
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
 
-    attrs_reports = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'loss', 'total']
-    reports = csv.writer(open(reports_file, 'wb+', 0))
-    reports.writerow(attrs_reports)
+    logging = True
+    if args.no_log:
+        loggging = False
 
-    attrs_results = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr']
-    results = csv.writer(open(results_file, 'wb+', 0))
-    results.writerow(attrs_results)
+    timestamp = str(time.time()).split('.')[0]
+    if logging:
+        reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(args.bitrate) + "." + timestamp + ".csv"))
+        results_file = os.path.join(args.output_dir, ("iperf3-to-mobile.results." + str(args.bitrate) + "." + timestamp + ".csv"))
+
+        attrs_reports = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'loss', 'total']
+        reports = csv.writer(open(reports_file, 'wb+', 0))
+        reports.writerow(attrs_reports)
+
+        attrs_results = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr']
+        results = csv.writer(open(results_file, 'wb+', 0))
+        results.writerow(attrs_results)
+
+    # start capturing packets (if specified)
+    if args.iface and logging:
+        capture_file = os.path.join(args.output_dir, ("iperf3-to-mobile.capture." + str(args.bitrate) + "." + timestamp + ".pcap"))
+        capture(args.iface, capture_file)
 
     # range tuples are used to compare ranges of time
     Range = namedtuple('Range', ['start', 'end'])
@@ -139,80 +164,81 @@ if __name__ == "__main__":
     # keep iperfing till a CTRL+C is caught...
     stop_loop = False
     while (stop_loop == False):
-        for protocol in [p.lower() for p in args.protocols.split(',')]:
-            for bitrate in [b for b in args.bitrates.split(',')]:
 
-                start_timestamp = time.time()
-                code, output = test(int(args.duration), args.ip_server, args.port, protocol, bitrate)
-                
-                if code < 0:
-                    continue
+        start_timestamp = time.time()
+        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate)
+        
+        if code < 0 or (not logging):
+            continue
 
-                output = json.loads(output)
-                # the iperf3 server produces output every second (if the '--get-server-ouput' option is used)
-                # it needs to be parsed directly from text, as it is not provided in json format
-                output_server = []
-                if 'server_output_text' in output:
-                    output_server = parse_server_output(output['server_output_text'])
+        output = json.loads(output)
+        # the iperf3 server produces output every second (if the '--get-server-ouput' option is used)
+        # it needs to be parsed directly from text, as it is not provided in json format
+        output_server = []
+        if 'server_output_text' in output:
+            output_server = parse_server_output(output['server_output_text'])
 
-                k = 0
-                _interval = []
-                for i, interval in enumerate(output['intervals']):
+        k = 0
+        _interval = []
+        for i, interval in enumerate(output['intervals']):
 
-                    if not output_server:
-                        _interval.append({'loss' : 0.0})
-                    else:
+            if not output_server:
+                _interval.append({'loss' : 0.0})
+            else:
 
-                        r1 = Range(start = float(interval['sum']['start']), end = float(interval['sum']['end']))
-                        r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
+                r1 = Range(start = float(interval['sum']['start']), end = float(interval['sum']['end']))
+                r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
 
-                        while not ((r2.end >= r1.end) or (k == (len(output_server) - 1))):
-                            k += 1
-                            r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
+                while not ((r2.end >= r1.end) or (k == (len(output_server) - 1))):
+                    k += 1
+                    r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
 
-                        loss = 0.0
-                        if output_server[k]['total'] != 0.0:
-                            loss = output_server[k]['lost'] / output_server[k]['total']
-                        _interval.append({'loss' : loss})
+                loss = 0.0
+                if output_server[k]['total'] != 0.0:
+                    loss = output_server[k]['lost'] / output_server[k]['total']
+                _interval.append({'loss' : loss})
 
-                if output['start']['test_start']['protocol'] == 'UDP':
+        if output['start']['test_start']['protocol'] == 'UDP':
 
-                    # 'intervals'
-                    # this assumes 1 sec intervals
-                    for i, interval in enumerate(output['intervals']):
+            # 'intervals'
+            # this assumes 1 sec intervals
+            for i, interval in enumerate(output['intervals']):
 
-                        # rely on local output as much as possible (it may happen that server output is lost)
-                        rprts = {
-                            'time'      : start_timestamp + interval['sum']['end'],
-                            'proto'     : output['start']['test_start']['protocol'], 
-                            'duration'  : interval['sum']['seconds'],
-                            'transfer'  : interval['sum']['bytes'], 
-                            'trgt-bw'   : float(bitrate) * 1000000.0, 
-                            'res-bw'    : interval['sum']['bits_per_second'],
-                            'loss'      : _interval[i]['loss'],
-                            'total'     : interval['sum']['packets']}
+                # rely on local output as much as possible (it may happen that server output is lost)
+                rprts = {
+                    'time'      : start_timestamp + interval['sum']['end'],
+                    'proto'     : output['start']['test_start']['protocol'], 
+                    'duration'  : interval['sum']['seconds'],
+                    'transfer'  : interval['sum']['bytes'], 
+                    'trgt-bw'   : float(bitrate) * 1000000.0, 
+                    'res-bw'    : interval['sum']['bits_per_second'],
+                    'loss'      : _interval[i]['loss'],
+                    'total'     : interval['sum']['packets']}
 
-                        # append line to .csv file
-                        reports.writerow([rprts[attr] for attr in attrs_reports])
+                # append line to .csv file
+                reports.writerow([rprts[attr] for attr in attrs_reports])
 
-                    rslts = {
-                        'time'      : start_timestamp,
-                        'proto'     : output['start']['test_start']['protocol'], 
-                        'duration'  : output['end']['sum']['seconds'],
-                        'transfer'  : output['end']['sum']['bytes'], 
-                        'trgt-bw'   : float(bitrate) * 1000000.0, 
-                        'res-bw'    : output['end']['sum']['bits_per_second'],
-                        'jitter'    : output['end']['sum']['jitter_ms'],
-                        'lost'      : output['end']['sum']['lost_packets'],
-                        'total'     : output['end']['sum']['packets'],
-                        'cpu-sndr'  : output['end']['cpu_utilization_percent']['host_total'],
-                        'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}
+            rslts = {
+                'time'      : start_timestamp,
+                'proto'     : output['start']['test_start']['protocol'], 
+                'duration'  : output['end']['sum']['seconds'],
+                'transfer'  : output['end']['sum']['bytes'], 
+                'trgt-bw'   : float(bitrate) * 1000000.0, 
+                'res-bw'    : output['end']['sum']['bits_per_second'],
+                'jitter'    : output['end']['sum']['jitter_ms'],
+                'lost'      : output['end']['sum']['lost_packets'],
+                'total'     : output['end']['sum']['packets'],
+                'cpu-sndr'  : output['end']['cpu_utilization_percent']['host_total'],
+                'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}
 
-                else:
-                    sys.stderr.write("""%s: [ERROR] TCP is not supported (yet)\n""" % sys.argv[0]) 
-                    sys.exit(1)
+        else:
+            sys.stderr.write("""%s: [ERROR] TCP is not supported (yet)\n""" % sys.argv[0]) 
+            sys.exit(1)
 
-                results.writerow([rslts[attr] for attr in attrs_results])
+        results.writerow([rslts[attr] for attr in attrs_results])
+
+    cmd = ["pkill", "-f", "tcpdump"]
+    proc = subprocess.call(cmd)
 
     sys.exit(0)
 

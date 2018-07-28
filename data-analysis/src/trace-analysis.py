@@ -103,6 +103,7 @@ def update_limits(limits, array):
             limits[1] = np.amax(array)
 
 def get_values_per_client(data, metric = 'SSI Signal'):
+
     # cstr : column name which identifies a client
     # tstr : column name for timestamp
     cstr = ''
@@ -140,22 +141,15 @@ def to_cdf(data, bins = 100):
     cdf = np.cumsum(counts)
     return cdf, bin_edges
 
-def to_hdf5(data, 
+def to_hdf5(
+    data, 
     freq, channel, metric, 
-    link_hdf5, baps_hdf5):
+    link_data):
 
-    values = get_values_per_client(data, metric).sort_values(by = ['timestamp'])
-    link_hdf5.append(
+    link_data.append(
         ('/%s/%s/%s' % (freq, channel, metric)),
         values,
         data_columns = values.columns,
-        format = 'table')
-
-    _best_aps = get_best_client(values, metric)
-    baps_hdf5.append(
-        ('/%s/%s/%s' % (freq, channel, metric)),
-        _best_aps,
-        data_columns = _best_aps.columns,
         format = 'table')
 
 def extract_metrics(
@@ -164,116 +158,131 @@ def extract_metrics(
     channels = {'2.4' : ['01', '11'], '5.1' : ['36'], '5.2' : ['40']},
     ap = ap, limits = None, seconds = 120):
 
-    """extracts 'best ap' metrics from .csv files of traces. 
-    saves them on .hdf5 file for quicker analysis"""
+    """extracts vehicular metrics from .csv files into .hdf5 files."""
 
     # aux. variable holds reference timestamp
     the_epoch = datetime.utcfromtimestamp(0)
 
     # metrics indexed by timestamp, for each client (or ap, whichever way you wanna look at it)
-    # best aps per timestamp
 
-    # 1) data from packet captures (macbook pro)
-    # save results as .hdf5 files
+    # we save x diff. types of link data:
+    #   - pkt captures at each of the iperf3 clients (senders)
+    #   - pkt captures at the iperf3 server (receiver)
+    #   - pkt capture in monitor mode (i.e. wlan frames), at the receiver
     link_data = pd.HDFStore(os.path.join(input_dir, "processed/link-data.hdf5"))
-    best_aps = pd.HDFStore(os.path.join(input_dir, "processed/best-aps.hdf5"))
-    # gps_pos = pd.HDFStore(os.path.join(input_dir, "processed/gps-pos.hdf5"))
+    # we also save gps positions indexed by timestamp
+    gps_pos = pd.HDFStore(os.path.join(input_dir, "processed/gps-pos.hdf5"))
 
+    mobile_ap_data = pd.DataFrame()
     for freq in ['2.4', '5.1', '5.2']:
         for channel in channels[freq]:
 
-            pcap_file = os.path.join(args.input_dir, ("link-data/%s/%s/link-data.csv" % (freq, channel)))
-            if not os.path.isfile(pcap_file):
-                continue
+            channel_dir = os.path.join(args.input_dir, ("link-data/%s/%s" % (freq, channel)))
+            for fname in sorted(glob.glob(os.path.join(channel_dir, '*.csv'))):
 
-            chunksize = 10 ** 5
-            for chunk in pd.read_csv(pcap_file, chunksize = chunksize):
+                ftype = fname.split('/')[-1].split('.')[0]
+                chunksize = 10 ** 5
+                print(fname)
+                for chunk in pd.read_csv(fname, chunksize = chunksize):
 
-                # consider frames directed at the mobile ap only
-                chunk = chunk[chunk['dst mac'] == ap]
-                # discard empty rssi values
-                # FIXME: many of the wlan data frames have a 'Greenfield' bit on, and 
-                # don't have rssi values
-                chunk = chunk[np.isfinite(chunk['SSI Signal'])]
-                # isolate UNIX timestamps w/ 10 msec precision
-                chunk['timestamp'] = chunk['Arrival Time'].map(lambda x : str((datetime.strptime(str(x)[:-12], '%b %d, %Y %H:%M:%S.%f') - the_epoch).total_seconds()))
+                    if ftype in ['monitor']:
 
-                # determine which client has the 'best' for each metric of interest
-                for metric in metrics['link-data']:
+                        # consider frames directed at the mobile ap only
+                        chunk = chunk[chunk['dst mac'] == ap]
+                        # discard empty rssi values
+                        # FIXME: many of the wlan data frames have a 'Greenfield' bit on, and 
+                        # don't have rssi values
+                        chunk = chunk[np.isfinite(chunk['SSI Signal'])]
 
-                    if metric not in chunk.columns:
-                        continue
+                        # isolate UNIX timestamps w/ 10 msec precision
+                        chunk['timestamp'] = chunk['Epoch Time']
+                        # chunk['timestamp'] = chunk['Arrival Time'].map(lambda x : str((datetime.strptime(str(x)[:-12], '%b %d, %Y %H:%M:%S.%f') - the_epoch).total_seconds()))
 
-                    save_to_hdf5(chunk, freq, channel, metric, link_data, best_aps)
+                        # save metric data per client, indexed by timestamp, on .hdf5
+                        for metric in metrics['link-data']:
+                            values_per_client = get_values_per_client(chunk, metric).sort_values(by = ['timestamp'])
+                            to_hdf5(values_per_client, freq, channel, metric, link_data)
 
-                del chunk
+                        # add instantaneous throughput to each rcvd udp packet
+                        # chunk['throughput'] = (chunk['Length'] * 8.0) / chunk['time delta']
+                        # print(chunk['throughput'].astype(str))
+                        # link_data.append(
+                        #     ('/%s/%s/wlan-throughput' % (freq, channel)),
+                        #     chunk[['Epoch Time', 'time', 'time delta', 'Length', 'Header length', 'src mac', 'dst mac', 'Protocol', 'Type', 'Type/Subtype', 'PHY type', 'SSI Signal', 'Signal strength (dBm)', 'Sequence number', 'Data rate', 'MCS index', 'Duration', 'Preamble', 'throughput']],
+                        #     data_columns = ['Epoch Time', 'time', 'time delta', 'Length', 'Header length', 'src mac', 'dst mac', 'Protocol', 'Type', 'Type/Subtype', 'PHY type', 'SSI Signal', 'Signal strength (dBm)', 'Sequence number', 'Data rate', 'MCS index', 'Duration', 'Preamble', 'throughput'],
+                        #     format = 'table')
 
-            # # gps data
-            # for fn in sorted(glob.glob(os.path.join(os.path.join(args.input_dir, ("link-data/%s/%s" % (freq, channel))), 'gps-log.*.csv'))):
+                        del chunk
 
-            #     if not os.path.isfile(fn):
-            #         continue
+                    elif ftype in ['gps-log']:
 
-            #     chunksize = 10 ** 5
-            #     for chunk in pd.read_csv(fn, chunksize = chunksize):
+                        gps_pos.append(
+                            ('/%s/%s' % (freq, channel)),
+                            chunk[['timestamp', 'time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']],
+                            data_columns = chunk[['timestamp', 'time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']].columns,
+                            format = 'table')
 
-            #         # FIXME: this is due to a timestamp mismatch problem (timezones...) in the gps receiver
-            #         if freq == '2.4':
-            #             chunk['timestamp'] = chunk['time'] + (2 * 3600)
-            #         else:
-            #             chunk['timestamp'] = chunk['time'] + 3600
+                    elif ftype in ['ap']:
 
-            #         gps_pos.append(
-            #             ('/%s/%s' % (freq, channel)),
-            #             chunk[['timestamp', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']],
-            #             data_columns = chunk[['timestamp', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']].columns,
-            #             format = 'table')
+                        # only consider udp and ipv4 packets
+                        chunk = chunk[chunk['Protocol'].str.contains('IPv4|UDP') == True]
+                        # consider frames directed at the mobile ap only
+                        chunk = chunk[chunk['dst mac'] == ap]
 
-    # 2) data from iperf3 files
-    data = defaultdict()
+                        mobile_ap_data = pd.concat([mobile_ap_data, chunk], ignore_index = True)
+                        # # add instantaneous throughput to each rcvd udp packet
+                        # chunk['throughput'] = (chunk['Length'] * 8.0) / chunk['time delta']
+                        # link_data.append(
+                        #     ('/%s/%s/app-throughput' % (freq, channel)),
+                        #     chunk[['Epoch Time', 'time delta', 'Length', 'Header Length', 'src mac', 'dst mac', 'Protocol', 'Source', 'Destination', 'Identification', 'throughput']],
+                        #     data_columns = ['Epoch Time', 'time delta', 'Length', 'Header Length', 'src mac', 'dst mac', 'Protocol', 'Source', 'Destination', 'Identification', 'throughput'],
+                        #     format = 'table')
+
+                    else:
+                        sys.stderr.write("""%s::extract_metrics() : [ERROR] unrecognized link-data .csv type.\n""" % sys.argv[0])
+
+    # 2) use ap.*.csv and sndr.csv captures at each of the clients to calculate packet loss
+    # and throughput averaged over 100 ms
     for client in clients:
+
+        rcvd_pkt_ids = mobile_ap_data[mobile_ap_data['src mac'] == client][['no', 'Epoch Time', 'Identification', 'Fragment offset', 'Reassembled IPv4 in frame']]
+
         for freq in ['2.4', '5.1', '5.2']:
-
-            if freq not in data:
-                data[freq] = defaultdict()
-
             for channel in channels[freq]:
-
-                if channel not in data[freq]:
-                    data[freq][channel] = pd.DataFrame()
 
                 # FIXME: if the client is the raspberry pi, remove the '.' from the <freq>
                 _freq = freq
                 if client == 'b8:27:eb:1e:2b:6a':
                     _freq = _freq.replace('.', '')
 
-                # FIXME: it's just gonna be one file per <freq.>/<channel> combination
-                for fn in sorted(glob.glob(os.path.join(os.path.join(args.input_dir, ("%s/%s/%s" % (client, _freq, channel))), 'iperf3-to-mobile.report.*.csv'))):
-
-                    print(fn)
-                    chunksize = 10 ** 5
-                    for chunk in pd.read_csv(fn, chunksize = chunksize):
-                        chunk['client'] = client
-                        # chunk['pdr'] = 1.0 - (chunk['lost'].astype(float) / chunk['total'].astype(float))
-                        chunk['timestamp'] = [ ts[:13] for ts in chunk['time'].astype(str) ]
-                        data[freq][channel] = pd.concat([data[freq][channel], chunk], ignore_index = True)
-
-    # determine 'best' client for each metric
-    for freq in data:
-        for channel in data[freq]:
-            for metric in metrics['iperf3']:
-        
-                if metric not in data[freq][channel].columns:
+                fname = os.path.join(args.input_dir, ("%s/%s/%s/sndr.csv" % (client, _freq, channel)))
+                if not os.path.isfile(fname): 
                     continue
 
-                if metric == 'res-bw':
-                    data[freq][channel] = data[freq][channel][data[freq][channel]['res-bw'] <= data[freq][channel]['trgt-bw']]
+                chunksize = 10 ** 5
+                for chunk in pd.read_csv(fname, chunksize = chunksize):
 
-                save_to_hdf5(data[freq][channel], freq, channel, metric, link_data, best_aps)
+                    # only consider udp and ipv4 packets
+                    chunk = chunk[chunk['Protocol'].str.contains('IPv4|UDP') == True]
+                    # consider frames directed at the mobile ap only
+                    chunk = chunk[chunk['dst mac'] == ap]
+
+                    # 1) check sent packets which aren't in the receiver logs 
+                    # this is easily done w/ the 'ip.id' field
+                    # https://www.cellstream.com/intranet/reference-reading/tipsandtricks/314-the-purpose-of-the-ip-id-field-demystified.html
+                    snt_pkt_ids = chunk[['no', 'Epoch Time', 'Identification', 'Fragment offset', 'Reassembled IPv4 in frame']]
+                    snt_pkt_ids['lost'] = ~(snt_pkt_ids['Identification'].isin(rcvd_pkt_ids['Identification']))
+
+                    # # add instantaneous throughput to each rcvd udp packet
+                    # chunk['throughput'] = (chunk['Length'] * 8.0) / chunk['time delta']
+                    # link_data.append(
+                    #     ('/%s/%s/app-throughput' % (freq, channel)),
+                    #     chunk[['Epoch Time', 'time delta', 'Length', 'Header Length', 'src mac', 'dst mac', 'Protocol', 'Source', 'Destination', 'Identification', 'throughput']],
+                    #     data_columns = ['Epoch Time', 'time delta', 'Length', 'Header Length', 'src mac', 'dst mac', 'Protocol', 'Source', 'Destination', 'Identification', 'throughput'],
+                    #     format = 'table')
 
     # close .hdf5 store
     link_data.close()
-    best_aps.close()
 
 def get_periods(data, metric = 'SSI Signal', mode = 'max'):
 
@@ -1097,7 +1106,7 @@ if __name__ == "__main__":
     #     args.input_dir, args.output_dir, 
     #     limits = [datetime(2018, 6, 19, 16, 27), datetime(2018, 6, 19, 16, 49)], 
     #     interval = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)])
-    # extract_metrics(args.input_dir)
+    extract_metrics(args.input_dir)
     # time_analysis(args.input_dir, args.output_dir)
     # vs_distance(args.input_dir, args.output_dir)
     # vs_distance(args.input_dir, args.output_dir, 'loss', 
@@ -1116,7 +1125,7 @@ if __name__ == "__main__":
     #     parameters = {
     #         'cdf' : {'y-axis-label' : 'CDF', 'x-limits' : [0.0, 10.0], 'y-limits' : [0.75, 1.0], 'scale-by' : 1.0},
     #         'duration-vs-dist' : {'x-limits' : [0.0, 200.0], 'y-limits' : [0.0, 0.100], 'scale-by' : 1.0}})
-    predict_performance(args.input_dir, args.output_dir)
+    # predict_performance(args.input_dir, args.output_dir)
     # get_laps(args.input_dir, args.output_dir, freq = '5.1', channel = '36')
 
     sys.exit(0)
