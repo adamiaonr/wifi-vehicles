@@ -101,7 +101,7 @@ if __name__ == "__main__":
     #    gps_log = csv.writer(open(filename, 'a', 0))
     #else:
     gps_log = csv.writer(open(filename, 'wb+', 0))
-    gps_log.writerow(attrs)
+    gps_log.writerow(['timestamp'] + attrs)
 
     # reset gpsd, just in case...
     if args.restart_gpsd:
@@ -194,12 +194,13 @@ if __name__ == "__main__":
                 if data_stream.TPV['time'] == last_timestamp:
                     continue
 
-                print([data_stream.TPV[attr] for attr in attrs])
                 data_stream.TPV['time'] = convert_to_unix(data_stream.TPV['time'])
                 last_timestamp = data_stream.TPV['time']
 
                 # write new row to .csv log
-                gps_log.writerow([data_stream.TPV[attr] for attr in attrs])
+                line = [str(time.time())] + [data_stream.TPV[attr] for attr in attrs]
+                gps_log.writerow(line)
+                print(line)
 
             time.sleep(1.0)
 
