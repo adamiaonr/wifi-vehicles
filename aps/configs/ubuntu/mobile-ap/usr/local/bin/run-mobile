@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pkill -f mobile-ap
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --dev-file $1 --ap-iface wlx24050f615114 --monitor-iface wlx24050faaab5d --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iwconfig 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050f615114 info | awk '/channel/ {print $2}') &

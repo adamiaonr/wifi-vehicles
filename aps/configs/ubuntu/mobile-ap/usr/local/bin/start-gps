@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# kill gpsd (if running)
+pkill -f gpsd
+# make sure there's not a process holding gpsd.socket, started by systemd
+systemctl stop gpsd
+systemctl disable gpsd
+systemctl stop gpsd.socket
+systemctl disable gpsd.socket
+# start gpsd manually
+pkill -f gpsd
+gpsd -n $1 -F -b /var/run/gpsd.sock
+# restart ntp
+service ntp restart
+
