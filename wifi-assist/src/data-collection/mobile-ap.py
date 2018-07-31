@@ -20,9 +20,14 @@ attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
 #   - altered /etc/default/gpsd to not start gpsd on boot
 #   - altered /lib/systemd/system/gpsd.service to not require gpsd.socket options
 #   - when reseting gpsd, we stop and disable gpsd and gpsd.socket first
-def reset_gpsd(dev_file = '/dev/ttyUSB0'):
+def restart_gpsd(dev_file = '/dev/ttyUSB0'):
     # simply run the start-gps script
     cmd = ["start-gps", dev_file]
+    proc = subprocess.call(cmd)
+
+def restart_service(service = 'ntp'):
+    cmd = ["service", service, "restart"]
+    proc = subprocess.call(cmd)
 
 def convert_to_unix(time_string):
     # 2017-11-01T16:46:52.000Z
@@ -65,6 +70,11 @@ if __name__ == "__main__":
          help = """restart gpsd daemon""",
          action = 'store_true')
 
+    parser.add_argument(
+        "--restart-ntp", 
+         help = """restart ntp daemon""",
+         action = 'store_true')
+
     args = parser.parse_args()
 
     if not args.dev_file:
@@ -84,8 +94,12 @@ if __name__ == "__main__":
     gps_log = csv.writer(open(filename, 'wb+', 0))
     gps_log.writerow(['timestamp'] + attrs)
 
-    # reset gpsd, just in case...
-    reset_gpsd(args.dev_file)
+    # restart gpsd
+    if args.restart_gpsd:
+        restart_gpsd(args.dev_file)
+    # restart ntp
+    if args.restart_ntp:
+        restart_service('ntp')
 
     # start reading gps data
     gps_socket = gps3.GPSDSocket()
