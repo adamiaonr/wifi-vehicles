@@ -27,7 +27,6 @@ def capture(iface, output_file):
     proc = subprocess.Popen(cmd)
 
 def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5):
-
     output = "N/A"
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
     cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
