@@ -14,34 +14,15 @@ from gps import *
 from gps3 import gps3
 from socket import error as socket_error
 
-gpsd = None # setting the global variable
-
+# attributes read from gps device
 attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
-
-# taken from https://gist.githubusercontent.com/wolfg1969/4653340/raw/142eb5746619257b0cd4e317fd8f5fd63ddf2022/gpsdData.py
-class GpsPoller(threading.Thread):
-    
-    def __init__(self):
-        threading.Thread.__init__(self)
-        global gpsd # bring it in scope
-        gpsd = gps(mode = WATCH_ENABLE) # starting the stream of info
-        self.current_value = None
-        self.running = True # setting the thread running to true
-
-    def run(self):
-        global gpsd
-        while gpsp.running:
-            gpsd.next() # this will continue to loop and grab EACH set of gpsd info to clear the buffer
-
+# this required a bit of tweaking to work:
+#   - altered /etc/default/gpsd to not start gpsd on boot
+#   - altered /lib/systemd/system/gpsd.service to not require gpsd.socket options
+#   - when reseting gpsd, we stop and disable gpsd and gpsd.socket first
 def reset_gpsd(dev_file = '/dev/ttyUSB0'):
-
-    # sudo killall gpsd
-    cmd = ["pkill", "-f", "gpsd"]
-    proc = subprocess.call(cmd)
-
-    # sudo gpsd /dev/ttyUSB0 -F -b /var/run/gpsd.sock
-    cmd = ["gpsd", dev_file, "-F -b", "/var/run/gpsd.sock"]
-    proc = subprocess.call(cmd)
+    # simply run the start-gps script
+    cmd = ["start-gps", dev_file]
 
 def convert_to_unix(time_string):
     # 2017-11-01T16:46:52.000Z
@@ -81,7 +62,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--restart-gpsd", 
-         help = """restart gpsd daemon (use carefully)""",
+         help = """restart gpsd daemon""",
          action = 'store_true')
 
     args = parser.parse_args()
@@ -104,61 +85,7 @@ if __name__ == "__main__":
     gps_log.writerow(['timestamp'] + attrs)
 
     # reset gpsd, just in case...
-    if args.restart_gpsd:
-        reset_gpsd(args.dev_file)
-
-    # # this code uses the gps module (not gps3)
-    # gpsp = GpsPoller() # create the thread
-    
-    # try:
-    #     gpsp.start() # start it up
-    
-    #     while True:
-    #         # it may take a second or two to get good data
-    #         # print
-    #         # print ' GPS reading'
-    #         # print '----------------------------------------'
-    #         # print 'latitude    ' , gpsd.fix.latitude
-    #         # print 'longitude   ' , gpsd.fix.longitude
-    #         # print 'time utc    ' , gpsd.utc,' + ', gpsd.fix.time
-    #         # print 'altitude (m)' , gpsd.fix.altitude
-    #         # print 'eps         ' , gpsd.fix.eps
-    #         # print 'epx         ' , gpsd.fix.epx
-    #         # print 'epv         ' , gpsd.fix.epv
-    #         # print 'ept         ' , gpsd.fix.ept
-    #         # print 'speed (m/s) ' , gpsd.fix.speed
-    #         # print 'climb       ' , gpsd.fix.climb
-    #         # print 'track       ' , gpsd.fix.track
-    #         # print 'mode        ' , gpsd.fix.mode
-    #         # print
-    #         # print 'sats        ' , gpsd.satellites
-
-    #         # attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
-    #         if not (gpsd.utc).encode("utf-8"):
-    #             continue
-
-    #         gpsr = {
-    #             'time' : convert_to_unix((gpsd.utc).encode("utf-8")),
-    #             'lon' : gpsd.fix.longitude,
-    #             'lat' : gpsd.fix.latitude,
-    #             'alt' : gpsd.fix.altitude,
-    #             'speed' : gpsd.fix.speed,
-    #             'epx' : gpsd.fix.epx,
-    #             'epy' : gpsd.fix.epy,
-    #             'epv' : gpsd.fix.epv,
-    #             'eps' : gpsd.fix.eps
-    #         }
-
-    #         if not gpsr['lon']:
-    #             continue
-
-    #         print(gpsr)
-    #         time.sleep(1.0) # set to whatever
-
-    # except (KeyboardInterrupt, SystemExit): # when you press ctrl+c
-    #     print "\nkilling thread..."
-    #     gpsp.running = False
-    #     gpsp.join() # wait for the thread to finish what it's doing
+    reset_gpsd(args.dev_file)
 
     # start reading gps data
     gps_socket = gps3.GPSDSocket()
