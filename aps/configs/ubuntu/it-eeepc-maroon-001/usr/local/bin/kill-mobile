@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pkill -f mobile-ap
-pkill -f get-ntp-accuracy
+pkill -f --signal 2 mobile-ap
+pkill -f --signal 2 get-ntp-accuracy
 
 exit 0

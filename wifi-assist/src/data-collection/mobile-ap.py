@@ -8,6 +8,7 @@ import datetime
 import subprocess
 import errno
 import threading
+import signal
 
 # for acessing the gps device
 from gps import *
@@ -16,6 +17,11 @@ from socket import error as socket_error
 
 # attributes read from gps device
 attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
+
+def signal_handler(signal, frame):
+    global stop_loop
+    stop_loop = True
+
 # this required a bit of tweaking to work:
 #   - altered /etc/default/gpsd to not start gpsd on boot
 #   - altered /lib/systemd/system/gpsd.service to not require gpsd.socket options
@@ -89,6 +95,9 @@ if __name__ == "__main__":
     if args.restart_ntp:
         restart_service('ntp')
 
+    # register CTRL+C catcher
+    signal.signal(signal.SIGINT, signal_handler)
+
     # gps log file (0 buffering)
     file_timestamp = str(time.time()).split('.')[0]
     filename = os.path.join(args.output_dir, 'gps-log.' + file_timestamp + '.csv')
@@ -119,34 +128,38 @@ if __name__ == "__main__":
         capture_file = os.path.join(args.output_dir, ("monitor." + args.monitor_iface + "." + file_timestamp + ".pcap"))
         capture(args.monitor_iface, capture_file, mode = 'monitor')
 
-    try:
-        last_timestamp = 0
-        for new_data in gps_socket:
+    stop_loop = False
+    last_timestamp = 0
+    for new_data in gps_socket:
 
-            if new_data:
+        if new_data:
 
-                # extract data from gps reading 
-                data_stream.unpack(new_data)
+            # extract data from gps reading 
+            data_stream.unpack(new_data)
 
-                # check if data is meaningful
-                if data_stream.TPV['lon'] == 'n/a':
-                    continue
+            # check if data is meaningful
+            if data_stream.TPV['lon'] == 'n/a':
+                continue
 
-                # convert time to unix timestamp format
-                if data_stream.TPV['time'] == last_timestamp:
-                    continue
+            # convert time to unix timestamp format
+            if data_stream.TPV['time'] == last_timestamp:
+                continue
 
-                data_stream.TPV['time'] = convert_to_unix(data_stream.TPV['time'])
-                last_timestamp = data_stream.TPV['time']
+            data_stream.TPV['time'] = convert_to_unix(data_stream.TPV['time'])
+            last_timestamp = data_stream.TPV['time']
 
-                # write new row to .csv log
-                line = [str(time.time())] + [data_stream.TPV[attr] for attr in attrs]
-                gps_log.writerow(line)
-                print(line)
+            # write new row to .csv log
+            line = [str(time.time())] + [data_stream.TPV[attr] for attr in attrs]
+            gps_log.writerow(line)
+            print(line)
 
-            time.sleep(1.0)
+        time.sleep(1.0)
 
-    except (KeyboardInterrupt, SystemExit):
-        cmd = ["pkill", "-f", "tcpdump"]
-        proc = subprocess.call(cmd)
-        sys.exit(0)
+        # keep collecting data till a CTRL+C is caught...
+        if stop_loop:
+            break
+
+    cmd = ["pkill", "-f", "tcpdump"]
+    proc = subprocess.call(cmd)
+
+    sys.exit(0)

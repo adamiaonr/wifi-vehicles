@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pkill -f cbt
-pkill -f get-ntp-accuracy
+pkill -f --signal 2 cbt
+pkill -f --signal 2 get-ntp-accuracy
 
 exit 0

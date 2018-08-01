@@ -222,7 +222,7 @@ if __name__ == "__main__":
                     'proto'     : output['start']['test_start']['protocol'], 
                     'duration'  : interval['sum']['seconds'],
                     'transfer'  : interval['sum']['bytes'], 
-                    'trgt-bw'   : float(bitrate) * 1000000.0, 
+                    'trgt-bw'   : float(args.bitrate) * 1000000.0, 
                     'res-bw'    : interval['sum']['bits_per_second'],
                     'loss'      : _interval[i]['loss'],
                     'total'     : interval['sum']['packets']}
@@ -235,7 +235,7 @@ if __name__ == "__main__":
                 'proto'     : output['start']['test_start']['protocol'], 
                 'duration'  : output['end']['sum']['seconds'],
                 'transfer'  : output['end']['sum']['bytes'], 
-                'trgt-bw'   : float(bitrate) * 1000000.0, 
+                'trgt-bw'   : float(args.bitrate) * 1000000.0, 
                 'res-bw'    : output['end']['sum']['bits_per_second'],
                 'jitter'    : output['end']['sum']['jitter_ms'],
                 'lost'      : output['end']['sum']['lost_packets'],

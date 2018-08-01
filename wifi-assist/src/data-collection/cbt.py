@@ -6,6 +6,11 @@ import time
 import datetime
 import subprocess
 import sys
+import signal
+
+def signal_handler(signal, frame):
+    global stop_loop
+    stop_loop = True
 
 def capture(iface, output_file, mode = 'ap'):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
@@ -125,22 +130,27 @@ default value is 1:HT20 for channel 1, 20 MHz bandwidth.""")
         parser.print_help()
         sys.exit(1)
 
-    try:
+    # register CTRL+C catcher
+    signal.signal(signal.SIGINT, signal_handler)
 
-        channel = args.channel.split(':')[0]
-        channel_bw = 'HT20'
+    channel = args.channel.split(':')[0]
+    channel_bw = 'HT20'
 
-        if len(args.set_monitor_mode.split(':')) > 1:
-            channel_bw = args.set_monitor_mode.split(':')[1]
+    if len(args.channel.split(':')) > 1:
+        channel_bw = args.channel.split(':')[1]
 
-        if not capture_only:
-            set_channel(args.iface, channel)
+    if not capture_only:
+        set_channel(args.iface, channel)
 
-        timestamp = str(time.time()).split('.')[0]
-        capture(args.iface, os.path.join(args.output_dir, ("monitor." + str(channel) + "." + str(channel_bw).rtrip('+').rtrip('-') + "." + timestamp + ".pcap")))
+    timestamp = str(time.time()).split('.')[0]
+    capture(args.iface, os.path.join(args.output_dir, ("monitor." + str(channel) + "." + str(channel_bw).rstrip('+').rstrip('-') + "." + timestamp + ".pcap")))
 
-    except (KeyboardInterrupt, SystemExit):
-        cmd = ["pkill", "-f", "tcpdump"]
-        proc = subprocess.call(cmd)
+    # keep sleeping till a CTRL+C is caught...
+    stop_loop = False
+    while (stop_loop == False):
+        time.sleep(1.0)
+
+    cmd = ["pkill", "-f", "tcpdump"]
+    proc = subprocess.call(cmd)
 
     sys.exit(0)
