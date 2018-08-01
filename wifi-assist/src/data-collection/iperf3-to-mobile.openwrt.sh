@@ -46,12 +46,11 @@ while [ "$stop_loop" = false ]; do
     error="$(echo "$output" | awk '/error/ {print substr ($2, 2, 6)}')"
     if [ "$error" = "error" ]
     then
-        exit
+        sleep 1
+    else
+        # otherwise, keep relaying the output to rsyslog
+        echo "$output" | logger -t "$mac_addr""|iperf3-log"
     fi
-
-    # otherwise, keep relaying the output to rsyslog
-    echo "$output" | logger -t "$mac_addr""|iperf3-log"
-
 done
 
 # kill tcpdump after CTRL+C
