@@ -16,13 +16,14 @@ bw=$3
 if [ $3 -gt 20 ]
 then
 
-    if [ $3 -gt 36 ]
+    if [ $2 -gt 36 ]
     then
         bw=$bw-
     else
         bw=$bw+
     fi
 fi
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode '"'$2:HT$bw'"'
+echo "$2:HT$bw"
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode "$2:HT$bw"
 
 exit 0
