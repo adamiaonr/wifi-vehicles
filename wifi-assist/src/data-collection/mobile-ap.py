@@ -85,6 +85,10 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
+    # restart ntp
+    if args.restart_ntp:
+        restart_service('ntp')
+
     # gps log file (0 buffering)
     file_timestamp = str(time.time()).split('.')[0]
     filename = os.path.join(args.output_dir, 'gps-log.' + file_timestamp + '.csv')
@@ -97,9 +101,6 @@ if __name__ == "__main__":
     # restart gpsd
     if args.restart_gpsd:
         restart_gpsd(args.dev_file)
-    # restart ntp
-    if args.restart_ntp:
-        restart_service('ntp')
 
     # start reading gps data
     gps_socket = gps3.GPSDSocket()

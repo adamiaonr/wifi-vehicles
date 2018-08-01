@@ -1,0 +1,6 @@
+#!/bin/bash
+
+pkill -f iperf3-to-mobile
+pkill -f get-ntp-accuracy
+
+exit 0

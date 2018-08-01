@@ -7,10 +7,15 @@ import datetime
 import subprocess
 import sys
 
-def capture(iface, time, output_file):
+def capture(iface, output_file, mode = 'ap'):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
-    cmd = ["timeout", str(time), "tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
-    proc = subprocess.call(cmd)
+    cmd = ''
+    if mode == 'ap':
+        cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
+    elif mode == 'monitor':
+        cmd = ["tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
+
+    proc = subprocess.Popen(cmd)
 
 def set_channel(iface, channel = 1, bw = 'HT20'):
 
@@ -50,18 +55,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # options (self-explanatory)
-    #1,6,11,36,40,44,48
-    parser.add_argument(
-        "--channels", 
-         help = """list of channels to scan, separated by ','. e.g.: '--channels 1,6,11'""")
 
-    parser.add_argument(
-        "--duration", 
-         help = """duration of scan (in seconds). e.g.: '--scan-duration 120'""")
+    # parser.add_argument(
+    #     "--duration", 
+    #      help = """duration of scan (in seconds). e.g.: '--scan-duration 120'""")
 
     parser.add_argument(
         "--iface", 
          help = """wifi iface to use for monitor mode. e.g.: '--iface wlx24050f9e2cb1'""")
+
+    parser.add_argument(
+        "--channel", 
+         help = """channel x and channel bandwidth y to scan.
+this sets the iface specified in the '--iface' option to monitor mode, on the specified channel and bandwidth.
+syntax is '--channel <x>:<y>'. the bandwidth y is specified in 'HT capability' format, i.e. 'HT20', 'HT40-' and 'HT40+'. 
+e.g.: '--channel 36:HT40+' sets iface to channel 36, 40 MHz bandwidth, center frequency in 5190 MHz.
+default value is 1:HT20 for channel 1, 20 MHz bandwidth.""")
 
     parser.add_argument(
         "--output-dir", 
@@ -70,18 +79,27 @@ if __name__ == "__main__":
     parser.add_argument(
         "--set-monitor-mode", 
          help = """set 'iface' to monitor mode to channel x and channel bandwidth y.
-syntax is '--set-monitor-mode <x>:<y>'.
-for frequency arguments, use MHz units, e.g. 5240 MHz for channel 48.
-default value is 1:HT20.
-e.g.: '--set-monitor-mode 48:HT40+' or '--set-monitor-mode 5240:HT40+'""")
+this sets the iface specified in the '--iface' option to monitor mode, on the specified channel and bandwidth.
+syntax is '--channel <x>:<y>'. the bandwidth y is specified in 'HT capability' format, i.e. 'HT20', 'HT40-' and 'HT40+'. 
+e.g.: '--channel 36:HT40+' sets iface to channel 36, 40 MHz bandwidth, center frequency in 5190 MHz.
+default value is 1:HT20 for channel 1, 20 MHz bandwidth.""")
+
+    parser.add_argument(
+        "--capture-only", 
+         help = """only starts tcpdump capture without setting iface to monitor mode""",
+         action = 'store_true')
 
     args = parser.parse_args()
 
-    if not args.channels:
-        args.channels = "1,6,11"
+    if not args.channel:
+        args.channel = "1:HT20"
 
-    if not args.duration:
-        args.duration = "10"
+    # if not args.duration:
+    #     args.duration = "10"
+
+    capture_only = False
+    if args.capture_only:
+        capture_only = True
 
     if not args.iface:
         sys.stderr.write("""%s: [ERROR] please supply an iface for monitor mode\n""" % sys.argv[0]) 
@@ -90,6 +108,7 @@ e.g.: '--set-monitor-mode 48:HT40+' or '--set-monitor-mode 5240:HT40+'""")
 
     if args.set_monitor_mode:
 
+        # FIXME: this is redundant, but here for retro-compatibility purposes
         channel = args.set_monitor_mode.split(':')[0]
         channel_bw = 'HT20'
         if len(args.set_monitor_mode.split(':')) > 1:
@@ -106,8 +125,22 @@ e.g.: '--set-monitor-mode 48:HT40+' or '--set-monitor-mode 5240:HT40+'""")
         parser.print_help()
         sys.exit(1)
 
-    for channel in [int(c) for c in args.channels.split(',')]:
-        set_channel(args.iface, channel)
-        capture(args.iface, int(args.duration), os.path.join(args.output_dir, ("eeepc-cbt-%02d.pcap" % (channel))))
+    try:
+
+        channel = args.channel.split(':')[0]
+        channel_bw = 'HT20'
+
+        if len(args.set_monitor_mode.split(':')) > 1:
+            channel_bw = args.set_monitor_mode.split(':')[1]
+
+        if not capture_only:
+            set_channel(args.iface, channel)
+
+        timestamp = str(time.time()).split('.')[0]
+        capture(args.iface, os.path.join(args.output_dir, ("monitor." + str(channel) + "." + str(channel_bw).rtrip('+').rtrip('-') + "." + timestamp + ".pcap")))
+
+    except (KeyboardInterrupt, SystemExit):
+        cmd = ["pkill", "-f", "tcpdump"]
+        proc = subprocess.call(cmd)
 
     sys.exit(0)

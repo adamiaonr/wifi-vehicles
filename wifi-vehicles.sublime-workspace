@@ -4,8 +4,80 @@
 		"selected_items":
 		[
 			[
+				"ou",
+				"output"
+			],
+			[
+				"ex",
+				"exit_value"
+			],
+			[
+				"fre",
+				"freq"
+			],
+			[
+				"ip",
+				"iperf3"
+			],
+			[
+				"re",
+				"remote_logger_ip"
+			],
+			[
+				"if",
+				"iface"
+			],
+			[
 				"se",
-				"set_ylim"
+				"server_port"
+			],
+			[
+				"ser",
+				"server_ip"
+			],
+			[
+				"st",
+				"start"
+			],
+			[
+				"res",
+				"restart"
+			],
+			[
+				"pr",
+				"proc"
+			],
+			[
+				"time",
+				"timestamp"
+			],
+			[
+				"tim",
+				"time"
+			],
+			[
+				"ap",
+				"ap_iface"
+			],
+			[
+				"mon",
+				"monitor_iface"
+			],
+			[
+				"mo",
+				"mode"
+			],
+			[
+				"fil",
+				"file_timestamp"
+			],
+			[
+				"cap",
+				"capture_file"
+			],
+			[
+				"int",
+				"interval"
 			],
 			[
 				"set",
@@ -32,10 +104,6 @@
 				"plot_date"
 			],
 			[
-				"ou",
-				"outer"
-			],
-			[
 				"bes",
 				"best_ap"
 			],
@@ -48,10 +116,6 @@
 				"groupby"
 			],
 			[
-				"tim",
-				"timestamp"
-			],
-			[
 				"col",
 				"columns"
 			],
@@ -62,10 +126,6 @@
 			[
 				"gr",
 				"groupby"
-			],
-			[
-				"time",
-				"timetuple"
 			],
 			[
 				"date",
@@ -144,10 +204,6 @@
 				"chunk"
 			],
 			[
-				"ap",
-				"ap_mac_addr"
-			],
-			[
 				"chu",
 				"chunk"
 			],
@@ -162,10 +218,6 @@
 			[
 				"arg",
 				"args"
-			],
-			[
-				"res",
-				"results"
 			],
 			[
 				"le",
@@ -212,24 +264,12 @@
 				"protocol"
 			],
 			[
-				"re",
-				"results"
-			],
-			[
 				"bit",
 				"bitrate"
 			],
 			[
-				"pr",
-				"print"
-			],
-			[
 				"bi",
 				"bitrate"
-			],
-			[
-				"ip",
-				"ip_server"
 			],
 			[
 				"po",
@@ -249,10 +289,6 @@
 			],
 			[
 				"file",
-				"file_name"
-			],
-			[
-				"fil",
 				"file_name"
 			],
 			[
@@ -392,10 +428,6 @@
 				"string"
 			],
 			[
-				"st",
-				"std"
-			],
-			[
 				"bu",
 				"buf_len"
 			],
@@ -482,155 +514,56 @@
 			[
 				"diff",
 				"differences"
-			],
-			[
-				"ro",
-				"roads"
-			],
-			[
-				"ta",
-				"table"
-			],
-			[
-				"lab",
-				"labels_anon"
-			],
-			[
-				"sc",
-				"smccells"
-			],
-			[
-				"cell",
-				"cells"
-			],
-			[
-				"sor",
-				"sort_values"
-			],
-			[
-				"bar",
-				"barwidth"
-			],
-			[
-				"dri",
-				"drop_duplicates"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "data-analysis/src/availability.py",
+			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
 			"settings":
 			{
-				"buffer_size": 19582,
+				"buffer_size": 1439,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
+			"file": "wifi-assist/src/data-collection/get-cbt.sh",
 			"settings":
 			{
-				"buffer_size": 8628,
+				"buffer_size": 876,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/wireless",
+			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
 			"settings":
 			{
-				"buffer_size": 339,
+				"buffer_size": 127,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.11.20",
+			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
 			"settings":
 			{
-				"buffer_size": 353,
+				"buffer_size": 308,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.36.40",
+			"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
 			"settings":
 			{
-				"buffer_size": 353,
+				"buffer_size": 259,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.11.20",
+			"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
 			"settings":
 			{
-				"buffer_size": 379,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.36.40",
-			"settings":
-			{
-				"buffer_size": 339,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "wifi-assist/src/data-collection/gps-logger.py",
-			"settings":
-			{
-				"buffer_size": 5775,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
-			"settings":
-			{
-				"buffer_size": 0,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/cbt.py",
-			"settings":
-			{
-				"buffer_size": 7317,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/trace-analysis.py",
-			"settings":
-			{
-				"buffer_size": 49024,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "",
-			"file": "/home/adamiaonr/workbench/iperf/src/iperf_api.c",
-			"file_size": -1,
-			"file_write_time": -1,
-			"settings":
-			{
-				"buffer_size": 0,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
-			"settings":
-			{
-				"buffer_size": 0,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "data-analysis/src/positioning.py",
-			"settings":
-			{
-				"buffer_size": 9299,
+				"buffer_size": 210,
 				"line_ending": "Unix"
 			}
 		}
@@ -675,8 +608,86 @@
 	},
 	"file_history":
 	[
-		"/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/run-iperf3",
+		"/home/adamiaonr/workbench/sandbox/example.sh",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/usr/local/bin/run-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/usr/local/bin/run-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/network/network.ap",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/ntpclient",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/system/system.iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/system",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/wireless.client.wpa2.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/wireless.client.wpa2.1",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/wireless.client.open.1",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/wireless.ap.open.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/wireless.client.open",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/wpa_supplicant/wpa_supplicant.timesynch.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/wpa_supplicant/wpa_supplicant.wpa2.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/wpa_supplicant/wpa_supplicant.open.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/wpa_supplicant/wpa_supplicant.open.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/network/interfaces",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/pi/usr/local/bin/run-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/kill-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.40.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.36.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.36.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.1.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.40.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.36.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.36.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.1.20",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/usr/local/bin/change-ap",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/network/interfaces",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/usr/local/bin/run-mobile",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.36.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.40.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.open.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.open.40.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.open.1.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.1.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.open.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.36.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bin/run-mobile",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bin/runiperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.wpa.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bin/killiperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bin/change-ap",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/wpa_supplicant/wpa_supplicant.conf.open.timesynch",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/wpa_supplicant/wpa_supplicant.conf.wpa2",
+		"/home/adamiaonr/workbench/sandbox/mobile-ap/usr/local/bin/start-gps",
+		"/home/adamiaonr/bin/start-gps",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.wpa.36.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.open.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/raspberry-pi/wireless.2.4",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/wireless.open.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.11.20",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/wireless",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.36.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/wireless.open.36.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/raspberry-pi/wireless.5.0",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/positioning.py",
+		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
+		"/home/adamiaonr/workbench/iperf/src/iperf_api.c",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/trace-analysis.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/cbt.py",
+		"/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/availability.py",
+		"/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
 		"/tmp/rsub-AHsqzt/wlan0",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/wpa_supplicant/wpa_supplicant.conf",
 		"/tmp/rsub-o55pxP/dhcpcd.conf",
@@ -691,14 +702,10 @@
 		"/tmp/rsub-lGmA7O/dhcpd.conf",
 		"/tmp/rsub-es1kSY/interfaces",
 		"/home/adamiaonr/workbench/sandbox/wireless.open.40",
-		"/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/rpi-bw-tests.py",
 		"/home/adamiaonr/Downloads/jsoniperf3",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iwlist.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/wifi-logger.py",
-		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/cbt.py",
 		"/home/adamiaonr/Downloads/ssid=nikola-tesla",
 		"/tmp/rsub-Yyokuw/hostapd.conf",
 		"/tmp/rsub-yizH2g/hostapd.conf",
@@ -707,7 +714,6 @@
 		"/tmp/rsub-EnKnj_/hostapd.conf",
 		"/tmp/rsub-se1G4h/hostapd.conf",
 		"/tmp/rsub-2bTWXR/hostapd.conf",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/positioning.py",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/convert_rocketfuel.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/network_utils.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/handoff_manager.py",
@@ -729,80 +735,7 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/scripts/rsub",
 		"/home/adamiaonr/workbench/rid-analytics/src/rid-analytics.cpp",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/server/Makefile",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/server/echo-server.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/src/run-analysis.cpp",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/Makefile",
-		"/home/adamiaonr/workbench/epi/Makefile",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/availability.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/hello-world.c",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/client/Makefile",
-		"/home/adamiaonr/workbench/networking-sandbox/ping/src/pingy.cpp",
-		"/home/adamiaonr/workbench/networking-sandbox/traceroute/src/traceroute.cpp",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo-client.cpp",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo-server.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/Makefile",
-		"/home/adamiaonr/workbench/rid-analytics/include/rid-analytics.h",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/availability.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/wifi-connections.py",
-		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/pytransport.py",
-		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/stack.py",
-		"/home/adamiaonr/workbench/networking-sandbox/python-ip-stack/src/pysocket.py",
-		"/home/adamiaonr/workbench/rid-analytics/src/prob.cpp",
-		"/home/adamiaonr/workbench/rid-analytics/include/prob.h",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/channels.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/coverage.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/.old/session_analysis.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/coverage.py",
-		"/home/adamiaonr/workbench/machine-learning/2017/src/hw4/ex1.py",
-		"/home/adamiaonr/workbench/machine-learning/2017/src/hw1/ex1.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/session_analysis.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/channels.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/plot.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/wifi_grid.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/README.md",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/performance.py",
-		"/home/adamiaonr/Downloads/stuffy",
-		"/home/adamiaonr/workbench/machine-learning-fall-2017/src/hw3/ex1.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/wifi-scans/wifi-reports/README",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/wifi_assist.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/output/coverage-2.csv",
-		"/mnt/hgfs/adamiaonr/Downloads/coverage-n-2.html",
-		"/mnt/hgfs/adamiaonr/Downloads/coverage-ss-2.html",
-		"/mnt/hgfs/adamiaonr/Downloads/coverage-n.html",
-		"/mnt/hgfs/adamiaonr/Downloads/gps-accuracy-mean.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/coverage.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/channel-intervals.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/session_analysis.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/general-analysis.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/plot_utils.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/plot.py",
-		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/plot_global.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/ap-stats.hdf5",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/private-public.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/wifi_assist.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/graphs/wifi-assist/2017-11-02/wifi-signal-quality.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/wifi-scans/wifi-assist/2017-11-02/gps-log.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/wifi-scans/wifi-assist/2017-11-02/wifi-log.csv",
-		"/mnt/hgfs/adamiaonr/Downloads/wifi-assist/gps-error-ep.html",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/wifi-scans/feup-experiments/2017-11-02/wifi-log.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/wifi-scans/feup-experiments/2017-11-02/gps-log.csv",
-		"/home/adamiaonr/workbench/wifi-authentication/wifi-assist/src/gps-logger.py",
-		"/tmp/rsub-8X8s3Z/ntp.conf",
-		"/home/adamiaonr/workbench/wifi-authentication/wifi-assist/src/wifi-logger.py",
-		"/home/adamiaonr/workbench/wifi-authentication/wifi-assist/src/iwlist.py",
-		"/mnt/hgfs/adamiaonr/Downloads/wifi-assist/channel-switch-table.tex",
-		"/mnt/hgfs/adamiaonr/Downloads/wifi-assist/Makefile",
-		"/mnt/hgfs/adamiaonr/Downloads/wifi-assist/preamble.tex",
-		"/mnt/hgfs/adamiaonr/workbench/conext-2017/motivation.tex",
-		"/mnt/hgfs/adamiaonr/workbench/conext-2017/conext-2017.tex",
-		"/mnt/hgfs/adamiaonr/workbench/conext-2017/preamble.tex",
-		"/tmp/rsub-MJS4wK/client.py",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/src/wifi_grid.py",
-		"/mnt/hgfs/adamiaonr/Downloads/wireless_tools.29/iwlib.h",
-		"/mnt/hgfs/adamiaonr/Downloads/wireless_tools.29/iwlist.c",
-		"/tmp/rsub-LNlall/wpa_supplicant.conf",
-		"/tmp/rsub-T4VmAu/ntp.conf",
-		"/home/adamiaonr/workbench/wifi-authentication/data-analysis/data/output/time-cdf.csv"
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/server/echo-server.cpp"
 	],
 	"find":
 	{
@@ -822,6 +755,13 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"echo $survey",
+			"iw wlan0 survey dump | grep \"in use\" -A 5",
+			"capture",
+			"ping",
+			"str(time.time()).split('.')[0]",
+			"bitrate",
+			"test(",
 			"ax4",
 			"ax3",
 			"ax2",
@@ -942,14 +882,7 @@
 			"COLUMNS",
 			"ax1",
 			"fig_1",
-			"ax1",
-			"sd",
-			".loc",
-			".iloc",
-			"append",
-			"Data",
-			"band_cols",
-			"x"
+			"ax1"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -957,6 +890,10 @@
 		"regex": false,
 		"replace_history":
 		[
+			"echo \"$survey\"",
+			"$survey",
+			"file_timestamp",
+			"timestamp",
 			"ax[3]",
 			"ax[2]",
 			"ax[1]",
@@ -1080,11 +1017,7 @@
 			"distance/strong",
 			"distance/strong/",
 			"distance/strong-full/",
-			"SF:",
-			"<tp iface=\"0\">10</tp>",
-			"<tp iface=\"0\">5</tp>",
-			"<tp iface=\"0\">4</tp>",
-			"<tp iface=\"0\">3</tp>"
+			"SF:"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -1095,85 +1028,81 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 3,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "data-analysis/src/availability.py",
+					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
 					"settings":
 					{
-						"buffer_size": 19582,
+						"buffer_size": 1439,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								15659,
-								15659
+								1243,
+								1243
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 5432.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
+					"file": "wifi-assist/src/data-collection/get-cbt.sh",
 					"settings":
 					{
-						"buffer_size": 8628,
+						"buffer_size": 876,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								264,
+								264
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 189.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "aps/configs/openwrt/unifi-ac-lite/wireless",
+					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
 					"settings":
 					{
-						"buffer_size": 339,
+						"buffer_size": 127,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								65,
+								65
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1183,24 +1112,23 @@
 				},
 				{
 					"buffer": 3,
-					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.11.20",
+					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
 					"settings":
 					{
-						"buffer_size": 353,
+						"buffer_size": 308,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								308,
+								308
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1210,10 +1138,10 @@
 				},
 				{
 					"buffer": 4,
-					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.open.36.40",
+					"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
 					"settings":
 					{
-						"buffer_size": 353,
+						"buffer_size": 259,
 						"regions":
 						{
 						},
@@ -1226,8 +1154,7 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1237,10 +1164,10 @@
 				},
 				{
 					"buffer": 5,
-					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.11.20",
+					"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
 					"settings":
 					{
-						"buffer_size": 379,
+						"buffer_size": 210,
 						"regions":
 						{
 						},
@@ -1253,234 +1180,10 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "aps/configs/openwrt/unifi-ac-lite/wireless.wpa2.36.40",
-					"settings":
-					{
-						"buffer_size": 339,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "wifi-assist/src/data-collection/gps-logger.py",
-					"settings":
-					{
-						"buffer_size": 5775,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
-					"settings":
-					{
-						"buffer_size": 0,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 564.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "data-analysis/src/cbt.py",
-					"settings":
-					{
-						"buffer_size": 7317,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2187,
-								2187
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 467.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "data-analysis/src/trace-analysis.py",
-					"settings":
-					{
-						"buffer_size": 49024,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3316.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "/home/adamiaonr/workbench/iperf/src/iperf_api.c",
-					"settings":
-					{
-						"buffer_size": 0,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "/home/adamiaonr/workbench/rid-analytics/scripts/graphs/cdn.py",
-					"settings":
-					{
-						"buffer_size": 0,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 5940.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 13,
-					"file": "data-analysis/src/positioning.py",
-					"settings":
-					{
-						"buffer_size": 9299,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5634,
-								5634
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2207.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1680,6 +1383,6 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 161.0,
+	"side_bar_width": 387.0,
 	"status_bar_visible": true
 }

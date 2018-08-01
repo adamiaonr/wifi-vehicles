@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]
+then
+	echo "usage : $0 <wpa-encryption> <channel> <bandwidth>"
+	exit 1
+fi
+
+# symlink to correct hostapd.conf file
+ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/etc/hostapd/hostapd.conf.$1.$2.$3 /etc/hostapd/hostapd.conf
+# restart hostapd (and everything else...)
+/etc/init.d/networking restart
+
+# change channel on the monitoring iface to that of the ap
+bw=$3
+if [ $3 -gt 20 ]
+then
+
+    if [ $3 -gt 36 ]
+    then
+        bw=$bw-
+    else
+        bw=$bw+
+    fi
+fi
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode '"'$2:HT$bw'"'
+
+exit 0

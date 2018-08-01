@@ -1,0 +1,6 @@
+#!/bin/bash
+
+pkill -f cbt
+pkill -f get-ntp-accuracy
+
+exit 0

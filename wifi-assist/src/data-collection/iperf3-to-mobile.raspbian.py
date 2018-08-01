@@ -21,6 +21,10 @@ def signal_handler(signal, frame):
     global stop_loop
     stop_loop = True
 
+def restart_service(service = 'ntp'):
+    cmd = ["service", service, "restart"]
+    proc = subprocess.call(cmd)
+
 def capture(iface, output_file):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
     cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
@@ -108,6 +112,11 @@ if __name__ == "__main__":
          help = """do not save any .csv files""",
          action = 'store_true')
 
+    parser.add_argument(
+        "--restart-ntp", 
+         help = """restart ntp daemon""",
+         action = 'store_true')
+
     args = parser.parse_args()
 
     if not args.bitrate:
@@ -134,6 +143,10 @@ if __name__ == "__main__":
 
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
+
+    # restart ntp
+    if args.restart_ntp:
+        restart_service('ntp')
 
     logging = True
     if args.no_log:

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <iperf3-bitrate>"
+	exit 1
+fi
+
+# start logread and relay it to 10.10.12.1:514, over udp
+killall logread
+logread -f -u -r 10.10.12.1 514 -P unifi-ac-lite &
+
+# read cbt and relay stats to rsyslog
+/root/workbench/get-cbt.sh &
+# start iperf3 tests and relay stats to rsyslog
+/root/workbench/iperf3-to-mobile.openwrt.sh $1 10.10.10.111 5202 &
+
+exit 0

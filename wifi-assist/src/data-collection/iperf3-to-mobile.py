@@ -30,6 +30,10 @@ def signal_handler(signal, frame):
     global stop_loop
     stop_loop = True
 
+def restart_service(service = 'ntp'):
+    cmd = ["service", service, "restart"]
+    proc = subprocess.call(cmd)
+
 def capture(iface, output_file):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
     cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
@@ -114,6 +118,11 @@ if __name__ == "__main__":
         "--output-dir", 
          help = """dir to save .csv files""")
 
+    parser.add_argument(
+        "--restart-ntp", 
+         help = """restart ntp daemon""",
+         action = 'store_true')
+
     args = parser.parse_args()
 
     if not args.bitrate:
@@ -132,6 +141,10 @@ if __name__ == "__main__":
         sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
+
+    # restart ntp
+    if args.restart_ntp:
+        restart_service('ntp')
 
     timestamp = str(time.time()).split('.')[0]
     reports_file = os.path.join(args.output_dir, ("iperf3-to-mobile.report." + str(args.bitrate) + "." + timestamp + ".csv"))
