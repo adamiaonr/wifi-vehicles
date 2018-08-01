@@ -6,8 +6,12 @@ then
 	exit 1
 fi
 
+# kill outstanding scritps
 pkill -f iperf3-to-mobile
 pkill -f get-ntp-accuracy
+# create dirs (if not available already)
+mkdir -p /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iwconfig wlx24050f9e2cb1 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}')
+# run scripts
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --bitrates $1 --ip-server 10.10.10.111 --port 5204 --iface wlx24050f9e2cb1 --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iwconfig wlx24050f9e2cb1 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}') &
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iwconfig wlx24050f9e2cb1 2> /dev/null | awk '/Frequency:/ {print substr ($2, 11, 3)}')/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}') &
 
