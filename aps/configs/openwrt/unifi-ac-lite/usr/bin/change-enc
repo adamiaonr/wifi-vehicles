@@ -1,0 +1,29 @@
+#!/bin/sh
+
+if [ $# -lt 2 ]
+then
+	echo "usage : $0 <wpa-encryption> <freq-band>"
+	echo "options : "
+	echo "    <wpa-encryption> : 'open' or 'wpa2'"
+	echo "    <freq-band>: '2.4' or '5' (GHz)"
+	exit 1
+fi
+
+freq=1
+if [ "$2" = "2.4" ]
+then
+	freq=1
+elif [ "$2" = "5" ]
+then  
+	freq=40
+else
+	echo "error : unrecognized freq-band :  $freq"
+	exit 1
+fi
+
+# symlink to correct wpa_supplicant.conf file
+ln -sfv /root/workbench/configs/etc/config/wireless/wireless.client.$1.$freq /etc/config/wireless
+# reboot so that the new configs take effect
+reboot
+
+exit 0
