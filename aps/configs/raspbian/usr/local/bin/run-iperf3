@@ -10,10 +10,10 @@ fi
 pkill -f iperf3-to-mobile
 pkill -f get-ntp-accuracy
 # create dirs (if not available already)
-mkdir -p /home/pi/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f6dae36 info | awk '/channel/ {print substr ($3, 2, 2) }')/$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}')
+mkdir -p /home/pi/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}')
 # run scripts
 python /home/pi/workbench/scripts/iperf3-to-mobile.raspbian.py --restart-ntp --bitrate $1 --ip-server 10.10.10.111 --port 5203 --iface wlx24050f6dae36 --output-dir /home/pi/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f6dae36 info | awk '/channel/ {print substr ($3, 2, 2) }')/$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}') &
-python /home/pi/workbench/scripts/get-ntp-accuracy.py --output-dir /home/pi/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f6dae36 info | awk '/channel/ {print substr ($3, 2, 2) }')/$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}') &
+python /home/pi/workbench/scripts/get-ntp-accuracy.py --output-dir /home/pi/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}') &
 
 exit 0
 
