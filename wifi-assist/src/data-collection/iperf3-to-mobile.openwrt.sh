@@ -5,10 +5,12 @@
 echo $$ > /var/run/iperf3-to-mobile.pid
 
 bitrate=$1
-server_ip=$2
-server_port=$3
-# iface=$4
-# ryslog_ip=$5
+trace_nr=$2
+channel=$3
+server_ip=$4
+server_port=$5
+# iface=$6
+# ryslog_ip=$7
 
 echo "started iperf3 script w/ params:"
 echo "  bitrate: $bitrate"
@@ -34,7 +36,19 @@ signal_handler() {
 # tcpdump -tt -S -e -vvvv -i $iface -s0  | logger -t "tcpdump" &
 
 # get mac addr of wifi iface
-mac_addr=$(iw wlan0 info | awk '/addr/ {print $2}')
+wiface=""
+if [ "$(iwconfig wlan0 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+then
+    wiface="wlan0"
+elif [ "$(iwconfig wlan1 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+then  
+    wiface="wlan1"
+else
+    echo "error : no wlan iface. aborting."
+    exit 1
+fi
+
+mac_addr=$(iw $wiface info | awk '/addr/ {print $2}')
 
 # run iperf3 in captures of 5 seconds (pipe output to logger)
 while [ "$stop_loop" = false ]; do
@@ -49,7 +63,7 @@ while [ "$stop_loop" = false ]; do
         sleep 1
     else
         # otherwise, keep relaying the output to rsyslog
-        echo "$output" | logger -t "$mac_addr""|iperf3-log"
+        echo "$output" | logger -t "$mac_addr|$trace_nr|$channel|$bitrate|iperf3-log"
     fi
 done
 
