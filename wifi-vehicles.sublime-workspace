@@ -4,16 +4,72 @@
 		"selected_items":
 		[
 			[
+				"wpa",
+				"wpa-encryption"
+			],
+			[
+				"fre",
+				"freq"
+			],
+			[
+				"freq",
+				"freq-band"
+			],
+			[
+				"con",
+				"config"
+			],
+			[
+				"st",
+				"stop_loop"
+			],
+			[
+				"stop",
+				"stop_loop"
+			],
+			[
+				"ch",
+				"channel"
+			],
+			[
+				"ca",
+				"capture_only"
+			],
+			[
+				"cha",
+				"channel"
+			],
+			[
+				"de",
+				"delta"
+			],
+			[
+				"str",
+				"stratum"
+			],
+			[
+				"pa",
+				"parse_ntpstat"
+			],
+			[
+				"sp",
+				"split"
+			],
+			[
+				"lo",
+				"log"
+			],
+			[
+				"log",
+				"log_file"
+			],
+			[
 				"ou",
 				"output"
 			],
 			[
 				"ex",
 				"exit_value"
-			],
-			[
-				"fre",
-				"freq"
 			],
 			[
 				"ip",
@@ -34,10 +90,6 @@
 			[
 				"ser",
 				"server_ip"
-			],
-			[
-				"st",
-				"start"
 			],
 			[
 				"res",
@@ -200,10 +252,6 @@
 				"mac_addr"
 			],
 			[
-				"ch",
-				"chunk"
-			],
-			[
 				"chu",
 				"chunk"
 			],
@@ -240,10 +288,6 @@
 				"filename"
 			],
 			[
-				"lo",
-				"loss"
-			],
-			[
 				"rs",
 				"results_file"
 			],
@@ -274,10 +318,6 @@
 			[
 				"po",
 				"protocols"
-			],
-			[
-				"cha",
-				"channel_nr"
 			],
 			[
 				"max",
@@ -416,16 +456,8 @@
 				"errsv"
 			],
 			[
-				"ca",
-				"carry_on"
-			],
-			[
 				"inc",
 				"include"
-			],
-			[
-				"str",
-				"string"
 			],
 			[
 				"bu",
@@ -450,10 +482,6 @@
 			[
 				"cel",
 				"cell_size"
-			],
-			[
-				"con",
-				"continue"
 			],
 			[
 				"LO",
@@ -486,84 +514,40 @@
 			[
 				"loca",
 				"location_file"
-			],
-			[
-				"up",
-				"updated_map"
-			],
-			[
-				"upda",
-				"update"
-			],
-			[
-				"aro",
-				"antiroads"
-			],
-			[
-				"over",
-				"overlay"
-			],
-			[
-				"dif",
-				"diff"
-			],
-			[
-				"di",
-				"diff"
-			],
-			[
-				"diff",
-				"differences"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
-			"settings":
-			{
-				"buffer_size": 1439,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "wifi-assist/src/data-collection/get-cbt.sh",
-			"settings":
-			{
-				"buffer_size": 876,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
-			"settings":
-			{
-				"buffer_size": 127,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
-			"settings":
-			{
-				"buffer_size": 308,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
 			"settings":
 			{
-				"buffer_size": 259,
+				"buffer_size": 1186,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
+			"file": "aps/configs/raspbian/usr/local/bin/run-iperf3",
 			"settings":
 			{
-				"buffer_size": 210,
+				"buffer_size": 891,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/run-iperf3",
+			"settings":
+			{
+				"buffer_size": 920,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/ubuntu/it-eeepc-maroon-001/usr/local/bin/run-mobile",
+			"settings":
+			{
+				"buffer_size": 903,
 				"line_ending": "Unix"
 			}
 		}
@@ -608,10 +592,36 @@
 	},
 	"file_history":
 	[
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/usr/local/bin/change-enc",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/change-enc",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/usr/bin/change-enc",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/kill-monitor",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/usr/local/bin/run-mobile",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/usr/local/bin/kill-mobile",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/run-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/usr/local/bin/run-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/kill-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/usr/local/bin/kill-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/usr/local/bin/change-ap",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/usr/local/bin/start-gps",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/etc/hostapd/hostapd.conf.open.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-maroon-001/etc/hostapd/hostapd.conf.wpa.40.40",
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cbt.sh",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
+		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/start-gps",
 		"/home/adamiaonr/workbench/sandbox/example.sh",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/usr/local/bin/run-iperf3",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/usr/local/bin/run-iperf3",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/network/network.ap",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/ntpclient",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/openwrt/unifi-ac-lite/etc/config/system/system.iperf3",
@@ -625,15 +635,9 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/wpa_supplicant/wpa_supplicant.wpa2.conf",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/wpa_supplicant/wpa_supplicant.open.conf",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/wpa_supplicant/wpa_supplicant.open.conf",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/etc/network/interfaces",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/pi/usr/local/bin/run-iperf3",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/kill-iperf3",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.40.40",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.40.40",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.40.20",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.36.40",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.wpa.36.20",
@@ -644,7 +648,6 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.36.20",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.11.20",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.open.1.20",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/usr/local/bin/change-ap",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/network/interfaces",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/usr/local/bin/run-mobile",
@@ -659,7 +662,6 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.open.11.20",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf.wpa.36.20",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/mobile-ap/etc/hostapd/hostapd.conf",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bin/run-mobile",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bin/runiperf3",
 		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.wpa.11.20",
@@ -685,7 +687,6 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/cbt.py",
 		"/home/adamiaonr/workbench/raspberrypi/wifi/iperf3-tests/src/rpi-bw-tests.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/gps-logger.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.raspbian.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/data-analysis/src/availability.py",
 		"/home/adamiaonr/workbench/rid-analytics/scripts/rocketfuel/generate_tests.py",
 		"/tmp/rsub-AHsqzt/wlan0",
@@ -718,24 +719,7 @@
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/network_utils.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/handoff_manager.py",
 		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/covmap_example.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/coverage_map.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/connection_manager.py",
-		"/home/adamiaonr/workbench/ralink-5572/common/cmm_data.c",
-		"/home/adamiaonr/workbench/ralink-5572/os/linux/sta_ioctl.c",
-		"/home/adamiaonr/workbench/ralink-5572/sta/sta_cfg.c",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/hostapd/hostapd.conf.ac",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/hostapd.conf",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/configs/raspbian/etc/hostapd/hostapd.conf",
-		"/home/adamiaonr/workbench/openwrt/package/kernel/mac80211/patches/621-rt2x00-ht20_40_fix.patch",
-		"/home/adamiaonr/workbench/rid-analytics/scripts/graphs/globalr.py",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/scripts/echo-server",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/client/echo-client.cpp",
-		"/home/adamiaonr/.ssh/config",
-		"/home/adamiaonr/workbench/sandbox/rsub",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/scripts/rsub",
-		"/home/adamiaonr/workbench/rid-analytics/src/rid-analytics.cpp",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/server/Makefile",
-		"/home/adamiaonr/workbench/wifi-vehicles/aps/src/echo/server/echo-server.cpp"
+		"/home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/blind-handovers/coverage_map.py"
 	],
 	"find":
 	{
@@ -1033,45 +1017,44 @@
 			[
 				{
 					"buffer": 0,
-					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
+					"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
 					"settings":
 					{
-						"buffer_size": 1439,
+						"buffer_size": 1186,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1243,
-								1243
+								1178,
+								1178
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 45.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "wifi-assist/src/data-collection/get-cbt.sh",
+					"file": "aps/configs/raspbian/usr/local/bin/run-iperf3",
 					"settings":
 					{
-						"buffer_size": 876,
+						"buffer_size": 891,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								264,
-								264
+								882,
+								882
 							]
 						],
 						"settings":
@@ -1086,18 +1069,18 @@
 				},
 				{
 					"buffer": 2,
-					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
+					"file": "aps/configs/ubuntu/it-eeepc-white-002/usr/local/bin/run-iperf3",
 					"settings":
 					{
-						"buffer_size": 127,
+						"buffer_size": 920,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								65,
-								65
+								920,
+								920
 							]
 						],
 						"settings":
@@ -1112,70 +1095,18 @@
 				},
 				{
 					"buffer": 3,
-					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
+					"file": "aps/configs/ubuntu/it-eeepc-maroon-001/usr/local/bin/run-mobile",
 					"settings":
 					{
-						"buffer_size": 308,
+						"buffer_size": 903,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								308,
-								308
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/run-monitor",
-					"settings":
-					{
-						"buffer_size": 259,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "aps/configs/ubuntu/it-eeepc-black-001/usr/local/bin/change-ap",
-					"settings":
-					{
-						"buffer_size": 210,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
+								895,
+								895
 							]
 						],
 						"settings":

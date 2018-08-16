@@ -12,12 +12,25 @@ signal_handler() {
 }
 
 # get mac addr of wifi iface
-mac_addr=$(iw wlan0 info | awk '/addr/ {print $2}')
+
+wiface=""
+if [ "$(iwconfig wlan0 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+then
+	wiface="wlan0"
+elif [ "$(iwconfig wlan1 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+then  
+	wiface="wlan1"
+else
+	echo "error : no wlan iface. aborting."
+	exit 1
+fi
+
+mac_addr=$(iw $wiface info | awk '/addr/ {print $2}')
 
 while [ "$stop_loop" = false ]; do
 
 	# gather survey dump from active channel
-	survey="$(iw wlan0 survey dump | grep "in use" -A 5)"
+	survey="$(iw $wiface survey dump | grep "in use" -A 5)"
 
 	# extract cbt survey components
 	freq=$(echo "$survey" | awk '/frequency/ {print $2}')

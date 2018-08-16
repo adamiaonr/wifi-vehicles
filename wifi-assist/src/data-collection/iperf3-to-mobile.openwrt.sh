@@ -34,7 +34,19 @@ signal_handler() {
 # tcpdump -tt -S -e -vvvv -i $iface -s0  | logger -t "tcpdump" &
 
 # get mac addr of wifi iface
-mac_addr=$(iw wlan0 info | awk '/addr/ {print $2}')
+wiface=""
+if [ "$(iwconfig wlan0 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+then
+    wiface="wlan0"
+elif [ "$(iwconfig wlan1 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+then  
+    wiface="wlan1"
+else
+    echo "error : no wlan iface. aborting."
+    exit 1
+fi
+
+mac_addr=$(iw $wiface info | awk '/addr/ {print $2}')
 
 # run iperf3 in captures of 5 seconds (pipe output to logger)
 while [ "$stop_loop" = false ]; do
