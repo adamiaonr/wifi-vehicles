@@ -13,7 +13,7 @@ logread -f -u -r 10.10.12.1 514 &
 # read cbt and relay stats to rsyslog
 /root/workbench/get-cbt.sh $2 &
 # start iperf3 tests and relay stats to rsyslog
-if [ "$protocol" == "udp" ]
+if [ "$1" == "udp" ]
 then
 	/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 10.10.10.111 5202 $3 &
 else
