@@ -21,10 +21,10 @@ signal_handler() {
 
 # get mac addr of wifi iface
 wiface=""
-if [ "$(iwconfig wlan0 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+if [ "$(iwinfo wlan0 info | awk '/Access Point/ {print $3}')" == "24:05:0F:61:51:14" ]
 then
 	wiface="wlan0"
-elif [ "$(iwconfig wlan1 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
+elif [ "$(iwinfo wlan1 info | awk '/Access Point/ {print $3}')" == "24:05:0F:61:51:14" ]
 then  
 	wiface="wlan1"
 else
