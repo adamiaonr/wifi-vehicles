@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if [ $# -lt 1 ]
+if [ $# -lt 3 ]
 then
-	echo "usage : $0 <iperf3-bitrate>"
+	echo "usage : $0 <iperf3-bitrate> <trace-nr> <channel>"
 	exit 1
 fi
 
@@ -11,8 +11,8 @@ killall logread
 logread -f -u -r 10.10.12.1 514 -P unifi-ac-lite &
 
 # read cbt and relay stats to rsyslog
-/root/workbench/get-cbt.sh &
+/root/workbench/get-cbt.sh $1 $2 $3 &
 # start iperf3 tests and relay stats to rsyslog
-/root/workbench/iperf3-to-mobile.openwrt.sh $1 10.10.10.111 5202 &
+/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 $3 10.10.10.111 5202 &
 
 exit 0

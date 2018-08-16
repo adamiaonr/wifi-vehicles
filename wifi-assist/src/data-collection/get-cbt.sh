@@ -41,7 +41,7 @@ while [ "$stop_loop" = false ]; do
 	ctt=$(echo "$survey" | awk '/channel transmit time/ {print $4}')
 
 	# send csv line to rsyslog
-	echo "$freq,$noise,$cat,$cbt,$crt,$ctt" |  logger -t "$mac_addr""|cbt-log"
+	echo "$freq,$noise,$cat,$cbt,$crt,$ctt" |  logger -t "$mac_addr|$2|$3|$1|cbt-log"
 
 	sleep 1
 
