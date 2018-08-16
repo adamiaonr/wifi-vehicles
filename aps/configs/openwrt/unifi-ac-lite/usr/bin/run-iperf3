@@ -2,17 +2,22 @@
 
 if [ $# -lt 3 ]
 then
-	echo "usage : $0 <iperf3-bitrate> <trace-nr> <channel>"
+	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
 	exit 1
 fi
 
 # start logread and relay it to 10.10.12.1:514, over udp
 killall logread
-logread -f -u -r 10.10.12.1 514 -P unifi-ac-lite &
+logread -f -u -r 10.10.12.1 514 &
 
 # read cbt and relay stats to rsyslog
-/root/workbench/get-cbt.sh $1 $2 $3 &
+/root/workbench/get-cbt.sh $2 &
 # start iperf3 tests and relay stats to rsyslog
-/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 $3 10.10.10.111 5202 &
+if [ "$protocol" == "udp" ]
+then
+	/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 10.10.10.111 5202 $3 &
+else
+	/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 10.10.10.111 5202 &
+fi
 
 exit 0

@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"wl",
+				"wlan1"
+			],
+			[
 				"wpa",
 				"wpa-encryption"
 			],
@@ -510,10 +514,6 @@
 			[
 				"sl",
 				"self"
-			],
-			[
-				"loca",
-				"location_file"
 			]
 		]
 	},
@@ -531,7 +531,7 @@
 			"file": "aps/configs/raspbian/usr/local/bin/run-iperf3",
 			"settings":
 			{
-				"buffer_size": 891,
+				"buffer_size": 819,
 				"line_ending": "Unix"
 			}
 		},
@@ -548,6 +548,57 @@
 			"settings":
 			{
 				"buffer_size": 903,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
+			"settings":
+			{
+				"buffer_size": 431,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
+			"settings":
+			{
+				"buffer_size": 136,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/change-enc",
+			"settings":
+			{
+				"buffer_size": 654,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "#!/bin/sh\n\necho $$ > /var/run/get-cbt.pid\n\nstop_loop=false\ntrap signal_handler INT\n\n# set stop_loop to true after catching CTRL-C signal\nsignal_handler() {\n    echo \"** received CTRL-C : quitting cbt script\"\n    stop_loop=true\n}\n\n# get mac addr of wifi iface\nwiface=\"\"\nif [ \"$(iwconfig wlan0 | awk '/Access Point/ {print $6}')\" == \"24:05:0F:61:51:14\" ]\nthen\n	wiface=\"wlan0\"\nelif [ \"$(iwconfig wlan1 | awk '/Access Point/ {print $6}')\" == \"24:05:0F:61:51:14\" ]\nthen  \n	wiface=\"wlan1\"\nelse\n	echo \"error : no wlan iface. aborting.\"\n	exit 1\nfi\n\nmac_addr=$(iw $wiface info | awk '/addr/ {print $2}')\n\nwhile [ \"$stop_loop\" = false ]; do\n\n	# gather survey dump from active channel\n	survey=\"$(iw $wiface survey dump | grep \"in use\" -A 5)\"\n\n	# extract cbt survey components\n	freq=$(echo \"$survey\" | awk '/frequency/ {print $2}')\n	noise=$(echo \"$survey\" | awk '/noise/ {print $2}')\n	cat=$(echo \"$survey\" | awk '/channel active time/ {print $4}')\n	cbt=$(echo \"$survey\" | awk '/channel busy time/ {print $4}')\n	crt=$(echo \"$survey\" | awk '/channel receive time/ {print $4}')\n	ctt=$(echo \"$survey\" | awk '/channel transmit time/ {print $4}')\n\n	# send csv line to rsyslog\n	echo \"$freq,$noise,$cat,$cbt,$crt,$ctt\" |  logger -t \"$mac_addr\"\"|cbt-log\"\n\n	sleep 1\n\ndone\n\nexit\n",
+			"file": "wifi-assist/src/data-collection/get-cbt.sh",
+			"file_size": 1257,
+			"file_write_time": 1533563224000000,
+			"settings":
+			{
+				"buffer_size": 1256,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
+			"settings":
+			{
+				"buffer_size": 1896,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wifi-assist/src/data-collection/get-ntp-accuracy.py",
+			"settings":
+			{
+				"buffer_size": 2171,
 				"line_ending": "Unix"
 			}
 		}
@@ -739,6 +790,7 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"wlan0",
 			"echo $survey",
 			"iw wlan0 survey dump | grep \"in use\" -A 5",
 			"capture",
@@ -865,8 +917,7 @@
 			"channel_snrs",
 			"COLUMNS",
 			"ax1",
-			"fig_1",
-			"ax1"
+			"fig_1"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1012,7 +1063,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 4,
 			"sheets":
 			[
 				{
@@ -1046,15 +1097,15 @@
 					"file": "aps/configs/raspbian/usr/local/bin/run-iperf3",
 					"settings":
 					{
-						"buffer_size": 891,
+						"buffer_size": 819,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								882,
-								882
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1112,6 +1163,168 @@
 						"settings":
 						{
 							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/run-iperf3",
+					"settings":
+					{
+						"buffer_size": 431,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/kill-iperf3",
+					"settings":
+					{
+						"buffer_size": 136,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "aps/configs/openwrt/unifi-ac-lite/usr/bin/change-enc",
+					"settings":
+					{
+						"buffer_size": 654,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								445,
+								445
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "wifi-assist/src/data-collection/get-cbt.sh",
+					"settings":
+					{
+						"buffer_size": 1256,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								539,
+								539
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "wifi-assist/src/data-collection/iperf3-to-mobile.openwrt.sh",
+					"settings":
+					{
+						"buffer_size": 1896,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 90.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "wifi-assist/src/data-collection/get-ntp-accuracy.py",
+					"settings":
+					{
+						"buffer_size": 2171,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1314,6 +1527,6 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 387.0,
+	"side_bar_width": 372.0,
 	"status_bar_visible": true
 }

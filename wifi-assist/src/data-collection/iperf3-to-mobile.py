@@ -42,8 +42,16 @@ def capture(iface, output_file):
 def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5):
 
     output = "N/A"
+
     # iperf3 -t <time> -c <ip_server> -u (or nothing) -b <bitrate>M
-    cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
+    if proto == 'udp':
+        cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
+    elif proto == 'tcp':
+        time = 10
+        cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port)]
+    else:
+        sys.stderr.write("""%s:::start_iperf3() : [ERROR] unknown protocol : %s\n""" % (sys.argv[0], proto))
+        return -1, output
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -90,9 +98,9 @@ if __name__ == "__main__":
         "--bitrate", 
          help = """iperf3 bitrate (in Mbps) to use in test. e.g.: '--bitrate 11'""")
 
-    # parser.add_argument(
-    #     "--protocols", 
-    #      help = """list of protocols (UDP or TCP), separated by ','. e.g.: '--protocols UDP,TCP'""")
+    parser.add_argument(
+        "--protocol", 
+         help = """protocol to use ('udp' or 'tcp')""")
 
     # parser.add_argument(
     #     "--duration", 
@@ -134,8 +142,10 @@ if __name__ == "__main__":
     # if not args.rounds:
     #     args.rounds = "5"
 
-    # if not args.protocols:
-    #     args.protocols = "udp"
+    if not args.protocol:
+        args.protocol = "udp"
+    else:
+        args.protocol = args.protocol.lower()
 
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
@@ -158,8 +168,23 @@ if __name__ == "__main__":
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
     # columns of data frames
-    reports = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'loss', 'total'])
-    results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
+    reports = None
+    results = None
+
+    if args.protocol == 'udp':
+
+        reports = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'loss', 'total'])
+        results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'transfer', 'trgt-bw', 'res-bw', 'jitter', 'lost', 'total', 'cpu-sndr', 'cpu-rcvr'])
+
+    elif args.protocol == 'tcp':
+
+        reports = pd.DataFrame(columns = ['time', 'proto', 'duration', 'bytes', 'bitrate', 'retransmits', 'cwnd'])
+        results = pd.DataFrame(columns = ['time', 'proto', 'duration', 'bytes-sndr', 'bytes-rcvr', 'bitrate-sndr', 'bitrate-rcvr', 'cpu-sndr', 'cpu-rcvr'])
+
+    else:
+        sys.stderr.write("""%s: [ERROR] unknown protocol : %s\n""" % (sys.argv[0], args.protocol))
+        sys.exit(1)
+
     # write the column names to the file
     reports.to_csv(reports_file, index = False, index_label = False)
     results.to_csv(results_file, index = False, index_label = False)
@@ -176,7 +201,7 @@ if __name__ == "__main__":
     while (stop_loop == False):
 
         start_timestamp = time.time()
-        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate)
+        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol)
         
         if code < 0:
             continue
@@ -239,8 +264,28 @@ if __name__ == "__main__":
                 'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}, ignore_index = True)
 
         else:
-            sys.stderr.write("""%s: [ERROR] TCP is not supported (yet)\n""" % sys.argv[0]) 
-            sys.exit(1)
+
+            for i, interval in enumerate(output['intervals']):
+
+                reports = reports.append({
+                    'time'          : start_timestamp + interval['sum']['end'],
+                    'proto'         : output['start']['test_start']['protocol'], 
+                    'duration'      : interval['sum']['seconds'],
+                    'bytes'         : interval['sum']['bytes'], 
+                    'bitrate'       : interval['sum']['bits_per_second'],
+                    'retransmits'   : interval['sum']['retransmits'],
+                    'cwnd'          : interval['streams'][-1]['snd_cwnd']}, ignore_index = True)
+
+            results = results.append({
+                'time'          : start_timestamp,
+                'proto'         : output['start']['test_start']['protocol'], 
+                'duration'      : output['end']['sum_received']['seconds'],
+                'bytes-sndr'    : output['end']['sum_sent']['bytes'], 
+                'bytes-rcvr'    : output['end']['sum_received']['bytes'],
+                'bitrate-sndr'  : output['end']['sum_sent']['bits_per_second'],
+                'bitrate-rcvr'  : output['end']['sum_received']['bits_per_second'],
+                'cpu-sndr'      : output['end']['cpu_utilization_percent']['host_total'],
+                'cpu-rcvr'      : output['end']['cpu_utilization_percent']['remote_total']}, ignore_index = True)
 
         # append lines to .csv files
         reports.to_csv(reports_file, mode = 'a', header = False, index = False, index_label = False)

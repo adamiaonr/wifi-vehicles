@@ -2,21 +2,43 @@
 
 # usage: ifperf3-to-mobile.openwrt.sh <bitrate> <server-ip> <server-port> <iface> <remote-logger-ip>
 
+if [ $# -lt 4 ]
+then
+    echo "usage : $0 <protocol> <trace-nr> <server_ip> <server_port> (if protocol = 'udp': <udp-bitrate>)"
+    exit 1
+fi
+
 echo $$ > /var/run/iperf3-to-mobile.pid
 
-bitrate=$1
+protocol=$1
 trace_nr=$2
-channel=$3
-server_ip=$4
-server_port=$5
-# iface=$6
-# ryslog_ip=$7
+# channel=$3
+server_ip=$3
+server_port=$4
 
 echo "started iperf3 script w/ params:"
-echo "  bitrate: $bitrate"
+echo "  protocol: $protocol"
 echo "  ip:port (iperf3 server): $server_ip:$server_port"
-# echo "  wlan iface: $iface"
-# echo "  ryslog ip: $ryslog_ip"
+# echo "  channel (iperf3 server): $server_ip:$server_port"
+echo "  trace-nr: $trace_nr"
+
+if [ "$protocol" == "udp" ]
+then
+
+    if [ $# -lt 5 ]
+    then
+        echo "usage : $0 <protocol> <trace-nr> <server_ip> <server_port> <udp-bitrate>"
+        exit 1
+    fi
+
+    bitrate=$5
+    echo "  bitrate: $bitrateM (bps)"
+
+elif [ "$protocol" != "tcp" ]
+then  
+    echo "error : unknown protocol : $protocol. aborting."
+    exit 1
+fi
 
 # trap ctrl-c and call signal_handler()
 stop_loop=false
@@ -27,13 +49,6 @@ signal_handler() {
     echo "** received CTRL-C : quitting iperf3 script"
     stop_loop=true
 }
-
-# # set remote syslog receiver
-# killall logread
-# logread -f -u -r $ryslog_ip 514 -P unifi-ac-lite &
-
-# # start tcpdump capture, pipe output to logger
-# tcpdump -tt -S -e -vvvv -i $iface -s0  | logger -t "tcpdump" &
 
 # get mac addr of wifi iface
 wiface=""
@@ -49,12 +64,25 @@ else
 fi
 
 mac_addr=$(iw $wiface info | awk '/addr/ {print $2}')
+# prefix to prepend to logger output:
+#   - mac_addr (remove ':')
+#   - trace_nr
+#   - protocol : 0 for udp, 1 for tcp
+#   - log line type : 'cbt' or 'iperf'
+logger_prefix="$(echo $mac_addr | sed -r 's/[:]//g')|$trace_nr"
 
 # run iperf3 in captures of 5 seconds (pipe output to logger)
 while [ "$stop_loop" = false ]; do
 
     # extract the output of iperf3
-    output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrate)
+    if [ "$protocol" == "udp" ]
+    then
+        output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrateM --get-server-output)
+        logger_prefix="$logger_prefix|0|iperf"
+    else
+        output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port)
+        logger_prefix="$logger_prefix|1|iperf"
+    fi
 
     # check for errors in iperf3's output: if errors exist, exit
     error="$(echo "$output" | awk '/error/ {print substr ($2, 2, 6)}')"
@@ -63,7 +91,7 @@ while [ "$stop_loop" = false ]; do
         sleep 1
     else
         # otherwise, keep relaying the output to rsyslog
-        echo "$output" | logger -t "$mac_addr|$trace_nr|$channel|$bitrate|iperf3-log"
+        echo "$output" | logger -t "$logger_prefix"
     fi
 done
 

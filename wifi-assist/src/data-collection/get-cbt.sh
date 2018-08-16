@@ -1,5 +1,13 @@
 #!/bin/sh
 
+if [ $# -lt 1 ]
+then
+    echo "usage : $0 <trace-nr>"
+    exit 1
+fi
+
+trace_nr=$1
+
 echo $$ > /var/run/get-cbt.pid
 
 stop_loop=false
@@ -12,7 +20,6 @@ signal_handler() {
 }
 
 # get mac addr of wifi iface
-
 wiface=""
 if [ "$(iwconfig wlan0 | awk '/Access Point/ {print $6}')" == "24:05:0F:61:51:14" ]
 then
@@ -26,6 +33,11 @@ else
 fi
 
 mac_addr=$(iw $wiface info | awk '/addr/ {print $2}')
+# prefix to prepend to logger output:
+#   - mac_addr (remove ':')
+#   - trace_nr
+#   - log line type : 'cbt' or 'iperf'
+logger_prefix="$(echo $mac_addr | sed -r 's/[:]//g')|$trace_nr"
 
 while [ "$stop_loop" = false ]; do
 
@@ -41,7 +53,7 @@ while [ "$stop_loop" = false ]; do
 	ctt=$(echo "$survey" | awk '/channel transmit time/ {print $4}')
 
 	# send csv line to rsyslog
-	echo "$freq,$noise,$cat,$cbt,$crt,$ctt" |  logger -t "$mac_addr|$2|$3|$1|cbt-log"
+	echo "$freq,$noise,$cat,$cbt,$crt,$ctt" |  logger -t "$logger_prefix|cbt"
 
 	sleep 1
 
