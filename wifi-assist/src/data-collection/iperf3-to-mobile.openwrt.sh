@@ -70,6 +70,12 @@ mac_addr=$(iw $wiface info | awk '/addr/ {print $2}')
 #   - protocol : 0 for udp, 1 for tcp
 #   - log line type : 'cbt' or 'iperf'
 logger_prefix="$(echo $mac_addr | sed -r 's/[:]//g')|$trace_nr"
+if [ "$protocol" == "udp" ]
+then
+    logger_prefix="$logger_prefix|0|iperf"
+else
+    logger_prefix="$logger_prefix|1|iperf"
+fi
 
 # run iperf3 in captures of 5 seconds (pipe output to logger)
 while [ "$stop_loop" = false ]; do
@@ -78,10 +84,8 @@ while [ "$stop_loop" = false ]; do
     if [ "$protocol" == "udp" ]
     then
         output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrateM --get-server-output)
-        logger_prefix="$logger_prefix|0|iperf"
     else
         output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port)
-        logger_prefix="$logger_prefix|1|iperf"
     fi
 
     # check for errors in iperf3's output: if errors exist, exit
