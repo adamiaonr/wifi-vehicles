@@ -24,7 +24,8 @@ python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/c
 # start capturing wlan frames in monitor mode
 mkdir -p /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f615299 info | awk '/channel/ {print $2}')
 echo "$1:HT$bw"
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f615299 --channel "$1:HT$bw" --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f615299 info | awk '/channel/ {print $2}') &
+echo $(iw wlx24050f615299 info)
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --capture-only --iface wlx24050f615299 --channel "$1:HT$bw" --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f615299 info | awk '/channel/ {print $2}') &
 # keep track of ntp accuracy
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f615299 info | awk '/channel/ {print $2}') &
 
