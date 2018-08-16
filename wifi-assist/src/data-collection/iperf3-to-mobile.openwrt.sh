@@ -32,7 +32,7 @@ then
     fi
 
     bitrate=$5
-    echo "  bitrate: $bitrateM (bps)"
+    echo '  bitrate: "$bitrate" M (bps)'
 
 elif [ "$protocol" != "tcp" ]
 then  
@@ -83,7 +83,7 @@ while [ "$stop_loop" = false ]; do
     # extract the output of iperf3
     if [ "$protocol" == "udp" ]
     then
-        output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrateM --get-server-output)
+        output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b "$bitrate"M --get-server-output)
     else
         output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port)
     fi
