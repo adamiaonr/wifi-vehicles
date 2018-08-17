@@ -1,0 +1,5 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+mkdir /tmp/vehicular-traces
+#mount -t nfs 10.10.12.1:/exports/users /tmp/vehicular-traces -o nolock
+exit 0
