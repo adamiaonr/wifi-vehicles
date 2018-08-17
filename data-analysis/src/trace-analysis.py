@@ -3,62 +3,44 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import os
+import re
 import argparse
 import sys
 import glob
 import math
 import gmplot
 import time
+import subprocess
+import csv
 # for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
+import datetime
 
 from random import randint
-
-from datetime import date
-from datetime import datetime
-from datetime import timedelta
 
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from matplotlib.gridspec import GridSpec
-
 from prettytable import PrettyTable
-
-# list of metrics : 
-# ['no', 'Arrival Time', 'time', 'Protocol', 'src mac', 'dst mac', 
-# 'Source', 'Destination', 'Type/Subtype', 'Length', 'Retry', 'Signal strength (dBm)', 
-# 'Type', 'radiotap.length', 'wlan_radio.duration', 'Data rate', 'SSI Signal', 'PHY type', 
-# 'wlan_radio.preamble', 'wlan.duration', 'Info']
-
-# list of wlan frame types : 
-# set(['VHT NDP Announcement', 'Reassociation Response', 'QoS Data', 
-#     'Authentication', 'Action No Ack', 'Reassociation Request', 
-#     '802.11 Block Ack', 'Data + CF-Ack + CF-Poll', 'Probe Response', 
-#     '45', 'CF-Ack/Poll (No data)', 'Association Response', 'Measurement Pilot', 
-#     'QoS CF-Ack + CF-Poll (No data)', 'QoS Data + CF-Poll', 'Request-to-send', '7', 
-#     'Beamforming Report Poll', 'QoS Null function (No data)', 'Association Request', 
-#     'Data', 'CF-Poll (No data)', 'CF-End (Control-frame)', 'Power-Save poll', 'Deauthentication', 
-#     'Beacon frame', 'Action', 'Probe Request', 'Acknowledgement (No data)', '802.11 Block Ack Req', 
-#     'QoS Data + CF-Acknowledgment', 'QoS CF-Poll (No Data)', 'Disassociate', 'Data + CF-Ack', 
-#     'CF-End + CF-Ack (Control-frame)', 'ATIM', 'Null function (No data)', 'Data + CF-Poll', 
-#     'QoS Data + CF-Ack + CF-Poll', 'Service Period Request', 'Aruba Management'])
 
 matplotlib.rcParams.update({'font.size': 16})
 
-# mac address of ap
+# mac address of mobile ap
 ap = '24:05:0f:61:51:14'
 # mac addresses of clients (side-of-the-road)
 clients = OrderedDict()
-# clients['24:05:0f:9e:2c:b1'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'red',     'lat' : 41.178433, 'lon' : -8.594942}
-# clients['24:05:0f:aa:ab:5d'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'green',   'lat' : 41.178516, 'lon' : -8.595371}
-# clients['b8:27:eb:1e:2b:6a'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'blue',    'lat' : 41.178599, 'lon' : -8.595299}
+clients['24:05:0f:6d:ae:36'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'blue',     'lat' : 41.178456, 'lon' : -8.594501, 'ip' : '10.10.10.250'}
+clients['fc:ec:da:1b:63:a6'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'red',      'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.53'}
+clients['24:05:0f:9e:2c:b1'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.113'}
 
-clients['24:05:0f:9e:2c:b1'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'red',     'lat' : 41.178456, 'lon' : -8.594501}
-clients['b8:27:eb:1e:2b:6a'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'blue',    'lat' : 41.178518, 'lon' : -8.595366}
-clients['24:05:0f:aa:ab:5d'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'green',   'lat' : 41.178563, 'lon' : -8.596012}
+peers = {
+    'mobile' : {'color' : 'black'}, 
+    'pos0'   : {'color' : 'blue',   'lat' : 41.178518, 'lon' : -8.595366}, 
+    'pos1'   : {'color' : 'red',    'lat' : 41.178518, 'lon' : -8.595366}, 
+    'pos2'   : {'color' : 'green',  'lat' : 41.178563, 'lon' : -8.596012}
+}
 
 t_diff = lambda t : (float(t[-1]) - float(t[0]))
 Range = namedtuple('Range', ['start', 'end'])
@@ -93,14 +75,11 @@ def gps_to_dist(lat_start, lon_start, lat_end, lon_end):
 
 def update_limits(limits, array):
 
-    if not limits:
-        limits.append(np.amin(array))
-        limits.append(np.amax(array))
-    else:
-        if np.amin(array) < limits[0]:
-            limits[0] = np.amin(array)
-        if np.amax(array) > limits[1]:
-            limits[1] = np.amax(array)
+    if ( (limits[0] is None) or (min(array) < limits[0]) ):
+        limits[0] = np.amin(array)
+
+    if ( (limits[1] is None) or (max(array) > limits[1]) ):
+        limits[1] = np.amax(array)
 
 def get_values_per_client(data, metric = 'SSI Signal'):
 
@@ -1072,6 +1051,491 @@ def vs_distance(input_dir, output_dir,
 #     plt.tight_layout()
 #     plt.savefig(os.path.join(output_dir, ("iperf-stats.pdf")), bbox_inches = 'tight', format = 'pdf')
 
+def parse_syslog(input_dir, trace_nr):
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    filename = os.path.join(trace_dir, ("pos1/syslog"))
+
+    cbt_file = csv.writer(open(os.path.join(trace_dir, ("pos1/cbt.csv")), 'wb+', 0))
+    cbt_file.writerow(['timestamp', 'mac-addr', 'channel', 'freq', 'bitrate', 'noise', 'channel-active-time', 'channel-busy-time', 'channel-receive-time', 'channel-transmit-time'])
+
+    iperf3_file = csv.writer(open(os.path.join(trace_dir, ("pos1/iperf3-to-mobile.results.csv")), 'wb+', 0))
+    iperf3_file.writerow(['time', 'cpu-sndr', 'cpu-rcvr'])
+
+    iperf3_dict = defaultdict()
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    f = open(filename, "r")
+    for line in f:
+        if (re.search("cb", line) and re.search(('\|%03d\|' % (int(trace_nr))), line)):
+            
+            line = line.replace('\n', '').split()
+
+            # parse timestamp from date
+            dt = ("%s %02d 2018 %s" % (line[0], int(line[1]), line[2]))
+            timestamp = (datetime.datetime.strptime(dt, '%b %d %Y %H:%M:%S') - epoch).total_seconds()
+            # parse trace params
+            mac_addr = line[5].split('|')[0]
+            channel = line[5].split('|')[2]
+            freq = line[6].split(',')[0]
+            bitrate = line[5].split('|')[3]
+            # parse cbt params
+            noise = line[6].split(',')[1]
+            cat = line[6].split(',')[2]
+            cbt = line[6].split(',')[3]
+            crt = line[6].split(',')[4]
+            ctt = line[6].split(',')[5]
+
+            cbt_file.writerow([timestamp, mac_addr, channel, freq, bitrate, noise, cat, cbt, crt, ctt])
+
+        elif (re.search("ipe", line) and re.search(('\|%03d\|' % (int(trace_nr))), line)):
+
+            line = line.replace('\n', '').split()
+
+            dt = ("%s %02d 2018 %s" % (line[0], int(line[1]), line[2]))
+            timestamp = (datetime.datetime.strptime(dt, '%b %d %Y %H:%M:%S') - epoch).total_seconds()
+
+            if re.search(('remote_total'), line[-1]):
+
+                val = float(line[-1].split('#011')[-1].rstrip(','))
+                if timestamp in iperf3_dict:
+                    iperf3_dict[timestamp]['cpu-rcvr'] = val
+                else:
+                    iperf3_dict[timestamp] = {'cpu-sndr' : 0.0, 'cpu-rcvr' : val}
+
+            elif re.search(('host_total'), line[-1]):
+
+                val = float(line[-1].split('#011')[-1].rstrip(','))
+                if timestamp in iperf3_dict:
+                    iperf3_dict[timestamp]['cpu-sndr'] = val
+                else:
+                    iperf3_dict[timestamp] = {'cpu-sndr' : val, 'cpu-rcvr' : 0.0}
+
+    for timestamp in iperf3_dict:
+        iperf3_file.writerow( [ timestamp, iperf3_dict[timestamp]['cpu-sndr'], iperf3_dict[timestamp]['cpu-rcvr'] ] )
+
+def extract_ip_id(ip_id):
+    return float(ip_id.split(' ')[-1].lstrip('(').rstrip(')'))
+
+def plot_time(input_dir, trace_nr, output_dir,
+    zoom = None):
+
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5, 4.0))
+
+    # keep track of xx axis min and max so that all data for each pos series is shown
+    xx_limits = [None, None]
+    if zoom is None:
+        xx_limits = [None, None]
+    else:
+        xx_limits = zoom
+
+    labels = defaultdict(str)
+    for mac in clients:
+        labels[mac] = clients[mac]['label']
+
+    plot_configs = OrderedDict([
+        ('wlan rssi', { 
+            'metrics' : ['wlan rssi'], 
+            'linewidth' : 0.75,
+            'marker' : None,
+            'markersize' : 0.0,
+            'markeredgewidth' : 0.0, 
+            'axis-labels' : ['time', 'rssi (dBm)'] }), 
+        # 'inter-arrival' : { 
+        #     'metrics' : ['diff'], 
+        #     'linewidth' : 0.75,
+        #     'marker' : None,
+        #     'markersize' : 0.0,
+        #     'markeredgewidth' : 0.0, 
+        #     'axis-labels' : ['time', 'pkt inter-arr. time (s)'], 
+        #     'scale' : ['linear', 'log'] }, 
+        # ('seq', { 
+        #     'metrics' : ['ip seq'], 
+        #     'linewidth' : 0.00,
+        #     'marker' : 'o',
+        #     'markersize' : 2.00,
+        #     'markeredgewidth' : 0.0, 
+        #     'axis-labels' : ['time', 'ip id.frag offset'] }),
+        ('bitrate', { 
+            'metrics' : ['bitrate'], 
+            'linewidth' : 0.00,
+            'marker' : 'o',
+            'markersize' : 2.0,
+            'markeredgewidth' : 0.0,
+            'scale' : ['linear', 'log'],
+            'y-limits' : [400000, 50000000],
+            'axis-labels' : ['time', 'bitrate (bps)'] })
+    ])
+
+    ax = OrderedDict()
+    for m, category in enumerate(plot_configs.keys()):
+        ax[category] = fig.add_subplot(211 + m)
+        ax[category].xaxis.grid(True)
+        ax[category].yaxis.grid(True)
+
+    # all rssi data that matters is in the monitor.*.csv file in mobile/
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    for fname in sorted(glob.glob(os.path.join(trace_dir, 'mobile/monitor.wlx24050faaab5d.*.csv'))):
+
+        chunksize = 10 ** 5
+        for chunk in pd.read_csv(fname, chunksize = chunksize):
+            for mac in clients:
+
+                # we only care about rows w/ src station being the client
+                data = chunk[(chunk['mac src'] == mac) & (chunk['mac dst'] == ap) & (chunk['ip proto'] == 'UDP')].reset_index()
+                if data.empty:
+                    continue
+
+                data['diff'] = data['epoch time'].astype(float) - data['epoch time'].shift(1).astype(float)
+                # seq numbers
+                data['ip seq'] = data.loc[~data['ip id'].isnull()]['ip id'].apply(extract_ip_id)
+                data['ip seq'] += (data.loc[~data['ip id'].isnull()]['ip frag offset'].astype(float) / 10000.0)
+                data['ip seq'] /= 1000.0
+                # for bitrate
+                timestamp_ref = data.iloc[0]['epoch time'].astype(float)
+                data['bitrate'] = (data['frame len'].cumsum(axis = 0) * 8.0) / (data['epoch time'].astype(float) - timestamp_ref)
+
+                for category in plot_configs:
+                    for metric in plot_configs[category]['metrics']:
+
+                        # extract data for plot
+                        df = data[np.isfinite(data[metric])]
+
+                        # re-sampling to reduce amoung 
+                        if category == 'bitrate':
+                            df = df.iloc[::50, :]
+
+                        # x axis should be in datetime objects, for plot_date()
+                        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in df['epoch time'] ]
+
+                        if not dates:
+                            continue
+
+                        # update the x axis limits
+                        if zoom is None:
+                            update_limits(xx_limits, dates)
+
+                        ax[category].plot_date(
+                            dates,
+                            df[metric],
+                            linewidth = plot_configs[category]['linewidth'], linestyle = '-', 
+                            color = clients[mac]['color'], label = labels[mac], 
+                            markersize = plot_configs[category]['markersize'], 
+                            marker = plot_configs[category]['marker'], 
+                            markeredgewidth = plot_configs[category]['markeredgewidth'])
+
+                # only add labels once per pos series
+                labels[mac] = ''
+
+    # divide xx axis in 5 ticks
+    delta = datetime.timedelta(seconds = ((xx_limits[1] - xx_limits[0]).total_seconds() / 5))
+    xticks = np.arange(xx_limits[0], xx_limits[1] + delta, delta)
+
+    for category in plot_configs:
+
+        ax[category].legend(
+            fontsize = 12, 
+            ncol = 3, loc = 'upper right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+        # set axis labels
+        ax[category].set_xlabel(plot_configs[category]['axis-labels'][0])
+        ax[category].set_ylabel(plot_configs[category]['axis-labels'][1])
+
+        # set x axis limits according to xx_limits
+        ax[category].set_xlim(xx_limits[0], xx_limits[1])
+
+        if 'scale' in plot_configs[category]:
+            ax[category].set_yscale(plot_configs[category]['scale'][1])
+        if 'y-limits' in plot_configs[category]:
+            ax[category].set_ylim(plot_configs[category]['y-limits'])
+
+        ax[category].set_xticks(xticks)
+        ax[category].set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
+
+    # create output dir for trace (if not existent)
+    trace_output_dir = os.path.join(output_dir, ("trace-%03d" % (int(trace_nr))))
+    if not os.path.isdir(trace_output_dir):
+        os.makedirs(trace_output_dir)
+
+    plt.savefig(os.path.join(trace_output_dir, ("rssi-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')                
+
+
+def plot_cbt(input_dir, trace_nr, output_dir,
+    zoom = None):
+
+    # FIXME: for now, only pos1 collects cbt directly
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    filename = os.path.join(trace_dir, ("pos1/cbt.csv"))
+
+    # get cbt data
+    if not os.path.isfile(filename):
+        parse_syslog(input_dir, trace_nr)
+
+    cbt_data = pd.read_csv(filename)
+
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5, 3.0))
+    ax = fig.add_subplot(111)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+
+    # identify segments of increasingly monotonic cat
+    cbt_data['diff'] = cbt_data['channel-active-time'] - cbt_data['channel-active-time'].shift(1)
+    segments = list(cbt_data.index[cbt_data['diff'] < 0.0])
+    segments.append(len(cbt_data) - 1)
+
+    channel = int(cbt_data.iloc[0]['channel'])
+    prev_seg = 0
+
+    # keep track of xx axis min and max so that all data for each pos series is shown
+    xx_limits = [None, None]
+    if zoom is None:
+        xx_limits = [None, None]
+    else:
+        xx_limits = zoom
+
+    labels = ['busy time', 'rx time', 'tx time']
+    for seg in segments:
+
+        data = cbt_data.iloc[prev_seg:seg]
+        if len(data) == 1:
+            continue
+
+        diff_cat = data['channel-active-time'] - data['channel-active-time'].shift(1)
+        diff_cbt = data['channel-busy-time'] - data['channel-busy-time'].shift(1)
+
+        # FIXME : fixes an error in cbt.csv of trace-009
+        if (channel == 20):
+            channel = 1
+
+        if (channel > 13):
+            diff_crt = data['channel-receive-time']
+            diff_ctt = data['channel-transmit-time']
+        else:
+            diff_crt = data['channel-receive-time'] - data['channel-receive-time'].shift(1)
+            diff_ctt = data['channel-transmit-time'] - data['channel-transmit-time'].shift(1)
+
+        data['cbt'] = diff_cbt / diff_cat
+        data['crt'] = diff_crt / diff_cat
+        data['ctt'] = diff_ctt / diff_cat
+
+        dates = [ datetime.datetime.fromtimestamp(float(dt) - 3600) for dt in data['timestamp'] ]
+
+        ax.plot_date(
+            dates,
+            data['cbt'],
+            linewidth = 0.75, linestyle = '-', color = 'red', label = labels[0], marker = None)
+
+        ax.plot_date(
+            dates,
+            data['crt'],
+            linewidth = 0.75, linestyle = '-', color = 'green', label = labels[1], marker = None)
+
+        ax.plot_date(
+            dates,
+            data['ctt'],
+            linewidth = 0.75, linestyle = '-', color = 'blue', label = labels[2], marker = None)
+
+        # update the x axis limits
+        if zoom is None:
+            update_limits(xx_limits, dates)
+
+        prev_seg = seg
+        labels = ['', '', '']
+
+    ax.legend(
+        fontsize = 12, 
+        ncol = 3, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("% of 1 sec")
+
+    ax.set_xlim(xx_limits[0], xx_limits[1])
+    ax.set_ylim([0.0, 1.3])
+    ax.set_yticks(np.arange(0.0, 1.2, 0.2))
+
+    # divide xx axis in 5 ticks
+    delta = datetime.timedelta(seconds = ((xx_limits[1] - xx_limits[0]).total_seconds() / 5))
+    xticks = np.arange(xx_limits[0], xx_limits[1] + delta, delta)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
+
+    # create output dir for trace (if not existent)
+    trace_output_dir = os.path.join(output_dir, ("trace-%03d" % (int(trace_nr))))
+    if not os.path.isdir(trace_output_dir):
+        os.makedirs(trace_output_dir)
+
+    plt.savefig(os.path.join(trace_output_dir, ("ct-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')
+
+def plot_ntp(input_dir, trace_nr, output_dir):
+
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5, 3.0))
+    ax = fig.add_subplot(111)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+
+    xx_limits = [None, None]
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    for peer in peers.keys():
+
+        peer_dir = os.path.join(trace_dir, ("%s" % (peer)))
+        for filename in sorted(glob.glob(os.path.join(peer_dir, 'ntpstat.*.csv'))):
+
+            ntp_data = pd.read_csv(filename)
+            dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in ntp_data['timestamp'] ]
+
+            if not dates:
+                continue
+
+            update_limits(xx_limits, dates)
+
+            # TODO: add a line marking the start of the experiment  
+            ax.plot_date(
+                dates,
+                ntp_data['delta'],
+                linewidth = 0.75, linestyle = '-', color = peers[peer]['color'], label = peer, marker = None)
+
+    ax.legend(
+        fontsize = 12, 
+        ncol = 2, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("ntp offset (ms)")
+
+    # log scale due to major differences in yy axis
+    ax.set_yscale('log')
+    ax.set_xlim(xx_limits[0], xx_limits[1])
+
+    # divide xx axis in 5 ticks
+    delta = datetime.timedelta(seconds = ((xx_limits[1] - xx_limits[0]).total_seconds() / 5))
+    xticks = np.arange(xx_limits[0], xx_limits[1] + delta, delta)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
+
+    # create output dir for trace (if not existent)
+    trace_output_dir = os.path.join(output_dir, ("trace-%03d" % (int(trace_nr))))
+    if not os.path.isdir(trace_output_dir):
+        os.makedirs(trace_output_dir)
+
+    plt.savefig(os.path.join(trace_output_dir, ("ntp-stats-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')
+
+def plot_cpu(input_dir, trace_nr, output_dir,
+    zoom = None):
+
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5, 3.0))
+    ax = fig.add_subplot(111)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+
+    # keep track of xx axis min and max so that all data for each pos series is shown
+    xx_limits = [None, None]
+    if zoom is None:
+        xx_limits = [None, None]
+    else:
+        xx_limits = zoom
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    label_mobile = 'mobile'
+    for peer in peers.keys():
+
+        if peer == 'mobile':
+            continue
+
+        peer_dir = os.path.join(trace_dir, ("%s" % (peer)))
+        for filename in sorted(glob.glob(os.path.join(peer_dir, 'iperf3-to-mobile.results*.csv'))):
+
+            cpu_data = pd.read_csv(filename)
+
+            offset = 0.0
+            if peer == 'pos1':
+                offset = 3600.0
+                cpu_data = cpu_data.sort_values(by = ['time'])
+            dates = [ datetime.datetime.fromtimestamp(float(dt) - offset) for dt in cpu_data['time'] ]
+
+            if not dates:
+                continue
+
+            # update the x axis limits
+            if zoom is None:
+                update_limits(xx_limits, dates)
+
+            # TODO: add a line marking the start of the experiment  
+            ax.plot_date(
+                dates,
+                cpu_data['cpu-sndr'],
+                linewidth = 0.75, linestyle = '-', color = peers[peer]['color'], label = peer, marker = None)
+
+            ax.plot_date(
+                dates,
+                cpu_data['cpu-rcvr'],
+                linewidth = 0.0, linestyle = None, color = peers['mobile']['color'], label = label_mobile,
+                marker = 'o', markersize = 2.50, markeredgewidth = 0.0)
+
+            label_mobile = ''
+
+    ax.legend(
+        fontsize = 12, 
+        ncol = 2, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("cpu usage (%)")
+
+    # log scale due to major differences in yy axis
+    # ax.set_yscale('log')
+    ax.set_xlim(xx_limits[0], xx_limits[1])
+    ax.set_ylim([0.0, 20.0])
+
+    # divide xx axis in 5 ticks
+    delta = datetime.timedelta(seconds = ((xx_limits[1] - xx_limits[0]).total_seconds() / 5))
+    xticks = np.arange(xx_limits[0], xx_limits[1] + delta, delta)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
+
+    # create output dir for trace (if not existent)
+    trace_output_dir = os.path.join(output_dir, ("trace-%03d" % (int(trace_nr))))
+    if not os.path.isdir(trace_output_dir):
+        os.makedirs(trace_output_dir)
+
+    plt.savefig(os.path.join(trace_output_dir, ("cpu-stats-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')    
+
+def list_traces(input_dir):
+
+    filename = os.path.join(input_dir, ("trace-info.csv"))
+    if not os.path.isfile(filename):
+        sys.stderr.write("""%s: [ERROR] no 'trace-info.csv' at %s\n""" % (sys.argv[0], input_dir))
+        return -1
+
+    trace_info = pd.read_csv(filename)
+    table = PrettyTable(list(trace_info.columns))
+    for i, row in trace_info.iterrows():
+        table.add_row([
+            ('%s' % (row['trace-nr'])),
+            ('%d' % (row['channel'])), 
+            ('%d' % (row['bw'])),
+            ('%dM' % (row['bitrate']))
+            ])
+
+    print(table)
+    return 0
+
 if __name__ == "__main__":
 
     # use an ArgumentParser for a nice CLI
@@ -1080,23 +1544,53 @@ if __name__ == "__main__":
     # options (self-explanatory)
     parser.add_argument(
         "--input-dir", 
-         help = """dir w/ .csv files""")
+         help = """dir w/ trace data""")
+
+    parser.add_argument(
+        "--list-traces", 
+         help = """lists available traces""",
+         action = 'store_true')
+
+    parser.add_argument(
+        "--trace-nr", 
+         help = """nr of trace to analyze. e.g., '--trace-nr 009'""")
 
     parser.add_argument(
         "--output-dir", 
-         help = """dir to save graphs""")
+         help = """dir to save graphs & other output data""")
 
     args = parser.parse_args()
 
     if not args.input_dir:
-        sys.stderr.write("""%s: [ERROR] please supply a dir w/ input files\n""" % sys.argv[0]) 
+        sys.stderr.write("""%s: [ERROR] must provide a dir w/ input files\n""" % sys.argv[0]) 
+        parser.print_help()
+        sys.exit(1)
+
+    if args.list_traces:
+        list_traces(args.input_dir)
+        sys.exit(0)
+
+    if not args.trace_nr:
+        sys.stderr.write("""%s: [ERROR] must provide a trace nr. to analyze\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
 
     if not args.output_dir:
-        sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
+        sys.stderr.write("""%s: [ERROR] must provide an output dir\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
+
+    plot_ntp(args.input_dir, args.trace_nr, args.output_dir)
+    # plot_time(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = [ datetime.datetime(2018, 8, 7, 16, 58), datetime.datetime(2018, 8, 7, 17, 02) ])
+    # plot_cbt(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = [ datetime.datetime(2018, 8, 7, 16, 58), datetime.datetime(2018, 8, 7, 17, 02) ])
+    # plot_cpu(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = [ datetime.datetime(2018, 8, 7, 16, 58), datetime.datetime(2018, 8, 7, 17, 02) ])
+
+    plot_time(args.input_dir, args.trace_nr, args.output_dir)
+    plot_cbt(args.input_dir, args.trace_nr, args.output_dir)
+    plot_cpu(args.input_dir, args.trace_nr, args.output_dir)
 
     # plot_rssi(args.input_dir, args.output_dir, limits = [datetime(2018, 6, 19, 16, 36), datetime(2018, 6, 19, 16, 38)], seconds = 10)
     # plot_rssi(args.input_dir, args.output_dir, limits = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)], seconds = 10)
@@ -1106,7 +1600,7 @@ if __name__ == "__main__":
     #     args.input_dir, args.output_dir, 
     #     limits = [datetime(2018, 6, 19, 16, 27), datetime(2018, 6, 19, 16, 49)], 
     #     interval = [datetime(2018, 6, 19, 16, 44), datetime(2018, 6, 19, 16, 46)])
-    extract_metrics(args.input_dir)
+    # extract_metrics(args.input_dir)
     # time_analysis(args.input_dir, args.output_dir)
     # vs_distance(args.input_dir, args.output_dir)
     # vs_distance(args.input_dir, args.output_dir, 'loss', 
