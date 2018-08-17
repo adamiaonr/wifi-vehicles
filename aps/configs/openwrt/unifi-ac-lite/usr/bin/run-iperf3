@@ -1,18 +1,45 @@
 #!/bin/sh
 
-if [ $# -lt 1 ]
+if [ $# -lt 2 ]
 then
-	echo "usage : $0 <iperf3-bitrate>"
+	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>) (optional: <capture>)"
 	exit 1
 fi
 
 # start logread and relay it to 10.10.12.1:514, over udp
-killall logread
-logread -f -u -r 10.10.12.1 514 -P unifi-ac-lite &
+# killall logread
+# logread -f -u -r 10.10.12.1 514 &
 
-# read cbt and relay stats to rsyslog
-/root/workbench/get-cbt.sh &
-# start iperf3 tests and relay stats to rsyslog
-/root/workbench/iperf3-to-mobile.openwrt.sh $1 10.10.10.111 5202 &
+# check if nfs mount is necessary
+if [ ! -d "/tmp/vehicular-traces/it-unifi-ac-lite-fcecda1b63a6" ]
+then
+	mount -t nfs 10.10.12.1:/exports/users /tmp/vehicular-traces -o nolock
+fi
+
+# create trace directory
+output_dir="/tmp/vehicular-traces/it-unifi-ac-lite-fcecda1b63a6/trace-$2"
+if [ ! -d "$output_dir" ]
+then
+	mkdir $output_dir
+fi
+
+# read cbt
+/root/workbench/get-cbt.sh $2 "$output_dir" &
+
+# start iperf3 tests
+if [ "$1" == "udp" ]
+then
+
+	if [ $# -lt 3 ]
+	then
+		echo "usage : $0 <protocol> <trace-nr> <udp-bitrate>"
+		exit 1
+	fi
+
+	/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 "$output_dir" 10.10.10.111 5202 $3 $4 &
+
+else
+	/root/workbench/iperf3-to-mobile.openwrt.sh $1 $2 "$output_dir" 10.10.10.111 5202 $3 &
+fi
 
 exit 0

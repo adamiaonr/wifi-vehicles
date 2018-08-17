@@ -4,6 +4,10 @@ kill -9 "$(cat /var/run/iperf3-to-mobile.pid)"
 kill -9 "$(cat /var/run/get-cbt.pid)"
 
 # stop logread
-killall logread
+# killall logread
+# stop iperf3
+killall iperf3
+# stop tcpdump
+killall tcpdump
 
 exit 0
