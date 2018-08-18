@@ -1,0 +1,13 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto wlx24050f6dae36
+iface wlx24050f6dae36 inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+dns-nameservers 1.1.1.1 8.8.8.8
+
+auto wlxc46e1f25d74a
+iface wlxc46e1f25d74a inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
+dns-nameservers 1.1.1.1 8.8.8.8
