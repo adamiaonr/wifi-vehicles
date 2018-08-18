@@ -16,6 +16,7 @@ trace_nr=$2
 output_dir=$3
 server_ip=$4
 server_port=$5
+bitrate=""
 
 echo "started iperf3 script w/ params:"
 echo "  protocol: $protocol"
@@ -50,7 +51,7 @@ fi
 if [ "$protocol" == "udp" ]
 then
 
-    if [ $# -lt 5 ]
+    if [ $# -lt 6 ]
     then
         echo "usage : $0 <protocol> <trace-nr> <output-dir> <server_ip> <server_port> <udp-bitrate>"
         exit 1

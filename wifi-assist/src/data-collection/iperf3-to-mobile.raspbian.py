@@ -207,96 +207,99 @@ if __name__ == "__main__":
         code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol)
         
         if code < 0 or (not logging):
+            sys.stderr.write("""%s: [ERROR] iperf3 command failed : %s\n""" % (sys.argv[0], output))
+            time.sleep(1)
             continue
 
         output = json.loads(output)
-        # the iperf3 server produces output every second (if the '--get-server-ouput' option is used)
-        # it needs to be parsed directly from text, as it is not provided in json format
-        output_server = []
-        if 'server_output_text' in output:
-            output_server = parse_server_output(output['server_output_text'])
 
-        k = 0
-        _interval = []
-        for i, interval in enumerate(output['intervals']):
+        # # the iperf3 server produces output for each second of the test (if the '--get-server-output' option is used)
+        # # it needs to be parsed directly from text, as it is not provided in json format
+        # output_server = []
+        # if 'server_output_text' in output:
+        #     output_server = parse_server_output(output['server_output_text'])
 
-            if not output_server:
-                _interval.append({'loss' : 0.0})
-            else:
+        # k = 0
+        # _interval = []
+        # for i, interval in enumerate(output['intervals']):
 
-                r1 = Range(start = float(interval['sum']['start']), end = float(interval['sum']['end']))
-                r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
+        #     if not output_server:
+        #         _interval.append({'loss' : 0.0})
+        #     else:
 
-                while not ((r2.end >= r1.end) or (k == (len(output_server) - 1))):
-                    k += 1
-                    r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
+        #         r1 = Range(start = float(interval['sum']['start']), end = float(interval['sum']['end']))
+        #         r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
 
-                loss = 0.0
-                if output_server[k]['total'] != 0.0:
-                    loss = output_server[k]['lost'] / output_server[k]['total']
-                _interval.append({'loss' : loss})
+        #         while not ((r2.end >= r1.end) or (k == (len(output_server) - 1))):
+        #             k += 1
+        #             r2 = Range(start = output_server[k]['start'], end = output_server[k]['end'])
 
-        if output['start']['test_start']['protocol'] == 'UDP':
+        #         loss = 0.0
+        #         if output_server[k]['total'] != 0.0:
+        #             loss = output_server[k]['lost'] / output_server[k]['total']
+        #         _interval.append({'loss' : loss})
 
-            # 'intervals'
-            # this assumes 1 sec intervals
-            for i, interval in enumerate(output['intervals']):
+        # if output['start']['test_start']['protocol'] == 'UDP':
 
-                # rely on local output as much as possible (it may happen that server output is lost)
-                rprts = {
-                    'time'      : start_timestamp + interval['sum']['end'],
-                    'proto'     : output['start']['test_start']['protocol'], 
-                    'duration'  : interval['sum']['seconds'],
-                    'transfer'  : interval['sum']['bytes'], 
-                    'trgt-bw'   : float(args.bitrate) * 1000000.0, 
-                    'res-bw'    : interval['sum']['bits_per_second'],
-                    'loss'      : _interval[i]['loss'],
-                    'total'     : interval['sum']['packets']}
+        #     # 'intervals'
+        #     # this assumes 1 sec intervals
+        #     for i, interval in enumerate(output['intervals']):
 
-                # append line to .csv file
-                reports.writerow([rprts[attr] for attr in attrs_reports])
+        #         # rely on local output as much as possible (it may happen that server output is lost)
+        #         rprts = {
+        #             'time'      : start_timestamp + interval['sum']['end'],
+        #             'proto'     : output['start']['test_start']['protocol'], 
+        #             'duration'  : interval['sum']['seconds'],
+        #             'transfer'  : interval['sum']['bytes'], 
+        #             'trgt-bw'   : float(args.bitrate) * 1000000.0, 
+        #             'res-bw'    : interval['sum']['bits_per_second'],
+        #             'loss'      : _interval[i]['loss'],
+        #             'total'     : interval['sum']['packets']}
 
-            rslts = {
-                'time'      : start_timestamp,
-                'proto'     : output['start']['test_start']['protocol'], 
-                'duration'  : output['end']['sum']['seconds'],
-                'transfer'  : output['end']['sum']['bytes'], 
-                'trgt-bw'   : float(args.bitrate) * 1000000.0, 
-                'res-bw'    : output['end']['sum']['bits_per_second'],
-                'jitter'    : output['end']['sum']['jitter_ms'],
-                'lost'      : output['end']['sum']['lost_packets'],
-                'total'     : output['end']['sum']['packets'],
-                'cpu-sndr'  : output['end']['cpu_utilization_percent']['host_total'],
-                'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}
+        #         # append line to .csv file
+        #         reports.writerow([rprts[attr] for attr in attrs_reports])
 
-        else:
+        #     rslts = {
+        #         'time'      : start_timestamp,
+        #         'proto'     : output['start']['test_start']['protocol'], 
+        #         'duration'  : output['end']['sum']['seconds'],
+        #         'transfer'  : output['end']['sum']['bytes'], 
+        #         'trgt-bw'   : float(args.bitrate) * 1000000.0, 
+        #         'res-bw'    : output['end']['sum']['bits_per_second'],
+        #         'jitter'    : output['end']['sum']['jitter_ms'],
+        #         'lost'      : output['end']['sum']['lost_packets'],
+        #         'total'     : output['end']['sum']['packets'],
+        #         'cpu-sndr'  : output['end']['cpu_utilization_percent']['host_total'],
+        #         'cpu-rcvr'  : output['end']['cpu_utilization_percent']['remote_total']}
 
-            for i, interval in enumerate(output['intervals']):
+        # else:
 
-                rprts = {
-                    'time'          : start_timestamp + interval['sum']['end'],
-                    'proto'         : output['start']['test_start']['protocol'], 
-                    'duration'      : interval['sum']['seconds'],
-                    'bytes'         : interval['sum']['bytes'], 
-                    'bitrate'       : interval['sum']['bits_per_second'],
-                    'retransmits'   : interval['sum']['retransmits'],
-                    'cwnd'          : interval['streams'][-1]['snd_cwnd']}
+        #     for i, interval in enumerate(output['intervals']):
 
-                # append line to .csv file
-                reports.writerow([rprts[attr] for attr in attrs_reports])
+        #         rprts = {
+        #             'time'          : start_timestamp + interval['sum']['end'],
+        #             'proto'         : output['start']['test_start']['protocol'], 
+        #             'duration'      : interval['sum']['seconds'],
+        #             'bytes'         : interval['sum']['bytes'], 
+        #             'bitrate'       : interval['sum']['bits_per_second'],
+        #             'retransmits'   : interval['sum']['retransmits'],
+        #             'cwnd'          : interval['streams'][-1]['snd_cwnd']}
 
-            rslts = {
-                'time'          : start_timestamp,
-                'proto'         : output['start']['test_start']['protocol'], 
-                'duration'      : output['end']['sum_received']['seconds'],
-                'bytes-sndr'    : output['end']['sum_sent']['bytes'], 
-                'bytes-rcvr'    : output['end']['sum_received']['bytes'],
-                'bitrate-sndr'  : output['end']['sum_sent']['bits_per_second'],
-                'bitrate-rcvr'  : output['end']['sum_received']['bits_per_second'],
-                'cpu-sndr'      : output['end']['cpu_utilization_percent']['host_total'],
-                'cpu-rcvr'      : output['end']['cpu_utilization_percent']['remote_total']}
+        #         # append line to .csv file
+        #         reports.writerow([rprts[attr] for attr in attrs_reports])
 
-        results.writerow([rslts[attr] for attr in attrs_results])
+        #     rslts = {
+        #         'time'          : start_timestamp,
+        #         'proto'         : output['start']['test_start']['protocol'], 
+        #         'duration'      : output['end']['sum_received']['seconds'],
+        #         'bytes-sndr'    : output['end']['sum_sent']['bytes'], 
+        #         'bytes-rcvr'    : output['end']['sum_received']['bytes'],
+        #         'bitrate-sndr'  : output['end']['sum_sent']['bits_per_second'],
+        #         'bitrate-rcvr'  : output['end']['sum_received']['bits_per_second'],
+        #         'cpu-sndr'      : output['end']['cpu_utilization_percent']['host_total'],
+        #         'cpu-rcvr'      : output['end']['cpu_utilization_percent']['remote_total']}
+
+        # results.writerow([rslts[attr] for attr in attrs_results])
 
     cmd = ["pkill", "-f", "tcpdump"]
     proc = subprocess.call(cmd)
