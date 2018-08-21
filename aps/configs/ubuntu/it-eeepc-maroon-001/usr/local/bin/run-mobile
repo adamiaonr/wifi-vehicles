@@ -1,18 +1,37 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]
+if [ $# -lt 4 ]
 then
-	echo "usage : $0 <usb-dev-file> <trace-nr>"
+	echo "usage : $0 <usb-dev-file> <channel> <bandwidth> <trace-nr>"
 	exit 1
 fi
 
 # kill outstanding scritps
 pkill -f mobile-ap
 pkill -f get-ntp-accuracy
+
+# change channel on the monitoring iface to that of the ap
+bw=$3
+if [ $3 -gt 20 ]
+then
+
+    if [ $2 -gt 36 ]
+    then
+        bw=$bw-
+    else
+        bw=$bw+
+    fi
+fi
+
+# first set iface wlx24050faaab5d to monitor mode, on the right channel and bw
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode "$2:HT$bw"
 # create dirs (if not available already)
-mkdir -p /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f615114 info | awk '/channel/ {print $2}')
+mkdir -p /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$4/$(iw wlx24050f615114 info | awk '/channel/ {print $2}')
+echo "$2:HT$bw"
+echo $(iw wlx24050faaab5d info)
+
 # run scripts
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --ap-iface wlx24050f615114 --monitor-iface wlx24050faaab5d --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f615114 info | awk '/channel/ {print $2}') &
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f615114 info | awk '/channel/ {print $2}') &
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --ap-iface wlx24050f615114 --monitor-iface wlx24050faaab5d --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$4/$(iw wlx24050f615114 info | awk '/channel/ {print $2}') &
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir /home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$4/$(iw wlx24050f615114 info | awk '/channel/ {print $2}') &
 
 exit 0
