@@ -2,5 +2,8 @@
 
 pkill -f --signal 2 mobile-ap
 pkill -f --signal 2 get-ntp-accuracy
+ps -ef | grep restart-iperf-servers | awk '{print $2}' | sudo xargs -r kill -9
+pkill -f iperf3
+pkill -f restart-dnsmasq
 
 exit 0

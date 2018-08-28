@@ -11,13 +11,14 @@ pkill -f mobile-ap
 pkill -f get-ntp-accuracy
 
 # restart dnsmasq, just in case
-service dnsmasq restart
+/usr/local/bin/restart-dnsmasq 15 &
 
 # kill and restart iperf3 servers
-pkill -f iperf3
-iperf3 -s -V -p 5202 &
-iperf3 -s -V -p 5203 &
-iperf3 -s -V -p 5204 &
+# pkill -f iperf3
+/usr/local/bin/restart-iperf-servers &
+# stdbuf -oL -eL iperf3 -s -V -p 5202 &> /var/run/iperf3.5202.out &
+# stdbuf -oL -eL iperf3 -s -V -p 5203 &> /var/run/iperf3.5203.out &
+# stdbuf -oL -eL iperf3 -s -V -p 5204 &> /var/run/iperf3.5204.out &
 
 # change channel on the monitoring iface to that of the ap
 bw=$3
