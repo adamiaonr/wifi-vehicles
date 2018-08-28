@@ -32,7 +32,7 @@ then
 fi
 
 # run scripts
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.10.111 --port 5204 --iface wlx24050f6dae36 --output-dir "$output_dir" &
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.10.111 --port 5203 --iface wlx24050f6dae36 --output-dir "$output_dir" &
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 
 exit 0
