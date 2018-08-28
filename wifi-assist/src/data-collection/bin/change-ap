@@ -1,4 +1,0 @@
-#!/bin/bash
-
-ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/etc/hostapd/hostapd.conf.$1.$2.$3 /etc/hostapd/hostapd.conf
-/etc/init.d/networking restart
