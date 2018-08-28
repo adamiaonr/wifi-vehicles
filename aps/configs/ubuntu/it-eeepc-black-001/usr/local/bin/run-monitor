@@ -6,9 +6,6 @@ then
 	exit 1
 fi
 
-# restart ntp, just in case
-service ntp restart
-
 # change channel on the monitoring iface to that of the ap
 bw=$2
 if [ $2 -gt 20 ]

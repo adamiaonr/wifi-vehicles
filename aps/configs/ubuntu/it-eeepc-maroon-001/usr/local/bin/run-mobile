@@ -10,8 +10,7 @@ fi
 pkill -f mobile-ap
 pkill -f get-ntp-accuracy
 
-# restart ntp and dnsmasq, just in case
-service ntp restart
+# restart dnsmasq, just in case
 service dnsmasq restart
 
 # kill and restart iperf3 servers
