@@ -10,6 +10,16 @@ fi
 pkill -f mobile-ap
 pkill -f get-ntp-accuracy
 
+# restart ntp and dnsmasq, just in case
+service ntp restart
+service dnsmasq restart
+
+# kill and restart iperf3 servers
+pkill -f iperf3
+iperf3 -s -V -p 5202 &
+iperf3 -s -V -p 5203 &
+iperf3 -s -V -p 5204 &
+
 # change channel on the monitoring iface to that of the ap
 bw=$3
 if [ $3 -gt 20 ]

@@ -10,6 +10,9 @@ fi
 pkill -f iperf3-to-mobile
 pkill -f get-ntp-accuracy
 
+# restart ntp, just in case
+service ntp restart
+
 # create dirs (if not available already)
 output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}')
 mkdir -p "$output_dir"
