@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <interval>"
+	exit 1
+fi
+
+interval=$1
+if [ $interval -lt 10 ]
+then
+	interval=10
+fi
+
+while true; do
+	service dnsmasq restart
+	sleep $interval
+done
+
+exit 0

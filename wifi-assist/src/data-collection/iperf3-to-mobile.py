@@ -47,7 +47,6 @@ def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5
     if proto == 'udp':
         cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
     elif proto == 'tcp':
-        time = 10
         cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port)]
     else:
         sys.stderr.write("""%s:::start_iperf3() : [ERROR] unknown protocol : %s\n""" % (sys.argv[0], proto))

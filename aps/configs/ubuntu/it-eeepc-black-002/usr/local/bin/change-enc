@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <wpa-encryption>"
+	echo "options : wpa1"
+	echo " : open"
+	exit 1
+fi
+
+# symlink to correct wpa_supplicant.conf file
+ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-002/etc/wpa_supplicant/wpa_supplicant.$1.conf /etc/wpa_supplicant/wpa_supplicant.conf
+# restart wpa_supplicant (and everything else...)
+pkill -f wpa_supplicant
+/etc/init.d/networking restart
+
+exit 0

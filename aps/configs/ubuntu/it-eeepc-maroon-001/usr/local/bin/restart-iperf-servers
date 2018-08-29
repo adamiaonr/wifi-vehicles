@@ -1,0 +1,61 @@
+#!/bin/bash
+
+echo "usage : $0"
+
+# trap ctrl-c and call signal_handler()
+stop_loop=false
+trap signal_handler INT
+
+# set stop_loop to true after catching CTRL-C signal
+signal_handler() {
+    echo "** received CTRL-C : quitting $0 script"
+    stop_loop=true
+}
+
+# list of iperf3 server ports to use
+declare -a ports=("5202" "5203" "5204")
+
+# restart iperf3 servers
+pkill -f iperf3
+for port in "${ports[@]}"
+do
+	# create .out files if not ready yet
+	filename="/tmp/iperf3.""$port"".out"
+	echo -e "$filename"
+	if [ ! -f "$filename" ]
+	then
+		touch "$filename"
+	fi
+
+	# restart iperf3 server
+	stdbuf -oL -eL iperf3 -s -V -p "$port" &> "$filename" &
+done
+
+# check output regularly and restasrt if iperf3 server is found 'hanging' 
+while [ "$stop_loop" = false ]; do
+
+	for port in "${ports[@]}"
+	do
+		filename="/tmp/iperf3.""$port"".out"
+		output=$(tail -3 $filename | awk '/nan/')
+		echo -e "$output"
+
+		if [ "$output" != "" ]
+		then
+			# restart iperf3 server
+			ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9
+			stdbuf -oL -eL iperf3 -s -V -p "$port" &> "$filename" &
+			echo -e "restarted iperf3 server ($port)"
+		else
+			# erase contents of outputfile
+			echo -e "" > "$filename"
+			echo -e "cleared iperf3 server log ($port)"
+		fi
+	done
+
+	# sleep for 5 sec before checking again
+	sleep 5
+
+done
+
+exit 0
