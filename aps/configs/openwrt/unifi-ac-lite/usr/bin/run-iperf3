@@ -25,6 +25,8 @@ fi
 
 # read cbt
 /root/workbench/get-cbt.sh $2 "$output_dir" &
+# keep caputring channel for 30 sec, before starting iperf3
+sleep 30
 
 # start iperf3 tests
 if [ "$1" == "udp" ]
