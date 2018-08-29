@@ -16,6 +16,7 @@ import csv
 import multiprocessing as mp 
 import hashlib
 import datetime
+import json
 
 from random import randint
 
@@ -32,7 +33,7 @@ ap = '24:05:0f:61:51:14'
 # mac addresses of clients (side-of-the-road)
 clients = OrderedDict()
 clients['24:05:0f:6d:ae:36'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'blue',     'lat' : 41.178456, 'lon' : -8.594501, 'ip' : '10.10.10.250'}
-clients['fc:ec:da:1b:63:a6'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'red',      'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.53'}
+clients['fc:ec:da:1a:63:a6'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'red',      'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.53'}
 clients['24:05:0f:9e:2c:b1'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.113'}
 
 peers = {
@@ -1051,6 +1052,46 @@ def vs_distance(input_dir, output_dir,
 #     plt.tight_layout()
 #     plt.savefig(os.path.join(output_dir, ("iperf-stats.pdf")), bbox_inches = 'tight', format = 'pdf')
 
+def parse_json(input_dir, trace_nr):
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+
+    # iperf3_report   = csv.writer(open(os.path.join(trace_dir, ("pos1/iperf3-to-mobile.report.csv")), 'wb+', 0))
+    iperf3_results  = csv.writer(open(os.path.join(trace_dir, ("pos1/iperf3-to-mobile.results.csv")), 'wb+', 0))
+    # write header
+    iperf3_results.writerow(['time', 'cpu-sndr', 'cpu-rcvr'])
+
+    for filename in sorted(glob.glob(os.path.join(trace_dir, 'pos1/iperf3-to-mobile.report.*.json'))):
+        json_file = open(filename)
+        json_str = json_file.read()
+
+        blocks = json_str.split('}\n{')
+
+        blocks[0] = blocks[0] + '}'
+        data = json.loads(blocks[0])
+        iperf3_results.writerow( 
+            [ 
+                data['start']['timestamp']['timesecs'], 
+                data['end']['cpu_utilization_percent']['host_total'], 
+                data['end']['cpu_utilization_percent']['remote_total'] ] )
+
+        blocks[-1] = '{' + blocks[-1]
+        data = json.loads(blocks[-1])
+        iperf3_results.writerow( 
+            [ 
+                data['start']['timestamp']['timesecs'], 
+                data['end']['cpu_utilization_percent']['host_total'], 
+                data['end']['cpu_utilization_percent']['remote_total'] ] )
+
+        for block in blocks[1:-1]:
+            block = '{' + block + '}'
+            data = json.loads(block)
+            iperf3_results.writerow( 
+                [ 
+                    data['start']['timestamp']['timesecs'], 
+                    data['end']['cpu_utilization_percent']['host_total'], 
+                    data['end']['cpu_utilization_percent']['remote_total'] ] )
+
 def parse_syslog(input_dir, trace_nr):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
@@ -1120,7 +1161,7 @@ def plot_time(input_dir, trace_nr, output_dir,
     zoom = None):
 
     plt.style.use('classic')
-    fig = plt.figure(figsize = (5, 4.0))
+    fig = plt.figure(figsize = (5, 6.0))
 
     # keep track of xx axis min and max so that all data for each pos series is shown
     xx_limits = [None, None]
@@ -1140,6 +1181,7 @@ def plot_time(input_dir, trace_nr, output_dir,
             'marker' : None,
             'markersize' : 0.0,
             'markeredgewidth' : 0.0, 
+            'y-limits' : [-75, -40],
             'axis-labels' : ['time', 'rssi (dBm)'] }), 
         # 'inter-arrival' : { 
         #     'metrics' : ['diff'], 
@@ -1163,13 +1205,22 @@ def plot_time(input_dir, trace_nr, output_dir,
             'markersize' : 2.0,
             'markeredgewidth' : 0.0,
             'scale' : ['linear', 'log'],
-            'y-limits' : [400000, 50000000],
-            'axis-labels' : ['time', 'bitrate (bps)'] })
+            # 'y-limits' : [400000, 50000000],
+            'axis-labels' : ['time', 'bitrate (bps)'] }),
+        ('wlan data rate', { 
+            'metrics' : ['802.11n data rate'], 
+            'linewidth' : 0.00,
+            'marker' : 'o',
+            'markersize' : 2.0,
+            'markeredgewidth' : 0.0,
+            'scale' : ['linear', 'log'],
+            # 'y-limits' : [0.1, 10 * 1000000.0],
+            'axis-labels' : ['time', '802.11n bitrate\n(bps)'] })
     ])
 
     ax = OrderedDict()
     for m, category in enumerate(plot_configs.keys()):
-        ax[category] = fig.add_subplot(211 + m)
+        ax[category] = fig.add_subplot(311 + m)
         ax[category].xaxis.grid(True)
         ax[category].yaxis.grid(True)
 
@@ -1182,7 +1233,7 @@ def plot_time(input_dir, trace_nr, output_dir,
             for mac in clients:
 
                 # we only care about rows w/ src station being the client
-                data = chunk[(chunk['mac src'] == mac) & (chunk['mac dst'] == ap) & (chunk['ip proto'] == 'UDP')].reset_index()
+                data = chunk[(chunk['wlan src addr'] == mac) & (chunk['wlan dst addr'] == ap) & (chunk['ip proto'] == 'TCP')].reset_index()
                 if data.empty:
                     continue
 
@@ -1194,6 +1245,7 @@ def plot_time(input_dir, trace_nr, output_dir,
                 # for bitrate
                 timestamp_ref = data.iloc[0]['epoch time'].astype(float)
                 data['bitrate'] = (data['frame len'].cumsum(axis = 0) * 8.0) / (data['epoch time'].astype(float) - timestamp_ref)
+                data['802.11n data rate'] = data['wlan data rate'] * 1000000.0
 
                 for category in plot_configs:
                     for metric in plot_configs[category]['metrics']:
@@ -1234,7 +1286,7 @@ def plot_time(input_dir, trace_nr, output_dir,
     for category in plot_configs:
 
         ax[category].legend(
-            fontsize = 12, 
+            fontsize = 10, 
             ncol = 3, loc = 'upper right',
             handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
@@ -1288,7 +1340,8 @@ def plot_cbt(input_dir, trace_nr, output_dir,
     segments = list(cbt_data.index[cbt_data['diff'] < 0.0])
     segments.append(len(cbt_data) - 1)
 
-    channel = int(cbt_data.iloc[0]['channel'])
+    # channel = int(cbt_data.iloc[0]['channel'])
+    channel = 1
     prev_seg = 0
 
     # keep track of xx axis min and max so that all data for each pos series is shown
@@ -1456,13 +1509,15 @@ def plot_cpu(input_dir, trace_nr, output_dir,
             continue
 
         peer_dir = os.path.join(trace_dir, ("%s" % (peer)))
-        for filename in sorted(glob.glob(os.path.join(peer_dir, 'iperf3-to-mobile.results*.csv'))):
+        for filename in sorted(glob.glob(os.path.join(peer_dir, 'iperf3-to-mobile.results*csv'))):
 
+            print(filename)
             cpu_data = pd.read_csv(filename)
+            print(cpu_data)
 
             offset = 0.0
             if peer == 'pos1':
-                offset = 3600.0
+                offset = 0.0
                 cpu_data = cpu_data.sort_values(by = ['time'])
             dates = [ datetime.datetime.fromtimestamp(float(dt) - offset) for dt in cpu_data['time'] ]
 
@@ -1580,7 +1635,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    plot_ntp(args.input_dir, args.trace_nr, args.output_dir)
+    # plot_ntp(args.input_dir, args.trace_nr, args.output_dir)
     # plot_time(args.input_dir, args.trace_nr, args.output_dir,
     #     zoom = [ datetime.datetime(2018, 8, 7, 16, 58), datetime.datetime(2018, 8, 7, 17, 02) ])
     # plot_cbt(args.input_dir, args.trace_nr, args.output_dir,
@@ -1589,6 +1644,7 @@ if __name__ == "__main__":
     #     zoom = [ datetime.datetime(2018, 8, 7, 16, 58), datetime.datetime(2018, 8, 7, 17, 02) ])
 
     plot_time(args.input_dir, args.trace_nr, args.output_dir)
+    parse_json(args.input_dir, args.trace_nr)
     plot_cbt(args.input_dir, args.trace_nr, args.output_dir)
     plot_cpu(args.input_dir, args.trace_nr, args.output_dir)
 
