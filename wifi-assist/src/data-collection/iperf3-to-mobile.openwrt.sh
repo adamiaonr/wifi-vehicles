@@ -108,7 +108,7 @@ while [ "$stop_loop" = false ]; do
     then
         output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrate --get-server-output)
     else
-        output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port)
+        output=$(iperf3 -V -J -t 10 -c $server_ip -p $server_port)
     fi
 
     # check for errors in iperf3's output: if errors exist, exit
