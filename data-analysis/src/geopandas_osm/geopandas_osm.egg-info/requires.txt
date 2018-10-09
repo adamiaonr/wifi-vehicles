@@ -1,0 +1,5 @@
+six
+geopandas
+
+[test]
+pytest
