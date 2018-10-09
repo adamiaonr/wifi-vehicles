@@ -106,6 +106,10 @@ while [ "$stop_loop" = false ]; do
     # extract the output of iperf3
     if [ "$protocol" == "udp" ]
     then
+
+        # wait a random interval (0 to 2 sec) before (re-)starting
+        sleep $(awk 'BEGIN{srand(); print int(rand()*3)}')
+
         output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrate --get-server-output)
     else
         output=$(iperf3 -V -J -t 10 -c $server_ip -p $server_port)

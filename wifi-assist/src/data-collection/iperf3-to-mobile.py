@@ -200,6 +200,10 @@ if __name__ == "__main__":
     stop_loop = False
     while (stop_loop == False):
 
+        # wait a random interval (0 to 2 sec) before (re-)starting
+        if args.protocol == 'udp':
+            time.sleep(randint(0,2))
+
         start_timestamp = time.time()
         code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol)
         
