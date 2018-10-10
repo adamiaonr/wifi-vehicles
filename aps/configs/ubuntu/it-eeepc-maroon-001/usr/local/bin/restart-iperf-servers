@@ -13,7 +13,7 @@ signal_handler() {
 }
 
 # list of iperf3 server ports to use
-declare -a ports=("5202" "5203" "5204")
+declare -a ports=("5202" "5203" "5204" "5205")
 
 # kill all iperf3 servers running
 pkill -f iperf3
