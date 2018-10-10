@@ -19,16 +19,16 @@ then
     fi
 fi
 
-# first set iface wlx24050f615299 to monitor mode, on the channel & bw passed as args
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f615299 --set-monitor-mode "$1:HT$bw"
+# first set iface wlx24050f6dae36 to monitor mode, on the channel & bw passed as args
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f6dae36 --set-monitor-mode "$1:HT$bw"
 # start capturing wlan frames in monitor mode
-output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f615299 info | awk '/channel/ {print $2}')
+output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}')
 mkdir -p "$output_dir"
 # print the channel and bw set on the monitor mode iface, for a quick check
 echo "$1:HT$bw"
-echo $(iw wlx24050f615299 info)
+echo $(iw wlx24050f6dae36 info)
 # run scripts
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --capture-only --iface wlx24050f615299 --channel "$1:HT$bw" --output-dir "$output_dir" &
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --capture-only --iface wlx24050f6dae36 --channel "$1:HT$bw" --output-dir "$output_dir" &
 # keep track of ntp accuracy
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 
