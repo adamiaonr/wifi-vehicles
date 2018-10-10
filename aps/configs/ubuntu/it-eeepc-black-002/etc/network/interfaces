@@ -2,12 +2,18 @@
 auto lo
 iface lo inet loopback
 
-auto wlx24050f6dae36
-iface wlx24050f6dae36 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-dns-nameservers 1.1.1.1 8.8.8.8
+#auto wlx24050f6dae36
+#iface wlx24050f6dae36 inet dhcp
+#wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+#dns-nameservers 1.1.1.1 8.8.8.8
 
 auto wlxc46e1f25d74a
 iface wlxc46e1f25d74a inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
+dns-nameservers 1.1.1.1 8.8.8.8
+
+auto enp3s0
+iface enp3s0 inet static
+address 10.10.11.1
+netmask 255.255.255.0
 dns-nameservers 1.1.1.1 8.8.8.8

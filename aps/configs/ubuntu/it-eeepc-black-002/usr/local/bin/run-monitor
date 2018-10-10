@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]
+then
+	echo "usage : $0 <channel> <bandwidth> <trace-nr>"
+	exit 1
+fi
+
+# change channel on the monitoring iface to that of the ap
+bw=$2
+if [ $2 -gt 20 ]
+then
+
+    if [ $1 -gt 36 ]
+    then
+        bw=$bw-
+    else
+        bw=$bw+
+    fi
+fi
+
+# first set iface wlx24050f615299 to monitor mode, on the channel & bw passed as args
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f615299 --set-monitor-mode "$1:HT$bw"
+# start capturing wlan frames in monitor mode
+output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$(iw wlx24050f615299 info | awk '/channel/ {print $2}')
+mkdir -p "$output_dir"
+# print the channel and bw set on the monitor mode iface, for a quick check
+echo "$1:HT$bw"
+echo $(iw wlx24050f615299 info)
+# run scripts
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --capture-only --iface wlx24050f615299 --channel "$1:HT$bw" --output-dir "$output_dir" &
+# keep track of ntp accuracy
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+
+exit 0
