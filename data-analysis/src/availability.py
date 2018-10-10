@@ -15,8 +15,9 @@ import hashlib
 # 
 import urllib
 import geopandas as gp
-import geopandas_osm.osm
 import shapely.geometry
+
+import mapping.openstreetmap
 
 import timeit
 
@@ -79,7 +80,7 @@ def get_roads(output_dir, bbox = [-8.650, 41.139, -8.578, 41.175],
     bbox = shapely.geometry.geo.box(bbox[0], bbox[1], bbox[2], bbox[3])
     roads = []
     for tag in tags:
-        roads.append(geopandas_osm.osm.query_osm('way', bbox, recurse = 'down', tags = tag))
+        roads.append(geopandas_osm.geopandas_osm.osm.query_osm('way', bbox, recurse = 'down', tags = tag))
 
     # concat dfs w/ tags
     roads = gp.GeoDataFrame(pd.concat(roads, ignore_index = True))
@@ -477,7 +478,7 @@ if __name__ == "__main__":
     if not args.output_dir:
         args.output_dir = "../data/output"
 
-    # roads = get_roads(args.output_dir)
+    roads = get_roads(args.output_dir)
     # get_antroads(args.output_dir)
     # get_roadcells(args.output_dir, roads)
     # refine_roadcells(args.data_file, args.output_dir)

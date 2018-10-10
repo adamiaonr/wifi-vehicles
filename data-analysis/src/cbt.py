@@ -126,10 +126,10 @@ def calc_cbt(input_file):
         # chunk['frame.duration'] = calc_frame_duration(chunk)
 
         # divide chunk in 1 sec periods:
-        #   - calculate the end transmission times (time + frame duration)
-        chunk['endtime'] = chunk['time'].values + (chunk['wlan_radio.duration'].values / 1000000.0)
+        #   - calculate the end transmission times (epoch time + frame duration), in micro sec
+        chunk['endtime'] = chunk['epoch time'].values + (chunk['wlan duration'].values / 1000000.0)
         #   - get period nr. from integer part of endtime
-        chunk['period.no'] = chunk['endtime'].values.astype(int)
+        chunk['period.no'] = chunk['epoch time'].values.astype(int)
         # print(chunk[['period.no', 'PHY type', 'Type', 'Type/Subtype', 'Length', 'Data rate', 'wlan_radio.duration']])
 
         # get count of type / subtypes per period

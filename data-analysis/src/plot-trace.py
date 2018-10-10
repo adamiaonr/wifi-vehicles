@@ -21,6 +21,7 @@ import json
 import mapping.utils
 import plot.utils
 import parsing.utils
+import analysis.metrics
 
 from random import randint
 from collections import defaultdict
@@ -42,9 +43,9 @@ clients['24:05:0f:9e:2c:b1'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'green',
 # peer names 
 peers = {
     'mobile' : {'color' : 'black'}, 
-    'pos0'   : {'color' : 'blue',   'lat' : 41.178456, 'lon' : -8.594501}, 
+    'pos2'   : {'color' : 'green',  'lat' : 41.178456, 'lon' : -8.594501}, 
     'pos1'   : {'color' : 'red',    'lat' : 41.178518, 'lon' : -8.595366}, 
-    'pos2'   : {'color' : 'green',  'lat' : 41.178563, 'lon' : -8.596012}
+    'pos0'   : {'color' : 'blue',   'lat' : 41.178563, 'lon' : -8.596012}
 }
 
 t_diff = lambda t : (float(t[-1]) - float(t[0]))
@@ -60,9 +61,6 @@ def parse_json(input_dir, trace_nr):
 
     for filename in sorted(glob.glob(os.path.join(trace_dir, 'pos1/iperf3-to-mobile.report.*.json'))):
         parsing.utils.parse_json(filename, iperf3_results)
-
-def extract_ip_id(ip_id):
-    return float(ip_id.split(' ')[-1].lstrip('(').rstrip(')'))
 
 def process_metric(data, aggr_metrics, metric):
 
@@ -191,18 +189,15 @@ def plot_time(input_dir, trace_nr, output_dir,
                     if 'aggr' in metric:
                         aggr_metrics[metric] = aggr_metrics[metric].iloc[0:0]
 
+            # make sure packets in chunk are sorted by unix timestamp
+            chunk = chunk.sort_values(by = ['epoch time'])
+
             for mac in clients:
 
                 # we only care about rows w/ src station being the client
                 data = chunk[(chunk['wlan src addr'] == mac) & (chunk['wlan dst addr'] == ap) & (chunk['ip proto'] == protocol.upper())].reset_index()
                 if data.empty:
                     continue
-
-                # # data['diff'] = data['epoch time'].astype(float) - data['epoch time'].shift(1).astype(float)
-                # # seq numbers
-                # data['ip seq'] = data.loc[~data['ip id'].isnull()]['ip id'].apply(extract_ip_id)
-                # data['ip seq'] += (data.loc[~data['ip id'].isnull()]['ip frag offset'].astype(float) / 10000.0)
-                # data['ip seq'] /= 1000.0
 
                 for category in plot_configs:
                     for metric in plot_configs[category]['metrics']:
@@ -306,9 +301,22 @@ def plot_time(input_dir, trace_nr, output_dir,
 def plot_cbt(input_dir, trace_nr, output_dir,
     zoom = None, channel = '1', bw = '20', protocol = 'udp'):
 
-    # FIXME: for now, only pos1 (the unifi ac lite node) collects cbt directly
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5, 4.5))
+
+    # cbt as taken from atheros chipset registers
+    ax1 = fig.add_subplot(211)
+    ax1.xaxis.grid(True)
+    ax1.yaxis.grid(True)
+
+    # 'manual' cbt method
+    ax2 = fig.add_subplot(212)
+    ax2.xaxis.grid(True)
+    ax2.yaxis.grid(True)
+
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
 
+    # cbt from atheros chipset resgisters
     for filename in sorted(glob.glob(os.path.join(trace_dir, 'pos1/cbt.*.csv'))):
 
         # read cbt .csv file
@@ -333,14 +341,7 @@ def plot_cbt(input_dir, trace_nr, output_dir,
         else:
             time_limits = zoom
 
-        plt.style.use('classic')
-        fig = plt.figure(figsize = (5, 3.0))
-
-        ax = fig.add_subplot(111)
-        ax.xaxis.grid(True)
-        ax.yaxis.grid(True)
-
-        labels = ['busy time', 'rx time', 'tx time']
+        labels = ['util.', 'rx', 'tx']
         for seg in segments:
 
             data = cbt_data.iloc[prev_seg:seg]
@@ -363,20 +364,20 @@ def plot_cbt(input_dir, trace_nr, output_dir,
 
             dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in data['timestamp'] ]
 
-            ax.plot_date(
+            ax1.plot_date(
                 dates,
-                data['cbt-diff'],
-                linewidth = 0.75, linestyle = '-', color = 'red', label = labels[0], marker = None)
+                data['cbt-diff'] * 100.0,
+                linewidth = 0.75, linestyle = '-', color = 'black', label = labels[0], marker = None)
 
-            ax.plot_date(
+            ax1.plot_date(
                 dates,
-                data['crt-diff'],
-                linewidth = 0.75, linestyle = '-', color = 'green', label = labels[1], marker = None)
+                data['crt-diff'] * 100.0,
+                linewidth = 0.75, linestyle = '-', color = 'grey', label = labels[1], marker = None)
 
-            ax.plot_date(
+            ax1.plot_date(
                 dates,
-                data['ctt-diff'],
-                linewidth = 0.75, linestyle = '-', color = 'blue', label = labels[2], marker = None)
+                data['ctt-diff'] * 100.0,
+                linewidth = 0.75, linestyle = '-', color = 'navy', label = labels[2], marker = None)
 
             # update the x axis limits
             if zoom is None:
@@ -385,24 +386,54 @@ def plot_cbt(input_dir, trace_nr, output_dir,
             prev_seg = seg
             labels = ['', '', '']
 
-        ax.legend(
+        ax1.legend(
             fontsize = 12, 
             ncol = 3, loc = 'upper right',
             handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-        ax.set_title(("channel %s, %s MHz, %s" % (channel, bw, protocol)))
+        ax1.set_title(("channel %s, %s MHz, %s\n at pos1" % (channel, bw, protocol)))
 
-        ax.set_xlabel("time")
-        ax.set_ylabel("% of 1 sec")
+        ax1.set_xlabel("time")
+        ax1.set_ylabel("% of 1 sec")
 
-        ax.set_xlim(time_limits[0], time_limits[1])
-        ax.set_ylim([0.0, 1.3])
-        ax.set_yticks(np.arange(0.0, 1.2, 0.2))
+        ax1.set_xlim(time_limits[0], time_limits[1])
+        ax1.set_ylim([0.0, 130.0])
+        ax1.set_yticks(np.arange(0.0, 120.0, 20.0))
 
         # divide xx axis in 5 ticks
         xticks = plot.utils.get_time_xticks(time_limits)
-        ax.set_xticks(xticks)
-        ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+        ax1.set_xticks(xticks)
+        ax1.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    # cbt from atheros chipset resgisters
+    for filename in sorted(glob.glob(os.path.join(trace_dir, 'mobile/monitor.wlx24050faaab5d.*.csv'))):
+
+        cbt_data, frame_types = analysis.metrics.calc_cbt(filename)
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in cbt_data['timestamp'] ]
+
+        ax2.plot_date(
+            dates,
+            cbt_data['utilization'],
+            linewidth = 0.75, linestyle = '-', color = 'black', label = 'util.', marker = None)
+
+        ax2.legend(
+            fontsize = 12, 
+            ncol = 3, loc = 'upper right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+        ax2.set_title(("at mobile node"))
+
+        ax2.set_xlabel("time")
+        ax2.set_ylabel("% of 1 sec")
+
+        ax2.set_xlim(time_limits[0], time_limits[1])
+        ax2.set_ylim([0.0, 130.0])
+        ax2.set_yticks(np.arange(0.0, 120.0, 20.0))
+
+        # divide xx axis in 5 ticks
+        xticks = plot.utils.get_time_xticks(time_limits)
+        ax2.set_xticks(xticks)
+        ax2.set_xticklabels([str(xt)[11:-7] for xt in xticks])
 
         plt.gcf().autofmt_xdate()
         plt.tight_layout()
@@ -559,7 +590,7 @@ def plot_gps(input_dir, trace_nr, output_dir,
     zoom = None, channel = '1', bw = '20', protocol = 'udp'):
 
     plt.style.use('classic')
-    fig = plt.figure(figsize = (5, 4.0))
+    fig = plt.figure(figsize = (5, 4.5))
     
     # dist to client
     ax1 = fig.add_subplot(211)
@@ -657,6 +688,92 @@ def plot_gps(input_dir, trace_nr, output_dir,
         os.makedirs(trace_output_dir)
 
     plt.savefig(os.path.join(trace_output_dir, ("gps-stats-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')
+
+def plot_pckt_loss(input_dir, trace_nr, output_dir,
+    zoom = None, channel = '1', bw = '20', protocol = 'udp'):
+
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5, 3.0))
+    
+    # dist to client
+    ax1 = fig.add_subplot(111)
+    ax1.xaxis.grid(True)
+    ax1.yaxis.grid(True)
+
+    labels = defaultdict(str)
+    for mac in clients:
+        labels[mac] = clients[mac]['label']
+
+    # keep track of xx axis min and max so that all data for each pos series is shown
+    time_limits = [None, None]
+    if zoom is None:
+        time_limits = [None, None]
+    else:
+        time_limits = zoom
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    for fname in sorted(glob.glob(os.path.join(trace_dir, 'mobile/monitor.wlx24050faaab5d.*.csv'))):
+        chunksize = 10 ** 5
+        for chunk in pd.read_csv(fname, chunksize = chunksize):
+
+            # make sure packets in chunk are sorted by unix timestamp
+            chunk = chunk.sort_values(by = ['epoch time'])
+
+            for mac in clients:
+
+                # we only care about rows w/ src station being the client
+                data = chunk[(chunk['wlan src addr'] == mac) & (chunk['wlan dst addr'] == ap) & (chunk['ip proto'] == protocol.upper())].reset_index()
+                if data.empty:
+                    continue
+
+                data = analysis.metrics.add_ip_seq(data)
+
+                df = analysis.metrics.calc_pckt_loss_2(data, method = 'wlan seq number', protocol = protocol)
+                # x axis should be in datetime objects, for plot_date()
+                dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in df['time'] ]
+
+                if not dates:
+                    continue
+
+                # update the x axis limits
+                if zoom is None:
+                    plot.utils.update_time_limits(time_limits, dates)
+
+                ax1.plot_date(
+                    dates,
+                    df['pckt-loss'],
+                    linewidth = 0.75, linestyle = '-',
+                    color = clients[mac]['color'], label = labels[mac], 
+                    marker = 'o', markersize = 1.50, markeredgewidth = 0.0)
+
+                labels[mac] = ''
+
+    # divide xx axis in 5 ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+
+    # dist to client
+    ax1.set_title(("channel %s, %s MHz, %s" % (channel, bw, protocol)))
+    ax1.set_xlabel("time")
+    ax1.set_ylabel("pckt loss (%)")
+    ax1.set_xlim(time_limits[0], time_limits[1])
+    ax1.set_ylim([0.0, 100.0])
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    ax1.legend(
+        fontsize = 12, 
+        ncol = 1, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    plt.gcf().autofmt_xdate()
+    plt.tight_layout()
+
+    # create output dir for trace (if not existent)
+    trace_output_dir = os.path.join(output_dir, ("trace-%03d" % (int(trace_nr))))
+    if not os.path.isdir(trace_output_dir):
+        os.makedirs(trace_output_dir)
+
+    plt.savefig(os.path.join(trace_output_dir, ("pckt-loss-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')
 
 def get_time_limits(input_dir, trace_nr, protocol):
 
@@ -775,21 +892,26 @@ if __name__ == "__main__":
     trace = trace_list[trace_list['trace-nr'] == int(args.trace_nr)]
     # parse_json(args.input_dir, args.trace_nr)
     time_limits = get_time_limits(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
-    plot_time(args.input_dir, args.trace_nr, args.output_dir, 
-        zoom = time_limits,
-        protocol = trace['proto'].values[-1],
-        channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+    # plot_time(args.input_dir, args.trace_nr, args.output_dir, 
+    #     zoom = time_limits,
+    #     protocol = trace['proto'].values[-1],
+    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
     plot_cbt(args.input_dir, args.trace_nr, args.output_dir,
         zoom = time_limits,
         protocol = trace['proto'].values[-1],
         channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
-    plot_cpu(args.input_dir, args.trace_nr, args.output_dir,
-        zoom = time_limits,
-        protocol = trace['proto'].values[-1],
-        channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
-    plot_gps(args.input_dir, args.trace_nr, args.output_dir,
-        zoom = time_limits,
-        protocol = trace['proto'].values[-1],
-        channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+    # plot_cpu(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = time_limits,
+    #     protocol = trace['proto'].values[-1],
+    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+    # plot_gps(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = time_limits,
+    #     protocol = trace['proto'].values[-1],
+    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+
+    # plot_pckt_loss(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = time_limits,
+    #     protocol = trace['proto'].values[-1],
+    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
 
     sys.exit(0)

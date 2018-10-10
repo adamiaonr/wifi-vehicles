@@ -20,6 +20,8 @@ import shapely.geometry
 
 import timeit
 
+import mapping.utils
+
 from random import randint
 from datetime import date
 from datetime import datetime
@@ -28,7 +30,22 @@ from collections import OrderedDict
 
 from prettytable import PrettyTable
 
-def get_roads(output_dir, bbox = [-8.650, 41.139, -8.578, 41.175], 
+# gps coords for a 'central' pin on porto, portugal
+# LAT  = 41.163158
+# LON = -8.6127137
+LAT  = 41.178557
+LON = -8.595022
+# north, south, west, east limits of map, in terms of geo coordinates
+LATN = LAT + 0.03
+LATS = LAT - 0.03
+LONE = LON + 0.06
+LONW = LON - 0.06
+
+CELL_SIZE = 20.0
+
+# bbox = [-8.650, 41.139, -8.578, 41.175]
+def get_roads(output_dir, 
+    bbox = [LONW, LATS, LONE, LATN], 
     tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']):
 
     bbox = shapely.geometry.geo.box(bbox[0], bbox[1], bbox[2], bbox[3])
@@ -69,7 +86,13 @@ def get_antiroads(output_dir):
     # save the result to a file
     diff.to_file(os.path.join(output_dir, "anti-roads"), driver = 'ESRI Shapefile')
 
-def get_roadcells(output_dir, roads, bbox = [LONW, LATS, LONE, LATN], cell_size = 20.0):
+def get_roadcells(output_dir, roads, center = [LAT, LON], bbox = [LONW, LATS, LONE, LATN], cell_size = CELL_SIZE):
+
+    # x and y span (in meters) of the map, derived from geo coordinate limits
+    # NOTE : y is the vertical axis (latitude), x is the horizontal axis (longitude)
+    Y_SPAN = mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
+    # FIXME : an x span depends on the latitude, and we're assuming a fixed latitude
+    X_SPAN = mapping.utils.gps_to_dist(bbox[0], center[0], bbox[2], center[0])
 
     # grid of polygons w/ cell_size side dimension
     # adapted from https://gis.stackexchange.com/questions/269243/create-a-polygon-grid-using-with-geopandas

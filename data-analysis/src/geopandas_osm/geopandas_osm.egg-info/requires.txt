@@ -1,5 +1,0 @@
-six
-geopandas
-
-[test]
-pytest
