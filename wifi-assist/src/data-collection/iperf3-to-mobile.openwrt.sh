@@ -48,6 +48,10 @@ else
     exit 1
 fi
 
+# set wlan short and long retry options to 1
+wiphy="phy"$(iw dev $wiface info | awk '/wiphy/ {print $2}')
+iw phy $wiphy set retry short 1 long 1
+
 if [ "$protocol" == "udp" ]
 then
 

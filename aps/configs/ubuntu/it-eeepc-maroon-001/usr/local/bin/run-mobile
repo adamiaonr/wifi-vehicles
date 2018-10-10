@@ -33,6 +33,10 @@ then
     fi
 fi
 
+# set wlan short and long retry options to 1
+wiphy="phy"$(iw dev wlx24050f615114 info | awk '/wiphy/ {print $2}')
+iw phy $wiphy set retry short 1 long 1 
+
 # first set iface wlx24050faaab5d to monitor mode, on the right channel and bw
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode "$2:HT$bw"
 # create dirs (if not available already)
