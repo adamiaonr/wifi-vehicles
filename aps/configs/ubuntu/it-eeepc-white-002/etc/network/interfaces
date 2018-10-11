@@ -2,8 +2,13 @@
 auto lo
 iface lo inet loopback
 
-auto wlx24050f9e2cb1
-iface wlx24050f9e2cb1 inet dhcp
+#auto wlx24050f9e2cb1
+#iface wlx24050f9e2cb1 inet dhcp
+#wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+#dns-nameservers 1.1.1.1 8.8.8.8
+
+auto wlx24050fe57b6a
+iface wlx24050fe57b6a inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
