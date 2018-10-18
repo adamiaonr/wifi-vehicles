@@ -36,16 +36,21 @@ matplotlib.rcParams.update({'font.size': 16})
 ap = '24:05:0f:61:51:14'
 # mac addresses of clients (side-of-the-road)
 clients = OrderedDict()
-clients['24:05:0f:6d:ae:36'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'blue',     'lat' : 41.178456, 'lon' : -8.594501, 'ip' : '10.10.10.250'}
+# clients['24:05:0f:9e:2c:b1'] = {'id' : 2, 'label' : 'pos. 0', 'color' : 'blue',     'lat' : 41.178456, 'lon' : -8.594501, 'ip' : '10.10.10.56'}
+clients['24:05:0f:e5:7b:6a'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'blue',     'lat' : 41.178456, 'lon' : -8.594501, 'ip' : '10.10.10.56'}
 clients['fc:ec:da:1b:63:a6'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'red',      'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.53'}
 clients['fc:ec:da:1a:63:a6'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'red',      'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.140'}
-clients['24:05:0f:9e:2c:b1'] = {'id' : 2, 'label' : 'pos. 2', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.113'}
+# clients['24:05:0f:6d:ae:36'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.113'}
+clients['78:8a:20:58:1f:6b'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.170'}
+clients['78:8a:20:58:1f:73'] = {'id' : 3, 'label' : 'pos. 3', 'color' : 'magenta',  'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.178'}
+
 # peer names 
 peers = {
     'mobile' : {'color' : 'black'}, 
-    'pos2'   : {'color' : 'green',  'lat' : 41.178456, 'lon' : -8.594501}, 
-    'pos1'   : {'color' : 'red',    'lat' : 41.178518, 'lon' : -8.595366}, 
-    'pos0'   : {'color' : 'blue',   'lat' : 41.178563, 'lon' : -8.596012}
+    'pos3'   : {'color' : 'magenta',    'lat' : 41.178518, 'lon' : -8.595366},
+    'pos2'   : {'color' : 'green',      'lat' : 41.178456, 'lon' : -8.594501}, 
+    'pos1'   : {'color' : 'red',        'lat' : 41.178518, 'lon' : -8.595366}, 
+    'pos0'   : {'color' : 'blue',       'lat' : 41.178563, 'lon' : -8.596012}
 }
 
 t_diff = lambda t : (float(t[-1]) - float(t[0]))
@@ -70,6 +75,7 @@ def process_metric(data, aggr_metrics, metric):
         
         df = data[['epoch time', 'frame len']]
         df['epoch time'] = df['epoch time'].astype(int)
+        print(df)
         df = df[['epoch time', 'frame len']].groupby(['epoch time']).sum().reset_index().sort_values(by = ['epoch time'])
         df['bitrate'] = df['frame len'] * 8.0
 
@@ -205,6 +211,10 @@ def plot_time(input_dir, trace_nr, output_dir,
                         # some metrics require special processing
                         if metric in ['bitrate', 'aggr-bitrate', '802.11n data rate', 'wlan rssi']:
                             df = process_metric(data, aggr_metrics, metric)
+
+                            if metric == 'bitrate':
+                                print(df)
+
                         else:
                             df = df.iloc[::50, :]
 
@@ -860,13 +870,13 @@ if __name__ == "__main__":
     trace_list = list_traces(args.input_dir)
     if args.list_traces:
         table = PrettyTable(list(trace_list.columns))
-        for i, row in trace_info.iterrows():
+        for i, row in trace_list.iterrows():
             table.add_row([
                 ('%s' % (row['trace-nr'])),
                 ('%s' % (row['proto'])), 
                 ('%d' % (row['channel'])), 
                 ('%d' % (row['bw'])),
-                ('%dM' % (row['bitrate']))
+                ('%s' % (('%sMbps' % row['bitrate']) if row['bitrate'] != '*' else row['bitrate']))
                 ])
         print(table)
 
@@ -892,14 +902,14 @@ if __name__ == "__main__":
     trace = trace_list[trace_list['trace-nr'] == int(args.trace_nr)]
     # parse_json(args.input_dir, args.trace_nr)
     time_limits = get_time_limits(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
-    # plot_time(args.input_dir, args.trace_nr, args.output_dir, 
-    #     zoom = time_limits,
-    #     protocol = trace['proto'].values[-1],
-    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
-    plot_cbt(args.input_dir, args.trace_nr, args.output_dir,
+    plot_time(args.input_dir, args.trace_nr, args.output_dir, 
         zoom = time_limits,
         protocol = trace['proto'].values[-1],
         channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+    # plot_cbt(args.input_dir, args.trace_nr, args.output_dir,
+    #     zoom = time_limits,
+    #     protocol = trace['proto'].values[-1],
+    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
     # plot_cpu(args.input_dir, args.trace_nr, args.output_dir,
     #     zoom = time_limits,
     #     protocol = trace['proto'].values[-1],
