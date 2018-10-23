@@ -48,9 +48,9 @@ else
     exit 1
 fi
 
-# set wlan short and long retry options to 1
+# set wlan short and long retry options to 10 and 7, respectively...
 wiphy="phy"$(iw dev $wiface info | awk '/wiphy/ {print $2}')
-iw phy $wiphy set retry short 1 long 1
+iw phy $wiphy set retry short 10 long 7
 
 if [ "$protocol" == "udp" ]
 then
@@ -111,10 +111,10 @@ while [ "$stop_loop" = false ]; do
     if [ "$protocol" == "udp" ]
     then
 
-        # wait a random interval (0 to 2 sec) before (re-)starting
-        sleep $(awk 'BEGIN{srand(); print int(rand()*3)}')
+        # wait a random interval (0 to 1 sec) before (re-)starting
+        sleep $(awk 'BEGIN{srand(); print int(rand()*2)}')
 
-        output=$(iperf3 -V -J -t 5 -c $server_ip -p $server_port -u -b $bitrate --get-server-output)
+        output=$(iperf3 -V -J -t 10 -c $server_ip -p $server_port -u -b $bitrate --get-server-output)
     else
         output=$(iperf3 -V -J -t 10 -c $server_ip -p $server_port)
     fi

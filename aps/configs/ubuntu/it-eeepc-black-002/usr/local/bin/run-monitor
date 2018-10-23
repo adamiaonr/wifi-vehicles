@@ -3,6 +3,9 @@
 if [ $# -lt 3 ]
 then
 	echo "usage : $0 <channel> <bandwidth> <trace-nr>"
+	echo "    <channel> : 1, 11, 36 or 40"
+	echo "    <bandwidth> : 20 or 40 (note: channels in the 2.4 GHz band only accept 20)"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
 	exit 1
 fi
 

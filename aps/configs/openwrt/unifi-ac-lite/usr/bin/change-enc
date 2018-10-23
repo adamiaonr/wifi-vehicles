@@ -2,17 +2,24 @@
 
 if [ $# -lt 2 ]
 then
-	echo "usage : $0 <wpa-encryption> <freq-band>"
+	echo "usage : $0 <encryption> <freq-band>"
 	echo "options : "
-	echo "    <wpa-encryption> : 'open' or 'wpa2'"
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
 	echo "    <freq-band>: '2.4' or '5' (GHz)"
 	exit 1
 fi
 
-if [ "$1" != "open" ] && [ "$1" != "wpa2" ]
+if [ "$1" != "open" ] && [ "$1" != "wpa" ]
 then
 	echo "error : unrecognized wpa-encryption : $1"
 	exit 1
+fi
+
+# ambiguity fix
+encryption=$1
+if [ "$encryption" = "wpa" ]
+then
+	encryption="wpa2"
 fi
 
 freq=1
@@ -28,7 +35,7 @@ else
 fi
 
 # symlink to correct wpa_supplicant.conf file
-ln -sfv /root/workbench/configs/etc/config/wireless/wireless.client.$1.$freq /etc/config/wireless
+ln -sfv /root/workbench/configs/etc/config/wireless/wireless.client.$encryption.$freq /etc/config/wireless
 # reboot so that the new configs take effect
 reboot
 

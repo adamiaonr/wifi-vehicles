@@ -3,6 +3,10 @@
 if [ $# -lt 2 ]
 then
 	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
+	echo "options : "
+	echo "    <protocol> : 'tcp' or 'udp'"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	echo "    <udp-bitrate> : target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
 	exit 1
 fi
 
@@ -28,6 +32,10 @@ then
 
 	bitrate=$3
 fi
+
+# set wlan short and long retry options to 10 and 7, respectively...
+wiphy="phy"$(iw dev wlx24050fe57b6a info | awk '/wiphy/ {print $2}')
+iw phy $wiphy set retry short 10 long 7
 
 # run scripts
 # python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.10.111 --port 5204 --iface wlx24050f9e2cb1 --output-dir "$output_dir" &

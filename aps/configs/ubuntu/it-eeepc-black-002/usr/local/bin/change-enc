@@ -3,8 +3,8 @@
 if [ $# -lt 1 ]
 then
 	echo "usage : $0 <wpa-encryption>"
-	echo "options : wpa"
-	echo " : open"
+	echo "options : "
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
 	exit 1
 fi
 

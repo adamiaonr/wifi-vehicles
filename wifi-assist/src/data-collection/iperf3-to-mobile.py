@@ -39,7 +39,7 @@ def capture(iface, output_file):
     cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
     proc = subprocess.Popen(cmd)
     
-def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5):
+def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 10):
 
     output = "N/A"
 
@@ -47,7 +47,6 @@ def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 5
     if proto == 'udp':
         cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M', "--get-server-output"]
     elif proto == 'tcp':
-        time = 10
         cmd = ["iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port)]
     else:
         sys.stderr.write("""%s:::start_iperf3() : [ERROR] unknown protocol : %s\n""" % (sys.argv[0], proto))
@@ -200,9 +199,9 @@ if __name__ == "__main__":
     stop_loop = False
     while (stop_loop == False):
 
-        # wait a random interval (0 to 2 sec) before (re-)starting
+        # wait a random interval (0 to 1 sec) before (re-)starting
         if args.protocol == 'udp':
-            time.sleep(randint(0,2))
+            time.sleep(randint(0,1))
 
         start_timestamp = time.time()
         code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol)

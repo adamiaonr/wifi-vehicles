@@ -2,7 +2,10 @@
 
 if [ $# -lt 3 ]
 then
-	echo "usage : $0 <wpa-encryption> <channel> <bandwidth>"
+	echo "usage : $0 <encryption> <channel> <bandwidth>"
+	echo "options : "
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
+	echo "    <channel>: 1, 11, 36 or 40"
 	exit 1
 fi
 

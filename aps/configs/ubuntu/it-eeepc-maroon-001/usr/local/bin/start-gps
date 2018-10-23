@@ -3,6 +3,8 @@
 if [ $# -lt 1 ]
 then
 	echo "usage : $0 <usb-dev-file>"
+	echo "options : "
+	echo "    <usb-dev-file> : e.g., '/dev/ttyACM0'"
 	exit 1
 fi
 

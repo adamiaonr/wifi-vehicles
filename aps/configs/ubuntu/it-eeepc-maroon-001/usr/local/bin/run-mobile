@@ -3,6 +3,11 @@
 if [ $# -lt 4 ]
 then
 	echo "usage : $0 <usb-dev-file> <channel> <bandwidth> <trace-nr>"
+	echo "options : "
+	echo "    <usb-dev-file> : e.g., '/dev/ttyACM0'"
+	echo "    <channel> : 1, 11, 36 or 40"
+	echo "    <bandwidth> : 20 or 40 (note: channels in the 2.4 GHz band only accept 20)"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
 	exit 1
 fi
 
@@ -33,9 +38,9 @@ then
     fi
 fi
 
-# set wlan short and long retry options to 1
+# set wlan short and long retry options to 10 and 7, respectively...
 wiphy="phy"$(iw dev wlx24050f615114 info | awk '/wiphy/ {print $2}')
-iw phy $wiphy set retry short 1 long 1 
+iw phy $wiphy set retry short 10 long 7
 
 # first set iface wlx24050faaab5d to monitor mode, on the right channel and bw
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode "$2:HT$bw"

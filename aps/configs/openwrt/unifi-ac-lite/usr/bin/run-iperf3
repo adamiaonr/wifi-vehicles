@@ -2,7 +2,11 @@
 
 if [ $# -lt 2 ]
 then
-	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>) (optional: <capture>)"
+	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
+	echo "options : "
+	echo "    <protocol> : 'tcp' or 'udp'"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	echo "    <udp-bitrate> : target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
 	exit 1
 fi
 

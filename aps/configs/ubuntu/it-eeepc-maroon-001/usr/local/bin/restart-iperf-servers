@@ -31,7 +31,7 @@ do
 	stdbuf -oL -eL iperf3 -s -V -p "$port" &> "$filename" &
 done
 
-# check output regularly and restasrt if iperf3 server is found 'hanging' 
+# check output regularly and restart if iperf3 server is found 'hanging' 
 # 'hanging' results in the iperf3 server output like: 
 # '[  5]   0.00-1.00   sec  0.00 Bytes  0.00 bits/sec  0.000 ms  0/0 (-nan%)'
 # as such, we look for the 'nan' pattern in the last n lines of iperf's output
@@ -57,9 +57,9 @@ while [ "$stop_loop" = false ]; do
 		fi
 	done
 
-	# sleep for 5 sec before checking again
-	# this means the iperf servers can be left hanging for 5 sec
-	sleep 5
+	# sleep for 3 sec before checking again
+	# this means the iperf servers can be left hanging for 3 sec
+	sleep 3
 
 done
 
