@@ -43,6 +43,8 @@ clients['fc:ec:da:1a:63:a6'] = {'id' : 1, 'label' : 'pos. 1', 'color' : 'red',  
 # clients['24:05:0f:6d:ae:36'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.113'}
 clients['78:8a:20:58:1f:6b'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.170'}
 clients['78:8a:20:58:1f:73'] = {'id' : 3, 'label' : 'pos. 3', 'color' : 'magenta',  'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.178'}
+clients['78:8a:20:57:1f:6b'] = {'id' : 0, 'label' : 'pos. 0', 'color' : 'green',    'lat' : 41.178563, 'lon' : -8.596012, 'ip' : '10.10.10.221'}
+clients['78:8a:20:57:1f:73'] = {'id' : 3, 'label' : 'pos. 3', 'color' : 'magenta',  'lat' : 41.178518, 'lon' : -8.595366, 'ip' : '10.10.10.229'}
 
 # peer names 
 peers = {
@@ -67,36 +69,41 @@ def parse_json(input_dir, trace_nr):
     for filename in sorted(glob.glob(os.path.join(trace_dir, 'pos1/iperf3-to-mobile.report.*.json'))):
         parsing.utils.parse_json(filename, iperf3_results)
 
-def process_metric(data, aggr_metrics, metric):
+def process_metric(data, metric, aggr_metrics = None):
 
-    # bitrates
-    df = None
-    if metric == 'bitrate':
+    proc_data = None
+    if metric == 'bitrate' or metric == 'throughput':
         
-        df = data[['epoch time', 'frame len']]
-        df['epoch time'] = df['epoch time'].astype(int)
-        print(df)
-        df = df[['epoch time', 'frame len']].groupby(['epoch time']).sum().reset_index().sort_values(by = ['epoch time'])
-        df['bitrate'] = df['frame len'] * 8.0
+        # throughput calc'ed based on feame length per second
+        proc_data = data[['epoch time', 'frame len']]
+        proc_data['epoch time'] = proc_data['epoch time'].astype(int)
+        proc_data = proc_data[['epoch time', 'frame len']].groupby(['epoch time']).sum().reset_index().sort_values(by = ['epoch time'])
+        # frame len in bytes, *8 to get bits (per second)
+        proc_data[metric] = (proc_data['frame len'] * 8.0) / 1000000
 
-        _metric = ('aggr-%s' % (metric))
-        aggr_metrics[_metric] = pd.merge(aggr_metrics[_metric], df[['epoch time', metric]], on = ['epoch time'], how = 'outer').set_index('epoch time').sum(axis = 1).reset_index().sort_values(by = ['epoch time'])
-        aggr_metrics[_metric].columns = ['epoch time', metric]
+        # in case an aggregate metric is requested
+        if aggr_metrics is not None:
+            _metric = ('aggr-%s' % (metric))
+            aggr_metrics[_metric] = pd.merge(aggr_metrics[_metric], proc_data[['epoch time', metric]], on = ['epoch time'], how = 'outer').set_index('epoch time').sum(axis = 1).reset_index().sort_values(by = ['epoch time'])
+            aggr_metrics[_metric].columns = ['epoch time', metric]
 
-    elif metric == '802.11n data rate':
+    elif metric == '802.11n data rate' or metric == 'wlan data rate':
 
-        df = data[['epoch time', 'wlan data rate']]
-        df['epoch time'] = df['epoch time'].astype(int)
-        df = df[['epoch time', 'wlan data rate']].groupby(['epoch time']).mean().reset_index()
-        df['802.11n data rate'] = df['wlan data rate'] * 1000000.0
+        proc_data = data[['epoch time', 'wlan data rate']]
+        # proc_data['epoch time'] = proc_data['epoch time'].astype(int)
+        proc_data = proc_data[['epoch time', 'wlan data rate']].groupby(['epoch time']).mean().reset_index()
+        proc_data['wlan data rate'] = proc_data['wlan data rate']
 
     elif metric == 'wlan rssi':
 
-        df = data[['epoch time', 'wlan rssi']]
-        df['epoch time'] = df['epoch time'].astype(int)
-        df = df[['epoch time', 'wlan rssi']].groupby(['epoch time']).mean().reset_index()
+        proc_data = data[['epoch time', 'wlan rssi']]
+        # proc_data['epoch time'] = proc_data['epoch time'].astype(int)
+        proc_data = proc_data[['epoch time', 'wlan rssi']].groupby(['epoch time']).mean().reset_index()
 
-    return df
+    else:
+        proc_data = data[['epoch time', metric]]
+
+    return proc_data
 
 def plot_time(input_dir, trace_nr, output_dir,
     zoom = None, protocol = 'udp', channel = '1', bw = '20'):
@@ -211,10 +218,6 @@ def plot_time(input_dir, trace_nr, output_dir,
                         # some metrics require special processing
                         if metric in ['bitrate', 'aggr-bitrate', '802.11n data rate', 'wlan rssi']:
                             df = process_metric(data, aggr_metrics, metric)
-
-                            if metric == 'bitrate':
-                                print(df)
-
                         else:
                             df = df.iloc[::50, :]
 
@@ -377,17 +380,17 @@ def plot_cbt(input_dir, trace_nr, output_dir,
             ax1.plot_date(
                 dates,
                 data['cbt-diff'] * 100.0,
-                linewidth = 0.75, linestyle = '-', color = 'black', label = labels[0], marker = None)
+                linewidth = 0.75, linestyle = '-', color = 'blue', label = labels[0], marker = None)
 
             ax1.plot_date(
                 dates,
                 data['crt-diff'] * 100.0,
-                linewidth = 0.75, linestyle = '-', color = 'grey', label = labels[1], marker = None)
+                linewidth = 0.75, linestyle = '-', color = 'red', label = labels[1], marker = None)
 
             ax1.plot_date(
                 dates,
                 data['ctt-diff'] * 100.0,
-                linewidth = 0.75, linestyle = '-', color = 'navy', label = labels[2], marker = None)
+                linewidth = 0.75, linestyle = '-', color = 'green', label = labels[2], marker = None)
 
             # update the x axis limits
             if zoom is None:
@@ -785,6 +788,89 @@ def plot_pckt_loss(input_dir, trace_nr, output_dir,
 
     plt.savefig(os.path.join(trace_output_dir, ("pckt-loss-%s.pdf" % (trace_nr))), bbox_inches = 'tight', format = 'pdf')
 
+def plot_cdfs(
+    input_dir, trace_nr, output_dir,
+    base_metrics = ['epoch time', 'wlan rssi', 'wlan data rate', 'frame len'],
+    cdf_metrics = ['wlan rssi', 'wlan data rate', 'throughput'],
+    protocol = 'udp', channel = '1', bw = '20'):
+
+    plt.style.use('classic')
+
+    plot_configs = OrderedDict([
+        ('wlan rssi', { 
+            'color' : 'blue',
+            'linewidth' : 0.75,
+            'x-label' : 'rssi (dBm)'}), 
+        ('throughput', { 
+            'color' : 'blue',
+            'linewidth' : 0.75,
+            'x-label' : 'throughput (Mbps)'}), 
+        ('wlan data rate', { 
+            'color' : 'blue',
+            'linewidth' : 0.75,
+            'x-label' : 'wlan bitrate (Mbps)'})])
+
+    to_cdf = pd.DataFrame()
+
+    # collect data to cdf-ize
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    for fname in sorted(glob.glob(os.path.join(trace_dir, 'mobile/monitor.wlx24050faaab5d.*.csv'))):
+
+        chunksize = 10 ** 5
+        for chunk in pd.read_csv(fname, chunksize = chunksize):
+
+            # make sure packets in chunk are sorted by unix timestamp
+            chunk = chunk.sort_values(by = ['epoch time'])
+
+            for mac in clients:
+
+                data = chunk[(chunk['wlan src addr'] == mac) & (chunk['wlan dst addr'] == ap) & (chunk['ip proto'] == protocol.upper())].reset_index()
+                if data.empty:
+                    continue
+
+                # add info about mac to data (will be useful later)
+                data['mac'] = mac
+                # collect metric data
+                to_cdf = pd.concat([to_cdf, data[base_metrics + ['mac']]], ignore_index = True)
+
+    # create output dir for trace (if not existent)
+    trace_output_dir = os.path.join(output_dir, ("trace-%03d" % (int(trace_nr))))
+    if not os.path.isdir(trace_output_dir):
+        os.makedirs(trace_output_dir)
+
+    # create 1 x len(cdf_metrics) figure
+    w = len(cdf_metrics)
+    h = to_cdf['mac'].unique()
+    fig = plt.figure(figsize = (4.5 * w, 6.0 * h))
+    fig.suptitle(("channel %s, %s MHz, %s" % (channel, bw, protocol)))
+
+    # generate cdfs for each of the cdf_metrics
+    for mac in clients:
+
+        _to_cdf = to_cdf[to_cdf['mac'] == mac]
+        if _to_cdf.empty:
+            continue
+
+        mid = (w / 2) + 1
+        for i, cmetric in enumerate(cdf_metrics):
+            
+            ax = fig.add_subplot(h, w, (i + 1))
+
+            # add a title w/ the client fixed pos. label on the graph in the middle
+            if (i + 1) == mid:
+                ax.set_title("%s" % (clients[mac]['label']))
+                mid += w
+
+            # pre-process the metric if necessary
+            __to_cdf = process_metric(_to_cdf, cmetric)
+            print("%s.%s : %s" % (mac, cmetric, len(__to_cdf)))
+
+            plot.utils.cdf(ax, __to_cdf, cmetric, 
+                plot_configs[cmetric])
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(trace_output_dir, ("cdfs.pdf")), bbox_inches = 'tight', format = 'pdf')
+
 def get_time_limits(input_dir, trace_nr, protocol):
 
     time_limits = [None, None]
@@ -901,11 +987,11 @@ if __name__ == "__main__":
     # fetch trace info from trace list
     trace = trace_list[trace_list['trace-nr'] == int(args.trace_nr)]
     # parse_json(args.input_dir, args.trace_nr)
-    time_limits = get_time_limits(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
-    plot_time(args.input_dir, args.trace_nr, args.output_dir, 
-        zoom = time_limits,
-        protocol = trace['proto'].values[-1],
-        channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+    # time_limits = get_time_limits(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
+    # plot_time(args.input_dir, args.trace_nr, args.output_dir, 
+    #     zoom = time_limits,
+    #     protocol = trace['proto'].values[-1],
+    #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
     # plot_cbt(args.input_dir, args.trace_nr, args.output_dir,
     #     zoom = time_limits,
     #     protocol = trace['proto'].values[-1],
@@ -923,5 +1009,9 @@ if __name__ == "__main__":
     #     zoom = time_limits,
     #     protocol = trace['proto'].values[-1],
     #     channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
+    
+    plot_cdfs(args.input_dir, args.trace_nr, args.output_dir,
+        protocol = trace['proto'].values[-1],
+        channel = trace['channel'].values[-1], bw = trace['bw'].values[-1])
 
     sys.exit(0)

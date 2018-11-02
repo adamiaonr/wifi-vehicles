@@ -29,11 +29,13 @@ def parse_json(input_filename, output_file):
 
     json_file = open(input_filename)
     json_str = json_file.read()
+
     # split the .json file in blocks, delimited by '}\n{'
     blocks = json_str.split('}\n{')
     # FIXME: the first block needs a '}' at the end for correct parsing by json.loads()
     blocks[0] = blocks[0] + '}'
     blocks[0] = blocks[0].replace('\n', '').replace('\t', '')
+
     data = json.loads(blocks[0])
     output_file.writerow( 
         [ 
@@ -43,6 +45,7 @@ def parse_json(input_filename, output_file):
 
     blocks[-1] = '{' + blocks[-1]
     blocks[-1] = blocks[-1].replace('\n', '').replace('\t', '')
+    
     data = json.loads(blocks[-1])
     output_file.writerow( 
         [ 
@@ -59,3 +62,10 @@ def parse_json(input_filename, output_file):
                 data['start']['timestamp']['timesecs'], 
                 data['end']['cpu_utilization_percent']['host_total'], 
                 data['end']['cpu_utilization_percent']['remote_total'] ] )
+
+def to_hdf5(data, metric, link_data):
+    link_data.append(
+        ('%s' % (metric)),
+        data,
+        data_columns = data.columns,
+        format = 'table')
