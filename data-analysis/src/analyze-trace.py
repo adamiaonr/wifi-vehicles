@@ -28,6 +28,7 @@ import geopandas as gp
 import plot.utils
 import plot.trace
 import plot.ap_selection
+import plot.gps
 
 import parsing.utils
 
@@ -248,6 +249,8 @@ if __name__ == "__main__":
         # extract rx data w/ default options
         analysis.trace.extract_rx_features(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
 
+    plot.trace.cells(args.input_dir, args.trace_nr, trace_output_dir, cell_size = 12.5)
+
     # # calculate the 'cadillac' periods, according to different metrics
     # for metric in ['throughput', 'wlan rssi', 'dist']:
     #     analysis.trace.calc_best(args.input_dir, args.trace_nr, metric = metric)
@@ -259,30 +262,30 @@ if __name__ == "__main__":
     #     method = 'periodic',
     #     args = {'periodic' : {'scan_period' : 20.0, 'scan_time' : 1.0}})
 
-    # cell history
-    data = analysis.ap_selection.cell(args.input_dir, args.trace_nr,
-        args = {'cell-size' : 10.0})
+    # # cell history
+    # data = analysis.ap_selection.cell(args.input_dir, args.trace_nr,
+    #     args = {'cell-size' : 10.0})
 
-    gt_metric = 'throughput'
-    plot_ap_selection(args.input_dir, args.trace_nr, trace_output_dir, 
-        gt_metric = gt_metric,
-        methods = ['best-rssi', 'best-cell'],
-        plot_configs = {
-            'best-rssi' : {
-                    'method' : 'periodic',
-                    'args' : {'scan-period' : 10.0, 'scan-time' : 1.0},
-                    'title' : ('scan + best RSS (period : %s sec, scan duration : %s sec)' % (10.0, 1.0)),
-                    'sub-title' : ('scan + best RSS (%s gain)' % (gt_metric)),
-                    'y-label' : 'throughput (Mbps)',
-                    'coef' : 1.0 / 1000000.0
-            },
-            'best-cell' : {
-                    'args' : {'cell-size' : 10.0},
-                    'title' : ('best mean thghpt per cell, in other laps (cell-size : %s m)' % (10.0)),
-                    'sub-title' : ('best mean thghpt per cell (%s gain)' % (gt_metric)),
-                    'y-label' : 'throughput (Mbps)',
-                    'coef' : 1.0 / 1000000.0
-            }
-        })
+    # gt_metric = 'throughput'
+    # plot_ap_selection(args.input_dir, args.trace_nr, trace_output_dir, 
+    #     gt_metric = gt_metric,
+    #     methods = ['best-rssi', 'best-cell'],
+    #     plot_configs = {
+    #         'best-rssi' : {
+    #                 'method' : 'periodic',
+    #                 'args' : {'scan-period' : 10.0, 'scan-time' : 1.0},
+    #                 'title' : ('scan + best RSS (period : %s sec, scan duration : %s sec)' % (10.0, 1.0)),
+    #                 'sub-title' : ('scan + best RSS (%s gain)' % (gt_metric)),
+    #                 'y-label' : 'throughput (Mbps)',
+    #                 'coef' : 1.0 / 1000000.0
+    #         },
+    #         'best-cell' : {
+    #                 'args' : {'cell-size' : 10.0},
+    #                 'title' : ('best mean thghpt per cell, in other laps (cell-size : %s m)' % (10.0)),
+    #                 'sub-title' : ('best mean thghpt per cell (%s gain)' % (gt_metric)),
+    #                 'y-label' : 'throughput (Mbps)',
+    #                 'coef' : 1.0 / 1000000.0
+    #         }
+    #     })
 
     sys.exit(0)
