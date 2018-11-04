@@ -106,6 +106,10 @@ def get_data(input_dir, trace_dir, tag_laps = True):
         gps_data = pd.read_csv(filename)
         gps_data['timestamp'] = gps_data['timestamp'].astype(int)
         gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
+        # reset 'lap-number' and 'direction' columns
+        gps_data['lap-number'] = -1.0
+        gps_data['direction'] = -1.0
+
         # get lap timestamps
         lap_timestamps = get_lap_timestamps(gps_data, clients)
         # if lap numbers are to be tagged, add them to gps_data

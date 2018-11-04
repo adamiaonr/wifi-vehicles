@@ -117,7 +117,7 @@ def extract_rx_features(input_dir, trace_nr,
             return
 
     # get time series of gps positions, and lap timestamps
-    gps_data, lap_tmstmps = analysis.gps.get_data(trace_dir, tag_laps = tag_laps)
+    gps_data, lap_tmstmps = analysis.gps.get_data(input_dir, trace_dir, tag_laps = tag_laps)
     # channel util. time series : a dict(), indexed by positions
     cbt_data = analysis.channel.get_data(trace_dir)
 
@@ -241,7 +241,7 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
     if metric == 'dist':
 
         # get dist. data from each fixed client
-        dist_data = analysis.trace.get_dist(input_dir, trace_nr)
+        dist_data = analysis.trace.get_distances(input_dir, trace_nr)
         # oversampling of timestamps (1 sec) into intervals (.5 sec)
         best['interval-tmstmp'] = [ (float(ts)) for ts in dist_data['timestamp'] ] + [ (float(ts) + 0.5) for ts in dist_data['timestamp'] ]
         best = best.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
@@ -277,7 +277,7 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
 
     parsing.utils.to_hdf5(best, ('/%s/%s' % ('best', metric)), database)
 
-def get_dist(input_dir, trace_nr):
+def get_distances(input_dir, trace_nr):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))

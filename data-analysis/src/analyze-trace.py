@@ -48,22 +48,6 @@ from prettytable import PrettyTable
 
 from sklearn import linear_model
 
-# gps coords for a 'central' pin on FEUP, portugal
-LAT  = (41.176796 + 41.179283) / 2.0
-LON = (-8.598336 + -8.593912) / 2.0
-# north, south, west, east limits of map, in terms of geo coordinates
-LATN = 41.176796
-LATS = 41.179283
-LONE = -8.593912
-LONW = -8.598336
-
-# CELL_SIZE = 20.0
-CELL_SIZE = 500.0
-
-# number of cells in grid, in x and y directions
-X_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LATN, 0.0, LATS, 0.0) / CELL_SIZE)))
-Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) / CELL_SIZE)))
-
 def plot_ap_selection(input_dir, trace_nr, output_dir, 
     gt_metric, 
     methods,
@@ -249,7 +233,7 @@ if __name__ == "__main__":
         # extract rx data w/ default options
         analysis.trace.extract_rx_features(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
 
-    plot.trace.cells(args.input_dir, args.trace_nr, trace_output_dir, cell_size = 12.5)
+    # plot.trace.cells(args.input_dir, args.trace_nr, trace_output_dir, cell_size = 12.5)
 
     # # calculate the 'cadillac' periods, according to different metrics
     # for metric in ['throughput', 'wlan rssi', 'dist']:
