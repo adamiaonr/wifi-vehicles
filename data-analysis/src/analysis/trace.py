@@ -59,6 +59,8 @@ CELL_SIZE = 500.0
 X_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LATN, 0.0, LATS, 0.0) / CELL_SIZE)))
 Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) / CELL_SIZE)))
 
+ref = {'lat' : 41.178685, 'lon' : -8.597872}
+
 def get_list(input_dir):
 
     filename = os.path.join(input_dir, ("trace-info.csv"))
@@ -237,42 +239,49 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
         return
 
     best = pd.DataFrame(columns = ['interval-tmstmp'])
+    macs = []
+    for i, client in clients.iterrows():
 
+        db_name = ('/%s/%s' % ('interval-data', client['mac']))
+        if db_name not in database.keys():
+            continue
+
+        # load data for a client mac
+        data = database.select(db_name)
+        if data.empty:
+            continue
+
+        macs.append(client['mac'])
+
+        if metric == 'dist':
+
+            # fix timestamp gaps
+            data.loc[np.isnan(data['timestamp']), 'timestamp'] = data[np.isnan(data['timestamp'])]['interval-tmstmp'].astype(int)
+            # fix lat and lon gaps
+            data = data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+            analysis.trace.fix_gaps(data, subset = ['lat', 'lon'])
+            # finally, calc distance to mac addr.
+            pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
+            data[client['mac']] = [ mapping.utils.gps_to_dist(client['lat'], client['lon'], p[0], p[1]) for p in pos ]
+
+        else:
+            data[client['mac']] = data[metric]
+
+        # update best w/ mac info
+        # FIXME: is the use of 'outer' merge correct here?
+        best = pd.merge(best, data[ ['interval-tmstmp', client['mac']] ], on = ['interval-tmstmp'], how = 'outer')
+
+    best = best.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+
+    # calculate the mac w/ max. value at each row
     if metric == 'dist':
+        best['best'] = best[macs].idxmin(axis = 1)
 
-        # get dist. data from each fixed client
-        dist_data = analysis.trace.get_distances(input_dir, trace_nr)
-        # oversampling of timestamps (1 sec) into intervals (.5 sec)
-        best['interval-tmstmp'] = [ (float(ts)) for ts in dist_data['timestamp'] ] + [ (float(ts) + 0.5) for ts in dist_data['timestamp'] ]
-        best = best.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
-        # keep a 'timestamp' column for merging
-        best['timestamp'] = best['interval-tmstmp'].astype(int)
-        best = pd.merge(best, dist_data, on = ['timestamp'], how = 'right')
-
-        # calculate the mac w/ min. value at each row
-        best['best'] = best[ [col for col in dist_data.columns if col not in {'timestamp'}] ].idxmin(axis = 1)
+        dist_db_name = ('/%s' % ('dist-data'))
+        if dist_db_name not in database.keys():
+            parsing.utils.to_hdf5(best, ('/%s' % ('dist-data')), database)
 
     else:
-
-        macs = []
-        for mac in list(clients['mac']):
-
-            db_name = ('/%s/%s' % ('interval-data', mac))
-            if db_name not in database.keys():
-                continue
-
-            # load data for a client mac
-            data = database.select(db_name)
-            if data.empty:
-                continue
-
-            data[mac] = data[metric]
-            macs.append(mac)
-            # update best w/ mac info
-            # FIXME: is the use of 'outer' merge correct here?
-            best = pd.merge(best, data[ ['interval-tmstmp', mac] ], on = ['interval-tmstmp'], how = 'outer')
-
-        # calculate the mac w/ max. value at each row
         best['best'] = best[macs].idxmax(axis = 1)
 
     parsing.utils.to_hdf5(best, ('/%s/%s' % ('best', metric)), database)
@@ -289,37 +298,172 @@ def get_distances(input_dir, trace_nr):
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
     db_name = ('/%s' % ('dist-data'))
-    if db_name in database.keys():
-        sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
-        return database.select(db_name).sort_values(by = ['timestamp'])
+    if db_name not in database.keys():
+        sys.stderr.write("""[INFO] %s not in database. aborting.\n""" % (db_name))
+        return
 
-    else:
-        sys.stderr.write("""[INFO] %s not in database. extracting.\n""" % (db_name))
+    return database.select(db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
 
-        # extract gps positions of mobile node
-        gps_data, lap_tmstmps = analysis.gps.get_data(trace_dir, tag_laps = False)
-        mobile_pos = [ [ row['lat'], row['lon'] ] for index, row in gps_data.iterrows() ]
-        # dist. data
-        dist_data = gps_data[['timestamp']]
-        for i, client in clients.iterrows():
-            dist_data[client['mac']] = [ mapping.utils.gps_to_dist(client['lat'], client['lon'], pos[0], pos[1]) for pos in mobile_pos ]
-
-        # save in .hdf5 file
-        parsing.utils.to_hdf5(dist_data, ('/%s' % ('dist-data')), database)
-        return dist_data
-
-def fix_gaps(data, subset):
-
-    # FIXME : still don't know how to do this without copying...
-    _data = data[['interval-tmstmp'] + subset]
-    _data['datetime'] = pd.to_datetime(_data['interval-tmstmp'], unit = 's')
+def fix_gaps(data, subset, column = 'interval-tmstmp'):
+    # FIXME : still don't know how to do this without copying, hence the variable '_data'
+    _data = data[[column] + subset]
+    # use pandas native time-based interpolation, which requires a datetime index
+    # FIXME : the type of interpolation should be defined as a parameter later on
+    _data['datetime'] = pd.to_datetime(_data[column], unit = 's')
     _data.set_index(['datetime'], inplace = True)
     _data.interpolate(method = 'time', inplace = True)
-    # update subset
+    # update subset columns w/ the interpolated values
     data.update(_data[subset].reset_index(drop = True))
 
-def extract_moving_data(gps_data):
+def extract_moving_data(gps_data, method = 'dropna'):
 
-    # find the interval-tmstmps of the first and last rows w/ gps positions
-    ix = gps_data.dropna(subset = ['lat', 'lon'], how = 'all').iloc[[0,-1]].index.tolist()
-    return gps_data.iloc[ix[0]:ix[-1]].sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    if method == 'dropna':
+        # find the interval-tmstmps of the first and last rows w/ gps positions
+        ix = gps_data.dropna(subset = ['lat', 'lon'], how = 'all').iloc[[0,-1]].index.tolist()
+        return gps_data.iloc[ix[0]:ix[-1]].sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    elif method == 'lap-number':
+        return gps_data[(gps_data['lap-number'] >= 1) & (gps_data['lap-number'] <= 5)].sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+
+def get_combination_key(traces):
+
+    # FIXME: there must be a better way of doing this...
+    combination_key = pd.DataFrame(columns = ['new-its', 'interval-tmstmp', 'trace-nr'])
+
+    # FIXME: hardcoded arrays are bad, and you should feel bad...
+    prev_its = 0.0
+    for lap in [1.0, 2.0, 3.0, 4.0 , 5.0]:
+        for direction in [1.0, -1.0]:
+
+            _traces = []
+            for trace in traces:
+                _trace = trace[(trace['lap-number'] == lap) & (trace['direction'] == direction)]
+
+                _trace.sort_values(by = ['ref-dist', 'interval-tmstmp'], ascending = [not bool(direction + 1), True], inplace = True)
+                # crude way of getting rid of mono
+                _trace['diff'] = _trace['interval-tmstmp'].shift(1) - _trace['interval-tmstmp']
+                while (np.amax(_trace['diff']) > 0.0):
+                    _trace = _trace[_trace['diff'] <= 0.0]
+                    _trace['diff'] = _trace['interval-tmstmp'].shift(1) - _trace['interval-tmstmp']
+
+                _traces.append(_trace)
+
+            new_trace = pd.concat(_traces, ignore_index = True)
+            new_trace.sort_values(by = ['ref-dist', 'interval-tmstmp'], ascending = [not bool(direction + 1), True], inplace = True)
+            new_trace['new-its'] = new_trace['interval-tmstmp'] - new_trace.iloc[0]['interval-tmstmp']
+            new_trace['diff-dist-cumsum'] = np.abs(new_trace['ref-dist'].shift(1) - new_trace['ref-dist']).cumsum().fillna(0.0)
+            # set abnormally high 'new-its' to nan
+            new_trace.loc[np.abs(new_trace['new-its']) > 500.0, 'new-its'] = None
+            new_trace = new_trace.reset_index(drop = True)
+            analysis.trace.fix_gaps(new_trace, subset = ['new-its'], column = 'diff-dist-cumsum')
+            # finally, round the 'elapsed' column to .5 sec
+            new_trace['new-its'] = new_trace['new-its'].apply(analysis.metrics.custom_round) + prev_its
+
+            combination_key = pd.concat([combination_key, new_trace[['new-its', 'interval-tmstmp', 'trace-nr', 'lap-number', 'direction']]], ignore_index = True)
+            prev_its = combination_key.iloc[-1]['new-its']
+
+    return combination_key
+
+def generate_new(input_dir, to_combine, new_trace_nr, replace = {}):
+
+    # get mac addr, info
+    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
+    # for quick access to aps and clients
+    clients = mac_addrs[mac_addrs['type'] == 'client']
+    # get trace info
+    trace_list = analysis.trace.get_list(input_dir)
+
+    # generate combination key
+    traces = []
+    for trace_nr in to_combine:
+
+        trace_data = pd.DataFrame()
+
+        trace = trace_list[trace_list['trace-nr'] == int(trace_nr)]
+        trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+        database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+        # FIXME : this is just here to get lap timestamps...
+        gps_data, lap_timestamps = analysis.gps.get_data(input_dir, trace_dir, tag_laps = False)
+
+        # gather all the timestamps and ['lat', 'lon'] pairs from trace
+        for i, client in clients.iterrows():
+
+            db_name = ('/%s/%s' % ('interval-data', client['mac']))
+            if db_name not in database.keys():
+                continue
+
+            # load data for a client mac
+            data = database.select(db_name)
+            if data.empty:
+                continue
+
+            # fix 'nan' gaps in ['lat', 'lon'] by time interpolation
+            # note : sort data by 'interval-tmstmp' first
+            data = data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+            analysis.trace.fix_gaps(data, subset = ['lat', 'lon'])
+            trace_data = pd.concat([trace_data, data[['interval-tmstmp', 'lat', 'lon']]], ignore_index = True)
+
+        # drop 'nan' lat lon pairs
+        trace_data.dropna(subset = ['lat', 'lon'], how = 'all', inplace = True)
+        # drop duplicates
+        trace_data.drop_duplicates(subset = ['interval-tmstmp', 'lat', 'lon'], inplace = True)
+        trace_data = trace_data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+        # find distance to a ref position, outside of the experimental circuit
+        pos = [ [ row['lat'], row['lon'] ] for index, row in trace_data[['lat', 'lon']].iterrows() ]
+        trace_data['ref-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], p[0], p[1]) for p in pos ]
+        # add lap numbers & direction
+        trace_data['timestamp'] = trace_data['interval-tmstmp'].astype(int)
+        analysis.gps.add_lap_numbers(trace_data, lap_timestamps)
+        # keep movement data only
+        trace_data = analysis.trace.extract_moving_data(trace_data, method = 'lap-number')
+        trace_data['trace-nr'] = int(trace_nr)
+
+        traces.append(trace_data[['interval-tmstmp', 'trace-nr', 'ref-dist', 'lap-number', 'direction']])
+
+    # get the combination key
+    combination_key = get_combination_key(traces)
+
+    # use the combination key to save the new trace data
+    # new trace directories & files
+    new_trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(new_trace_nr))))
+    if not os.path.isdir(os.path.join(new_trace_dir, 'processed')):
+        os.makedirs(os.path.join(new_trace_dir, 'processed'))
+
+    new_database = pd.HDFStore(os.path.join(new_trace_dir, "processed/database.hdf5"))
+
+    for trace_nr in to_combine:
+        trace = trace_list[trace_list['trace-nr'] == int(trace_nr)]
+        trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+        database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+        # filter combination key for this trace
+        ck = combination_key[combination_key['trace-nr'] == int(trace_nr)]
+
+        for i, client in clients.iterrows():
+
+            db_name = ('/%s/%s' % ('interval-data', client['mac']))
+            if db_name not in database.keys():
+                continue
+
+            # load data for a client mac
+            data = database.select(db_name)
+            if data.empty:
+                continue
+
+            # check if mac requires a replacement
+            if client['mac'] in replace[trace_nr]:
+                client['mac'] = replace[trace_nr][client['mac']]
+
+            # fix 'nan' gaps in ['lat', 'lon'] by time interpolation
+            # note : sort data by 'interval-tmstmp' first
+            data = data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+            analysis.trace.fix_gaps(data, subset = ['lat', 'lon'])
+            # drop 'nan' lat lon pairs
+            data.dropna(subset = ['lat', 'lon'], how = 'all', inplace = True)
+            # drop the lap-number and direction columns (will be added on merge)
+            data.drop(['lap-number', 'direction'], axis = 1, inplace = True)
+
+            # merge data w/ combination key for the trace
+            data = pd.merge(data, ck[['interval-tmstmp', 'new-its', 'lap-number', 'direction']], on = ['interval-tmstmp'], how = 'inner')
+            # change the 'interval-tmstmp' index
+            data['interval-tmstmp'] = data['new-its']
+            parsing.utils.to_hdf5(data, ('/%s/%s' % ('interval-data', client['mac'])), new_database)

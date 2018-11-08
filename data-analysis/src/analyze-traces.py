@@ -34,7 +34,7 @@ import parsing.utils
 
 import analysis.metrics
 import analysis.trace
-import analysis.ap_selection
+import analysis.ap_selection.rssi
 
 import shapely.geometry
 
@@ -108,7 +108,7 @@ def plot_freq_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan
     clients = mac_addrs[mac_addrs['type'] == 'client']
 
     # len(metrics) x 2 plots
-    fig = plt.figure(figsize = (2.0 * 4.0, len(metrics) * 3.0))
+    fig = plt.figure(figsize = (2.0 * 4.0, len(metrics) * 2.0))
 
     axs = defaultdict(list)
     for m, metric in enumerate(metrics):
@@ -125,12 +125,6 @@ def plot_freq_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan
         trace = trace_list[trace_list['trace-nr'] == int(trace_nr)]
         trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
         database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
-        
-        # get pos. data from trace
-        gps_data, lap_tmstmps = analysis.gps.get_data(input_dir, trace_dir, tag_laps = False)
-        # add 'interval-tmstmp' column
-        gps_data['interval-tmstmp'] = [ (float(ts)) for ts in gps_data['timestamp'] ]
-        gps_data = gps_data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
 
         # extract metric data
         for i, client in clients.iterrows():
@@ -179,7 +173,7 @@ def plot_freq_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan
             plot.utils.cdf(axs[metric][1], cdf[fb][metric], metric = metric, plot_configs = plot_configs[metric])
 
     fig.tight_layout()
-    plt.savefig(os.path.join(output_dir, ("freq-band-stats.pdf")), bbox_inches = 'tight', format = 'pdf')
+    plt.savefig(os.path.join(output_dir, ("freq-band-stats-%s.pdf" % ('-'.join(sorted([('%03d' % (int(t))) for t in traces]))))), bbox_inches = 'tight', format = 'pdf')
 
 def handle_list_traces(input_dir):
 
@@ -217,6 +211,7 @@ if __name__ == "__main__":
 
     # trace nrs. to combine in analysis
     traces = [32, 36, 37, 45, 46, 48, 49]
+    # traces = [32, 36, 46, 49]
 
     args = parser.parse_args()
 
@@ -249,5 +244,9 @@ if __name__ == "__main__":
     #   - 'rssi' vs. 'dist' for each band : 2.4 Ghz and 5.0 Ghz
     #   - 'throughput' vs. 'dist' for each band : 2.4 Ghz and 5.0 Ghz
     plot_freq_bands(args.input_dir, args.output_dir, traces)
+
+    # analysis.trace.generate_new(args.input_dir, to_combine = [49, 46],
+    #     new_trace_nr = 55, 
+    #     replace = {46 : {}, 49 : {'24:05:0f:e5:7b:6a' : '24:05:0f:e5:7b:6b'}})
 
     sys.exit(0)

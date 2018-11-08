@@ -316,7 +316,10 @@ def calc_pckt_loss_2(data, method = 'wlan seq number', protocol = 'tcp', interva
 
     return pckt_loss
 
-def find_peaks(data, x_metric = 'timestamp', y_metric = 'dist', thrshld = 120.0):
+def rotate(l, n):
+    return l[-n:] + l[:-n]
+
+def find_peaks(data, x_metric = 'timestamp', y_metric = 'lap-dist', thrshld = [300.0, 140.0]):
 
     # this is too trivial of a solution btw, but it does the job...
     # algorithm : 
@@ -326,21 +329,57 @@ def find_peaks(data, x_metric = 'timestamp', y_metric = 'dist', thrshld = 120.0)
 
     peaks = defaultdict(list)
     wndw_pos = 0
-    # print("n = %d" % (len(data)))
     while (wndw_pos + 3) < len(data):
 
         wndw = data.iloc[wndw_pos:(wndw_pos + 3)][y_metric].values
-        if ((wndw[0] < wndw[1]) and (wndw[1] > wndw[2])) and (wndw[1] > thrshld):
+        if ((wndw[0] < wndw[1]) and (wndw[1] > wndw[2])) and (wndw[1] > thrshld[0]):
             # print("[%d, %d]" % (wndw_pos, wndw_pos + 3))
             # print(wndw)
             peaks['start'].append(data.iloc[wndw_pos + 1][x_metric])
 
-        # FIXME : hardcoded threshold
-        if ((wndw[0] < wndw[1]) and (wndw[1] > wndw[2])) and (wndw[1] < 40.0):
+        if ((wndw[0] > wndw[1]) and (wndw[1] < wndw[2])) and (wndw[1] < thrshld[1]):
             # print("[%d, %d]" % (wndw_pos, wndw_pos + 3))
             # print(wndw)
             peaks['turn'].append(data.iloc[wndw_pos + 1][x_metric])
 
         wndw_pos += 1
+
+    # check for missing 'turns' and add them
+    # FIXME: this is sloppy code, and there should be a better method to find peaks
+    starts = len(peaks['start'])
+    turns = len(peaks['turn'])
+    if starts > (turns + 1):
+        i = 0
+        j = 1
+        c = 0
+        while (i < turns):
+            
+            if peaks['turn'][i] > peaks['start'][j]:
+                peaks['turn'].append((peaks['start'][j - 1] + peaks['start'][j]) / 2.0)
+                c += 1
+            else:
+                i += 1
+
+            j += 1
+
+        peaks['turn'] = rotate(peaks['turn'], c)
+
+    else:
+
+        i = 0
+        starts = len(peaks['start'])
+        while (i + 1) < starts:
+            if ((peaks['start'][i + 1] - peaks['start'][i]) < 5.0):
+                del peaks['start'][i + 1]
+                starts -= 1
+            i += 1
+
+        i = 0
+        turns = len(peaks['turn'])
+        while (i + 1) < turns:
+            if ((peaks['turn'][i + 1] - peaks['turn'][i]) < 5.0):
+                del peaks['turn'][i + 1]
+                turns -= 1
+            i += 1
 
     return peaks

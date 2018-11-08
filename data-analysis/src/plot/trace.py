@@ -54,7 +54,7 @@ def distances(ax, input_dir, trace_nr, time_limits = None):
     ax.xaxis.grid(True)
     ax.yaxis.grid(True)
 
-    ax.set_title('dist. (in m) of mobile node to each fixed pos. (trace %s)' % (trace_nr))
+    ax.set_title('dist. (in m) to fixed pos. (trace %s)' % (trace_nr))
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
@@ -62,7 +62,7 @@ def distances(ax, input_dir, trace_nr, time_limits = None):
     clients = mac_addrs[mac_addrs['type'] == 'client']
 
     # get dist. data
-    dist_data = analysis.trace.get_dist(input_dir, trace_nr)
+    dist_data = analysis.trace.get_distances(input_dir, trace_nr)
     # aux variables
     if not time_limits:
         time_limits = [None, None]
@@ -70,26 +70,36 @@ def distances(ax, input_dir, trace_nr, time_limits = None):
     visited = []
     for i, client in clients.iterrows():
 
+        if client['mac'] not in dist_data:
+            continue
+
         # avoid going through same pos twice
         if client['label'] in visited:
             continue
         else:
             visited.append(client['label'])
 
-        _dist_data = dist_data[ ['timestamp', client['mac']] ]
-        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _dist_data['timestamp'] ]
+        _dist_data = dist_data[ ['interval-tmstmp', client['mac']] ].drop_duplicates(subset = ['interval-tmstmp'])
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _dist_data['interval-tmstmp'] ]
         plot.utils.update_time_limits(time_limits, dates)
 
         ax.plot_date(
             dates,
             _dist_data[client['mac']],
             linewidth = 0.0, linestyle = '-', color = client['color'], label = client['label'], 
-            marker = 'o', markersize = 2.50, markeredgewidth = 0.0)
+            marker = client['marker'], markersize = client['marker-size'], markeredgewidth = 0.0)
 
     ax.legend(
         fontsize = 10, 
         ncol = 4, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    # # draw vertical lines for each lap & turn
+    # gps_data, lap_timestamps = analysis.gps.get_data(input_dir, os.path.join(input_dir, ("trace-%03d" % (int(trace_nr)))), tag_laps = False)
+    # for ts in lap_timestamps['start']:
+    #     ax.axvline(x = datetime.datetime.fromtimestamp(ts), color = 'k', linestyle = '-', linewidth = .75)
+    # for ts in lap_timestamps['turn']:
+    #     ax.axvline(x = datetime.datetime.fromtimestamp(ts), color = 'k', linestyle = '--', linewidth = .75)
 
     # divide xx axis in 5 ticks
     xticks = plot.utils.get_time_xticks(time_limits)
@@ -175,21 +185,21 @@ def best(ax, input_dir, trace_nr,
             linestyle = '-', 
             color = client['color'], 
             label = client['label'], 
-            markersize = 2.50, 
-            marker = 'o', 
+            markersize = client['marker-size'], 
+            marker = client['marker'], 
             markeredgewidth = 0.0)
 
-    # plot a black line w/ throughput for all mac addrs
-    _data = data.iloc[::5, :]
-    dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
-    ax.plot(
-        dates,
-        (_data[macs].max(axis = 1).values) * plot_configs[metric]['coef'],
-        alpha = .5,
-        linewidth = 0.75, 
-        linestyle = '-', 
-        color = 'black', 
-        marker = None)
+    # # plot a black line w/ throughput for all mac addrs
+    # _data = data.iloc[::5, :]
+    # dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
+    # ax.plot(
+    #     dates,
+    #     (_data[macs].max(axis = 1).values) * plot_configs[metric]['coef'],
+    #     alpha = .5,
+    #     linewidth = 0.75, 
+    #     linestyle = '-', 
+    #     color = 'black', 
+    #     marker = None)
 
     ax.legend(
         fontsize = 10, 

@@ -67,32 +67,30 @@ def get_cell_num(gps_data,
 
     return X_CELL_NUM, Y_CELL_NUM
 
-def add_lap_numbers(gps_data, lap_timestamps):
+def add_lap_numbers(data, lap_timestamps):
 
     # reset 'lap-number' and 'direction' columns
-    gps_data['lap-number'] = -1.0
-    gps_data['direction'] = -1.0
+    data['lap-number'] = -1.0
+    data['direction'] = -1.0
 
     i = 0
-    while (i + 1) < len(lap_timestamps['start']):        
+    while (i + 1) < len(lap_timestamps['start']):
         # set lap nr.
-        gps_data.loc[(gps_data['timestamp'] > float(lap_timestamps['start'][i])) & (gps_data['timestamp'] <= float(lap_timestamps['start'][i + 1])), 'lap-number'] = i + 1
+        data.loc[(data['timestamp'] > float(lap_timestamps['start'][i])) & (data['timestamp'] <= float(lap_timestamps['start'][i + 1])), 'lap-number'] = i + 1
+
         # set direction(s) :
         #    1 : East to West
         #   -1 : West to East
-        gps_data.loc[(gps_data['timestamp'] > float(lap_timestamps['start'][i])) & (gps_data['timestamp'] <= float(lap_timestamps['turn'][i])), 'direction']  = 1
-        gps_data.loc[(gps_data['timestamp'] > float(lap_timestamps['turn'][i])) & (gps_data['timestamp'] <= float(lap_timestamps['start'][i + 1])), 'direction']  = -1
+        data.loc[(data['timestamp'] > float(lap_timestamps['start'][i])) & (data['timestamp'] <= float(lap_timestamps['turn'][i])), 'direction'] = 1
+        data.loc[(data['timestamp'] > float(lap_timestamps['turn'][i]))  & (data['timestamp'] <= float(lap_timestamps['start'][i + 1])), 'direction']  = -1
 
         i += 1
 
-def get_lap_timestamps(gps_data, clients):
-    # find 'peaks' of distance of mobile to client @pos0
-    # FIXME : this assumes laps always start next to pos2
-    pos0 = clients[clients['name'] == 'pos0'].iloc[0]
-    gps_pos = [ [row['lat'], row['lon'] ] for index, row in gps_data.iterrows() ]
-    gps_data['dist'] = [ mapping.utils.gps_to_dist(pos0['lat'], pos0['lon'], gps[0], gps[1]) for gps in gps_pos ] 
-
-    return analysis.metrics.find_peaks(gps_data, x_metric = 'timestamp', y_metric = 'dist')
+def get_lap_timestamps(data, clients, ref = {'lat' : 41.178685, 'lon' : -8.597872}):
+    # find 'peaks' of distance to a ref position, guaranteed to be outside of the experimental circuit
+    pos = [ [row['lat'], row['lon'] ] for index, row in data.iterrows() ]
+    data['lap-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], gps[0], gps[1]) for gps in pos ]
+    return analysis.metrics.find_peaks(data, x_metric = 'timestamp', y_metric = 'lap-dist')
 
 def get_data(input_dir, trace_dir, tag_laps = True):
 
