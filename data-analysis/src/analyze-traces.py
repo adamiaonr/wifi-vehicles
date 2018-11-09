@@ -245,7 +245,7 @@ if __name__ == "__main__":
     #   - 'throughput' vs. 'dist' for each band : 2.4 Ghz and 5.0 Ghz
     plot_freq_bands(args.input_dir, args.output_dir, traces)
 
-    # analysis.trace.generate_new(args.input_dir, to_combine = [49, 46],
+    # analysis.trace.combine(args.input_dir, to_combine = [49, 46],
     #     new_trace_nr = 55, 
     #     replace = {46 : {}, 49 : {'24:05:0f:e5:7b:6a' : '24:05:0f:e5:7b:6b'}})
 

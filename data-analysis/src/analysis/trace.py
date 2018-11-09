@@ -235,10 +235,19 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
     # as a safeguard, if best period data already exists for the trace, abort
     db_name = ('/%s/%s' % ('best', metric))
     if db_name in database.keys():
+        # if metric == 'dist':
+        #     database.remove(db_name)
+        # else:
+        #     sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
+        #     return
         sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
         return
 
-    best = pd.DataFrame(columns = ['interval-tmstmp'])
+    add_metrics = []
+    if metric == 'dist':
+        add_metrics = ['lat', 'lon', 'lap-number', 'direction']
+
+    best = pd.DataFrame(columns = ['interval-tmstmp'] + add_metrics)
     macs = []
     for i, client in clients.iterrows():
 
@@ -269,17 +278,23 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
 
         # update best w/ mac info
         # FIXME: is the use of 'outer' merge correct here?
-        best = pd.merge(best, data[ ['interval-tmstmp', client['mac']] ], on = ['interval-tmstmp'], how = 'outer')
+        best = pd.merge(best, data[ ['interval-tmstmp', client['mac']] + add_metrics ], on = ['interval-tmstmp'] + add_metrics, how = 'outer')
 
+    # drop duplicate timestamps & sort by timestamp
+    best.drop_duplicates(subset = ['interval-tmstmp'], inplace = True)
     best = best.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
 
     # calculate the mac w/ max. value at each row
     if metric == 'dist':
         best['best'] = best[macs].idxmin(axis = 1)
 
+        # FIXME: the collection of this dataset should not be done here...
         dist_db_name = ('/%s' % ('dist-data'))
         if dist_db_name not in database.keys():
             parsing.utils.to_hdf5(best, ('/%s' % ('dist-data')), database)
+        # else:
+        #     database.remove(dist_db_name)
+        #     parsing.utils.to_hdf5(best, ('/%s' % ('dist-data')), database)
 
     else:
         best['best'] = best[macs].idxmax(axis = 1)
@@ -363,7 +378,7 @@ def get_combination_key(traces):
 
     return combination_key
 
-def generate_new(input_dir, to_combine, new_trace_nr, replace = {}):
+def combine(input_dir, to_combine, new_trace_nr, replace = {}):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))

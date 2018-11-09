@@ -69,6 +69,8 @@ def rssi(axs, input_dir, trace_nr,
     base_db_name = ''
     if plot_configs['method'] == 'periodic':
         base_db_name = ('/%s/%s/%d/%d' % ('best-rssi', 'periodic', int(plot_configs['args']['scan-period']), int(plot_configs['args']['scan-time'])))
+    elif plot_configs['method'] == 'band-steering':
+        base_db_name = ('/%s/%s/%s/%s/%s/%s' % ('best-rssi', plot_configs['method'], plot_configs['args']['scan-period'], plot_configs['args']['scan-time'], plot_configs['args']['cell-size'], plot_configs['args']['aid-metric']))        
     else:
         sys.stderr.write("""[ERROR] method %s not implemented yet. abort.\n""" % (plot_configs['method']))
 
@@ -78,6 +80,7 @@ def rssi(axs, input_dir, trace_nr,
     base_data.rename(index = str, columns = {'ap-period' : 'block', 'scan-period' : 'sub-block'}, inplace = True)
     # save 'best' values of original metric
     base_data['best-val-orig'] = 0.0
+    base_data.dropna(subset = ['best'], inplace = True)
     for mac in base_data['best'].unique():
         base_data.loc[(base_data['best'] == mac), 'best-val-orig'] = base_data[base_data['best'] == mac][mac]
     base_data['best-val-orig'] = base_data['best-val-orig'].fillna(0.0)
@@ -262,10 +265,10 @@ def rssi(axs, input_dir, trace_nr,
             xticklabels[i] = (((xticks[i].astype('uint64') / 1e6).astype('uint32')) - ((xticks[0].astype('uint64') / 1e6).astype('uint32')))
         ax.set_xticklabels(xticklabels, ha = 'center')
 
-    # save results for further
-    ap_selection_db = ('/%s/%s/%s/%d/%d' % ('ap-selection', 'best-rssi', 'periodic', int(plot_configs['args']['scan-period']), int(plot_configs['args']['scan-time'])))
-    if ap_selection_db not in database.keys():
-        parsing.utils.to_hdf5(base_data, ap_selection_db, database)
+    # # save results for further
+    # ap_selection_db = ('/%s/%s/%s/%d/%d' % ('ap-selection', 'best-rssi', 'periodic', int(plot_configs['args']['scan-period']), int(plot_configs['args']['scan-time'])))
+    # if ap_selection_db not in database.keys():
+    #     parsing.utils.to_hdf5(base_data, ap_selection_db, database)
 
 def cell(axs, input_dir, trace_nr, 
     gt_metric,
@@ -453,6 +456,6 @@ def cell(axs, input_dir, trace_nr,
         ax.set_xticks(sorted(major_xticks.values()), minor = False)
         ax.set_xticklabels([int((dt - te).total_seconds() - (time_limits[0] - te).total_seconds()) for dt in sorted(major_xticks.values())], ha = 'center')
 
-    ap_selection_db = ('/%s/%s/%s/%s/%s' % ('ap-selection', 'best-cell', plot_configs['args']['cell-size'], 'every-other', 'no-direction'))
-    if ap_selection_db not in database.keys():
-        parsing.utils.to_hdf5(base_data, ap_selection_db, database)
+    # ap_selection_db = ('/%s/%s/%s/%s/%s' % ('ap-selection', 'best-cell', plot_configs['args']['cell-size'], 'every-other', 'no-direction'))
+    # if ap_selection_db not in database.keys():
+    #     parsing.utils.to_hdf5(base_data, ap_selection_db, database)

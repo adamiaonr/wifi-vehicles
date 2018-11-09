@@ -82,6 +82,16 @@ def plot_ap_selection(input_dir, trace_nr, output_dir,
                 plot_configs = plot_configs[method],
                 time_limits = time_limits)
 
+        elif method == 'band-steering':
+            plot.ap_selection.rssi(ax, args.input_dir, args.trace_nr,
+                gt_metric = gt_metric,
+                compare_to = {
+                    'method' : 'best-rssi',
+                    'db-name' : ('/%s/%s/%d/%d' % ('best-rssi', plot_configs['best-rssi']['method'], int(plot_configs['best-rssi']['args']['scan-period']), int(plot_configs['best-rssi']['args']['scan-time'])))
+                    },
+                plot_configs = plot_configs[method],
+                time_limits = time_limits)
+
         elif method == 'best-cell':
             plot.ap_selection.cell(ax, args.input_dir, args.trace_nr,
                 gt_metric = gt_metric,
@@ -263,24 +273,37 @@ if __name__ == "__main__":
     # plot_distances(args.input_dir, args.trace_nr, trace_output_dir)
 
     # rssi analysis (default args, i.e., 'periodic scan' analysis)
-    analysis.ap_selection.rssi.basic(args.input_dir, args.trace_nr,
+    analysis.ap_selection.rssi.periodic(args.input_dir, args.trace_nr,
         method = 'periodic',
-        args = {'periodic' : {'scan_period' : 5.0, 'scan_time' : 0.0}})
+        args = {'scan_period' : 10.0, 'scan_time' : 1.0})
+
+    # # cell history
+    # analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
+    #     args = {'cell-size' : 5.0})
 
     # cell history
-    analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
-        args = {'cell-size' : 5.0})
+    analysis.ap_selection.rssi.band_steering(args.input_dir, args.trace_nr,
+        args = {'scan_period' : 10.0, 'scan_time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'throughput'})
 
     gt_metric = 'throughput'
     plot_ap_selection(args.input_dir, args.trace_nr, trace_output_dir, 
         gt_metric = gt_metric,
-        methods = ['best-rssi', 'best-cell'],
+        methods = ['best-rssi', 'band-steering', 'best-cell'],
         plot_configs = {
             'best-rssi' : {
                     'method' : 'periodic',
-                    'args' : {'scan-period' : 5.0, 'scan-time' : 0.0},
-                    'title' : ('scan + best RSS (period : %s sec, scan duration : %s sec)' % (5.0, 0.0)),
+                    'args' : {'scan-period' : 10.0, 'scan-time' : 1.0},
+                    'title' : ('scan + best RSS (period : %s sec, scan duration : %s sec)' % (10.0, 0.0)),
                     'sub-title' : ('scan + best RSS (%s gain)' % (gt_metric)),
+                    'y-label' : 'RSS (dBm)',
+                    'y-sec-label' : 'throughput (Mbps)',
+                    'coef' : 1.0 / 1000000.0
+            },
+            'band-steering' : {
+                    'method' : 'band-steering',
+                    'args' : {'scan-period' : 10.0, 'scan-time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'throughput'},
+                    'title' : ('scan + best RSS w/ band steering (P : %s sec, SD : %s sec, CS : %s m)' % (10.0, 0.0, 10.0)),
+                    'sub-title' : ('band steering (%s gain)' % (gt_metric)),
                     'y-label' : 'RSS (dBm)',
                     'y-sec-label' : 'throughput (Mbps)',
                     'coef' : 1.0 / 1000000.0

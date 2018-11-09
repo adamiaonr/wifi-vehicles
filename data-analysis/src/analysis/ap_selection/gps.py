@@ -53,16 +53,6 @@ LONW = -8.598336
 LAT  = (41.176796 + 41.179283) / 2.0
 LON = (-8.598336 + -8.593912) / 2.0
 
-def get_closest_cell(cell, candidates):
-    
-    cells = pd.DataFrame()
-    
-    for c in candidates:
-        cells = cells.append({'cell-x' : c[0], 'cell-y' : c[1]}, ignore_index = True)
-    cells['diff'] = np.abs(cells['cell-x'] - cell[0]) + np.abs(cells['cell-y'] - cell[1])
-
-    return cells.ix[cells['diff'].idxmin()]
-
 def cell(input_dir, trace_nr,
     metric = 'throughput',
     args = {'cell-size' : 10.0}):
