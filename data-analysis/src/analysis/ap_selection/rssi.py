@@ -75,7 +75,8 @@ def _rssi(data, macs, mode = 'periodic'):
 
 def periodic(input_dir, trace_nr,
     method = 'periodic',
-    args = {'scan_period' : 10.0, 'scan_time' : 1.0}):
+    args = {'scan_period' : 10.0, 'scan_time' : 1.0},
+    force_calc = False):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
@@ -86,21 +87,21 @@ def periodic(input_dir, trace_nr,
     # save data on .hdf5 database
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    if method == 'periodic':
-        db_name = ('/%s/%s/%d/%d' % ('best-rssi', method, int(args['scan_period']), int(args['scan_time'])))
-        if db_name in database.keys():
-            sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
+    periodic_db = ('/%s/%s/%d/%d' % ('best-rssi', method, int(args['scan_period']), int(args['scan_time'])))
+    if periodic_db in database.keys():
+        if force_calc:
+            database.remove(periodic_db)
+        else:
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (periodic_db))
             return
-    else:
-        sys.stderr.write("""[ERROR] method %s not implemented yet. abort.\n""" % (method))
 
     # load 'best' 'wlan rssi' data
-    db_name = ('/%s/%s' % ('best', 'wlan rssi'))
-    if db_name not in database.keys():
-        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+    best_db = ('/%s/%s' % ('best', 'wlan rssi'))
+    if best_db not in database.keys():
+        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (best_db))
         return
 
-    data = database.select(db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    data = database.select(best_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
     # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
     # get rid of 'best' column
     data = data[[col for col in data.columns if col not in {'best'}]].drop_duplicates(subset = ['interval-tmstmp'])
@@ -124,7 +125,7 @@ def periodic(input_dir, trace_nr,
         #   - the highest rssi at the end of each ap-period
         #   - it remains for the rest of each scan-period
         data = data.groupby(['ap-period']).apply(_rssi, macs = macs)
-        parsing.utils.to_hdf5(data, ('/%s/%s/%d/%d' % ('best-rssi', 'periodic', int(sp), int(st))), database)
+        parsing.utils.to_hdf5(data, periodic_db, database)
 
     else:
         sys.stderr.write("""[ERROR] method %s not implemented yet. abort.\n""" % (method))
@@ -134,7 +135,8 @@ def _band_steering(data):
 
 def band_steering(input_dir, trace_nr,
     method = 'band-steering',
-    args = {'scan_period' : 10.0, 'scan_time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'throughput'}):
+    args = {'scan_period' : 10.0, 'scan_time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'throughput'},
+    force_calc = False):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
@@ -145,10 +147,13 @@ def band_steering(input_dir, trace_nr,
     # save data on .hdf5 database
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    db_name = ('/%s/%s/%s/%s/%s/%s' % ('best-rssi', method, args['scan_period'], args['scan_time'], args['cell-size'], args['aid-metric']))
-    if db_name in database.keys():
-        sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (db_name))
-        return
+    band_steer_db = ('/%s/%s/%s/%s/%s/%s' % ('best-rssi', method, args['scan_period'], args['scan_time'], args['cell-size'], args['aid-metric']))
+    if band_steer_db in database.keys():
+        if force_calc:
+            database.remove(band_steer_db)
+        else:
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (band_steer_db))
+            return
 
     # we need 3 data collections to do this:
     #   1) lat & lon data (on /dist-data)
@@ -231,4 +236,4 @@ def band_steering(input_dir, trace_nr,
     rssi_data['scan-period'] = (((rssi_data.groupby(['ap-period'])['interval-tmstmp'].transform(lambda x : x.diff().cumsum()).fillna(0.0) / (st)).astype(int)) == 0).astype(int)
     rssi_data['best'] = ''
     rssi_data = rssi_data.groupby(['ap-period']).apply(_rssi, macs = macs, mode = 'band-steering')
-    parsing.utils.to_hdf5(rssi_data, db_name, database)
+    parsing.utils.to_hdf5(rssi_data, band_steer_db, database)

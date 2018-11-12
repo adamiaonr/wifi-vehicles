@@ -119,3 +119,20 @@ def vs(
         ncol = 4, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5, 
         markerscale = (plot_configs['markersize'] if plot_configs['markersize'] > 3.0 else 3.0))
+
+def save_hash(output_dir, plot_hash, methods, plot_configs):
+
+    filename = os.path.join(output_dir, 'plot-info.csv')
+
+    plot_list = pd.DataFrame(columns = ['hash', 'method', 'params'])
+    if not os.path.isfile(filename):
+        plot_list.to_csv(filename, index = False, sep = ',')
+
+    if plot_hash not in pd.read_csv(filename)['hash'].tolist():
+
+        plot_list = plot_list.append({
+            'hash' : plot_hash,
+            'method' : str(methods),
+            'params' : str(json.dumps(plot_configs, sort_keys = True))}, ignore_index = True)
+
+        plot_list.to_csv(filename, mode = 'a', header = False, index = False, sep = ',')

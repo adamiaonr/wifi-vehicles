@@ -70,7 +70,7 @@ def rssi(axs, input_dir, trace_nr,
     if plot_configs['method'] == 'periodic':
         base_db_name = ('/%s/%s/%d/%d' % ('best-rssi', 'periodic', int(plot_configs['args']['scan-period']), int(plot_configs['args']['scan-time'])))
     elif plot_configs['method'] == 'band-steering':
-        base_db_name = ('/%s/%s/%s/%s/%s/%s' % ('best-rssi', plot_configs['method'], plot_configs['args']['scan-period'], plot_configs['args']['scan-time'], plot_configs['args']['cell-size'], plot_configs['args']['aid-metric']))        
+        base_db_name = ('/%s/%s/%s/%s/%s/%s' % ('best-rssi', plot_configs['method'], plot_configs['args']['scan-period'], plot_configs['args']['scan-time'], plot_configs['args']['cell-size'], plot_configs['args']['aid-metric']))
     else:
         sys.stderr.write("""[ERROR] method %s not implemented yet. abort.\n""" % (plot_configs['method']))
 
@@ -124,11 +124,13 @@ def rssi(axs, input_dir, trace_nr,
     base_data['best-val'] = base_data['best-val'].fillna(0.0)
 
     # ratio between selected metric and gt metric (in log10)
-    base_data['ratio'] = np.log10((base_data['best-val']) / base_data['cmp-best-val'])
+    base_data['ratio'] = 10.0 * (np.log10((base_data['best-val']) / base_data['cmp-best-val']))
+    print(base_data['ratio'])
     base_data['ratio'] = base_data['ratio'].fillna(0.0)
 
     yy_max = max(abs(np.amin(base_data[np.isfinite(base_data['ratio'])]['ratio'])), abs(np.amax(base_data[np.isfinite(base_data['ratio'])]['ratio'])))
     yy_max = analysis.metrics.custom_round(yy_max, prec = 1, base = 5)
+    print(yy_max)
     base_data.replace({'ratio' : {-np.Inf : -(yy_max - 1.5), np.Inf : (yy_max - 1.5)}}, inplace = True)
 
     # get segments of consecutive intervals in which the client is served by the same selected ap
@@ -265,11 +267,6 @@ def rssi(axs, input_dir, trace_nr,
             xticklabels[i] = (((xticks[i].astype('uint64') / 1e6).astype('uint32')) - ((xticks[0].astype('uint64') / 1e6).astype('uint32')))
         ax.set_xticklabels(xticklabels, ha = 'center')
 
-    # # save results for further
-    # ap_selection_db = ('/%s/%s/%s/%d/%d' % ('ap-selection', 'best-rssi', 'periodic', int(plot_configs['args']['scan-period']), int(plot_configs['args']['scan-time'])))
-    # if ap_selection_db not in database.keys():
-    #     parsing.utils.to_hdf5(base_data, ap_selection_db, database)
-
 def cell(axs, input_dir, trace_nr, 
     gt_metric,
     compare_to,
@@ -341,11 +338,12 @@ def cell(axs, input_dir, trace_nr,
     base_data['best-val'] = base_data['best-val'].fillna(0.0)
     
     # ratio between selected metric and gt metric (in log10)
-    base_data['ratio'] = np.log10((base_data['best-val']) / base_data['cmp-best-val'])
+    base_data['ratio'] = 10.0 * (np.log10((base_data['best-val']) / base_data['cmp-best-val']))
     base_data['ratio'] = base_data['ratio'].fillna(0.0)
 
     yy_max = max(abs(np.amin(base_data[np.isfinite(base_data['ratio'])]['ratio'])), abs(np.amax(base_data[np.isfinite(base_data['ratio'])]['ratio'])))
     yy_max = analysis.metrics.custom_round(yy_max, prec = 1, base = 5)
+    print(yy_max)
     base_data.replace({'ratio' : {-np.Inf : -(yy_max - 1.0), np.Inf : (yy_max - 1.0)}}, inplace = True)
 
     # get segments of consecutive intervals in which the client is served by the same selected ap
@@ -455,7 +453,3 @@ def cell(axs, input_dir, trace_nr,
         major_xticks = analysis.gps.get_lap_datetimes(base_data)
         ax.set_xticks(sorted(major_xticks.values()), minor = False)
         ax.set_xticklabels([int((dt - te).total_seconds() - (time_limits[0] - te).total_seconds()) for dt in sorted(major_xticks.values())], ha = 'center')
-
-    # ap_selection_db = ('/%s/%s/%s/%s/%s' % ('ap-selection', 'best-cell', plot_configs['args']['cell-size'], 'every-other', 'no-direction'))
-    # if ap_selection_db not in database.keys():
-    #     parsing.utils.to_hdf5(base_data, ap_selection_db, database)

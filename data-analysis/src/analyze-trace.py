@@ -53,7 +53,15 @@ from sklearn import linear_model
 def plot_ap_selection(input_dir, trace_nr, output_dir, 
     gt_metric, 
     methods,
-    plot_configs):
+    plot_configs,
+    redraw = False):
+
+    plot_hash = hashlib.md5(json.dumps(plot_configs, sort_keys = True)).hexdigest()
+    plot_filename = os.path.join(output_dir, ("ap-selection-methods-%s.pdf" % (plot_hash)))
+    plot.utils.save_hash(output_dir, plot_hash = plot_hash, methods = [m for m in plot_configs], plot_configs = plot_configs)
+    if os.path.isfile(plot_filename) and (not redraw):
+        sys.stderr.write("""[INFO] %s exists. skipping plotting.\n""" % (plot_filename))
+        return
 
     plt.style.use('classic')
     # 2 subplots per method
@@ -110,7 +118,8 @@ def plot_ap_selection(input_dir, trace_nr, output_dir,
         ax.set_xlim(time_limits[0], time_limits[1])
 
     fig.tight_layout()
-    plt.savefig(os.path.join(output_dir, ("ap-selection-methods-%s.pdf" % (hash(json.dumps(plot_configs, sort_keys = True))))), bbox_inches = 'tight', format = 'pdf')
+    plt.savefig(plot_filename, bbox_inches = 'tight', format = 'pdf')
+    plot.utils.save_hash(output_dir, plot_hash = plot_hash, methods = [m for m in plot_configs], plot_configs = plot_configs)
 
 def plot_best(input_dir, trace_nr, output_dir, metrics = ['throughput']):
 
@@ -266,7 +275,7 @@ if __name__ == "__main__":
     # plot.trace.cells(args.input_dir, args.trace_nr, trace_output_dir, cell_size = 12.5)
 
     # calculate the 'cadillac' periods, according to different metrics
-    for metric in ['throughput', 'wlan rssi', 'dist']:
+    for metric in ['throughput', 'wlan rssi', 'dist', 'wlan data rate']:
         analysis.trace.calc_best(args.input_dir, args.trace_nr, metric = metric)
 
     # plot_best(args.input_dir, args.trace_nr, trace_output_dir, metrics = ['throughput', 'wlan rssi', 'dist'])
@@ -277,15 +286,18 @@ if __name__ == "__main__":
         method = 'periodic',
         args = {'scan_period' : 10.0, 'scan_time' : 1.0})
 
-    # # cell history
-    # analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
-    #     args = {'cell-size' : 5.0})
+    # cell history
+    analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
+        metric = 'wlan data rate',
+        args = {'cell-size' : 10.0},
+        force_calc = False)
 
     # cell history
     analysis.ap_selection.rssi.band_steering(args.input_dir, args.trace_nr,
-        args = {'scan_period' : 10.0, 'scan_time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'throughput'})
+        args = {'scan_period' : 10.0, 'scan_time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'wlan data rate'},
+        force_calc = False)
 
-    gt_metric = 'throughput'
+    gt_metric = 'wlan data rate'
     plot_ap_selection(args.input_dir, args.trace_nr, trace_output_dir, 
         gt_metric = gt_metric,
         methods = ['best-rssi', 'band-steering', 'best-cell'],
@@ -296,23 +308,23 @@ if __name__ == "__main__":
                     'title' : ('scan + best RSS (period : %s sec, scan duration : %s sec)' % (10.0, 0.0)),
                     'sub-title' : ('scan + best RSS (%s gain)' % (gt_metric)),
                     'y-label' : 'RSS (dBm)',
-                    'y-sec-label' : 'throughput (Mbps)',
+                    'y-sec-label' : 'wlan data rate (Mbps)',
                     'coef' : 1.0 / 1000000.0
             },
             'band-steering' : {
                     'method' : 'band-steering',
-                    'args' : {'scan-period' : 10.0, 'scan-time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'throughput'},
+                    'args' : {'scan-period' : 10.0, 'scan-time' : 1.0, 'cell-size' : 10.0, 'aid-metric' : 'wlan data rate'},
                     'title' : ('scan + best RSS w/ band steering (P : %s sec, SD : %s sec, CS : %s m)' % (10.0, 0.0, 10.0)),
                     'sub-title' : ('band steering (%s gain)' % (gt_metric)),
                     'y-label' : 'RSS (dBm)',
-                    'y-sec-label' : 'throughput (Mbps)',
+                    'y-sec-label' : 'wlan data rate (Mbps)',
                     'coef' : 1.0 / 1000000.0
             },
             'best-cell' : {
-                    'args' : {'cell-size' : 5.0},
-                    'title' : ('best mean thghpt per cell, in other laps (cell-size : %s m)' % (5.0)),
+                    'args' : {'cell-size' : 10.0},
+                    'title' : ('best mean thghpt per cell, in other laps (cell-size : %s m)' % (10.0)),
                     'sub-title' : ('best mean thghpt per cell (%s gain)' % (gt_metric)),
-                    'y-label' : 'throughput (Mbps)',
+                    'y-label' : 'wlan data rate (Mbps)',
                     'coef' : 1.0 / 1000000.0
             }
         })

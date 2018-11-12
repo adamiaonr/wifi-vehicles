@@ -118,6 +118,10 @@ def best(ax, input_dir, trace_nr,
             'y-label' : 'throughput (Mbps)',
             'coef' : 1.0 / 1000000.0
         },
+        'wlan data rate' : {
+            'y-label' : 'wlan data rate (Mbps)',
+            'coef' : 1.0 / 1000000.0
+        },
         'wlan rssi' : {
             'y-label' : 'RSS (dbm)',
             'coef' : 1.0
@@ -138,16 +142,16 @@ def best(ax, input_dir, trace_nr,
     # save data on .hdf5 database
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))    
 
-    db_name = ('/%s/%s' % ('best', metric))
-    if db_name not in database.keys():
-        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+    best_db = ('/%s/%s' % ('best', metric))
+    if best_db not in database.keys():
+        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (best_db))
         return
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(True)
     ax.set_title('pos. w/ best %s per 0.5 sec segment (trace %s)' % (metric, trace_nr))
 
-    data = database.select(db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    data = database.select(best_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
     # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
     data = data.drop_duplicates(subset = ['interval-tmstmp'])
 
@@ -269,12 +273,12 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0):
     macs = []
     for i, client in clients.iterrows():
 
-        db_name = ('/%s/%s' % ('interval-data', client['mac']))
-        if db_name not in database.keys():
+        interval_db = ('/%s/%s' % ('interval-data', client['mac']))
+        if interval_db not in database.keys():
             continue
 
         # load data for a client mac
-        data = database.select(db_name)
+        data = database.select(interval_db)
         if data.empty:
             continue
 

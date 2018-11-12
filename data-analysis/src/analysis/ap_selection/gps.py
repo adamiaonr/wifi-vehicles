@@ -55,7 +55,8 @@ LON = (-8.598336 + -8.593912) / 2.0
 
 def cell(input_dir, trace_nr,
     metric = 'throughput',
-    args = {'cell-size' : 10.0}):
+    args = {'cell-size' : 10.0},
+    force_calc = False):
 
     # objective:
     #   - get a dataframe w/ columns ['interval-tmstmp', 'cell-x', 'cell-y', <thghpt for all macs>, 'best [mac]']
@@ -71,22 +72,25 @@ def cell(input_dir, trace_nr,
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    db_name = ('/%s/%s/%s/%s' % ('best-cell', args['cell-size'], 'every-other', 'no-direction'))
-    if db_name in database.keys():
-        sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
-        return
+    cell_db = ('/%s/%s/%s/%s/%s' % ('best-cell', args['cell-size'], 'every-other', 'no-direction', metric))
+    if cell_db in database.keys():
+        if force_calc:
+            database.remove(cell_db)
+        else:
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (cell_db))
+            return
 
     # merge trace data w/ throughput data
     trace_data = pd.DataFrame(columns = ['interval-tmstmp', 'lat', 'lon', 'lap-number', 'direction'])
     macs = []
     for i, client in clients.iterrows():
 
-        db_name = ('/%s/%s' % ('interval-data', client['mac']))
-        if db_name not in database.keys():
+        base_db = ('/%s/%s' % ('interval-data', client['mac']))
+        if base_db not in database.keys():
             continue
 
         # load data for a client mac
-        data = database.select(db_name)
+        data = database.select(base_db)
         if data.empty:
             continue
 
@@ -130,7 +134,7 @@ def cell(input_dir, trace_nr,
             # find the current <cell-x, cell-y> pair in 'others'
             other_name = name
             if other_name not in other.groups:
-                cc = get_closest_cell(name, other.groups.keys())
+                cc = analysis.gps.get_closest_cell(name, other.groups.keys())
                 other_name = (cc['cell-x'], cc['cell-y'])
 
             other_data = trace_data.iloc[other.groups[other_name].tolist()]
@@ -139,4 +143,4 @@ def cell(input_dir, trace_nr,
     trace_data = trace_data[trace_data['best'] != ''].sort_values(by = ['interval-tmstmp']).reset_index(drop = True).convert_objects(convert_numeric = True)
     trace_data['block'] = ((trace_data['best'].shift(1) != trace_data['best'])).astype(int).cumsum()
 
-    parsing.utils.to_hdf5(trace_data, ('/%s/%s/%s/%s' % ('best-cell', args['cell-size'], 'every-other', 'no-direction')), database)
+    parsing.utils.to_hdf5(trace_data, cell_db, database)

@@ -100,7 +100,8 @@ def extract_rx_features(input_dir, trace_nr,
     protocol = 'tcp',
     interval = 0.5,
     tag_laps = False,
-    tag_gps = True):
+    tag_gps = True,
+    force_calc = False):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
@@ -113,10 +114,14 @@ def extract_rx_features(input_dir, trace_nr,
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
     # as a safeguard, if rx data already exists for the trace, abort rx data extraction
     for mac in list(clients['mac']):
-        db_name = ('/%s/%s' % ('interval-data', mac))
-        if db_name in database.keys():
-            sys.stderr.write("""[ERROR] %s already in database. abort.\n""" % (db_name))
-            return
+
+        interval_db = ('/%s/%s' % ('interval-data', mac))
+        if interval_db in database.keys():
+            if force_calc:
+                database.remove(interval_db)
+            else:
+                sys.stderr.write("""[ERROR] %s already in database. skipping data extraction.\n""" % (interval_db))
+                return
 
     # get time series of gps positions, and lap timestamps
     gps_data, lap_tmstmps = analysis.gps.get_data(input_dir, trace_dir, tag_laps = tag_laps)
@@ -221,7 +226,9 @@ def extract_rx_features(input_dir, trace_nr,
     # save dataset stats on database
     parsing.utils.to_hdf5(dataset_stats, ('/%s/%s' % ('dataset-stats', 'rx')), database)
 
-def calc_best(input_dir, trace_nr, metric = 'throughput'):
+def calc_best(input_dir, trace_nr, 
+    metric = 'throughput', 
+    force_calc = False):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
@@ -233,15 +240,14 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
     # as a safeguard, if best period data already exists for the trace, abort
-    db_name = ('/%s/%s' % ('best', metric))
-    if db_name in database.keys():
-        # if metric == 'dist':
-        #     database.remove(db_name)
-        # else:
-        #     sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
-        #     return
-        sys.stderr.write("""[INFO] %s already in database\n""" % (db_name))
-        return
+    best_db = ('/%s/%s' % ('best', metric))
+    if best_db in database.keys():
+
+        if force_calc:
+            database.remove(best_db)
+        else:
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (best_db))
+            return
 
     add_metrics = []
     if metric == 'dist':
@@ -251,12 +257,12 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
     macs = []
     for i, client in clients.iterrows():
 
-        db_name = ('/%s/%s' % ('interval-data', client['mac']))
-        if db_name not in database.keys():
+        interval_db = ('/%s/%s' % ('interval-data', client['mac']))
+        if interval_db not in database.keys():
             continue
 
         # load data for a client mac
-        data = database.select(db_name)
+        data = database.select(interval_db)
         if data.empty:
             continue
 
@@ -289,17 +295,17 @@ def calc_best(input_dir, trace_nr, metric = 'throughput'):
         best['best'] = best[macs].idxmin(axis = 1)
 
         # FIXME: the collection of this dataset should not be done here...
-        dist_db_name = ('/%s' % ('dist-data'))
-        if dist_db_name not in database.keys():
-            parsing.utils.to_hdf5(best, ('/%s' % ('dist-data')), database)
-        # else:
-        #     database.remove(dist_db_name)
-        #     parsing.utils.to_hdf5(best, ('/%s' % ('dist-data')), database)
+        dist_db = ('/%s' % ('dist-data'))
+        if dist_db not in database.keys():
+            parsing.utils.to_hdf5(best, dist_db, database)
+        elif force_calc:
+            database.remove(dist_db)
+            parsing.utils.to_hdf5(best, dist_db, database)
 
     else:
         best['best'] = best[macs].idxmax(axis = 1)
 
-    parsing.utils.to_hdf5(best, ('/%s/%s' % ('best', metric)), database)
+    parsing.utils.to_hdf5(best, best_db, database)
 
 def get_distances(input_dir, trace_nr):
 
@@ -312,12 +318,12 @@ def get_distances(input_dir, trace_nr):
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    db_name = ('/%s' % ('dist-data'))
-    if db_name not in database.keys():
-        sys.stderr.write("""[INFO] %s not in database. aborting.\n""" % (db_name))
+    dist_db = ('/%s' % ('dist-data'))
+    if dist_db not in database.keys():
+        sys.stderr.write("""[INFO] %s not in database. aborting.\n""" % (dist_db))
         return
 
-    return database.select(db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    return database.select(dist_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
 
 def fix_gaps(data, subset, column = 'interval-tmstmp'):
     # FIXME : still don't know how to do this without copying, hence the variable '_data'
@@ -336,6 +342,7 @@ def extract_moving_data(gps_data, method = 'dropna'):
         # find the interval-tmstmps of the first and last rows w/ gps positions
         ix = gps_data.dropna(subset = ['lat', 'lon'], how = 'all').iloc[[0,-1]].index.tolist()
         return gps_data.iloc[ix[0]:ix[-1]].sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+
     elif method == 'lap-number':
         return gps_data[(gps_data['lap-number'] >= 1) & (gps_data['lap-number'] <= 5)].sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
 
@@ -402,12 +409,12 @@ def combine(input_dir, to_combine, new_trace_nr, replace = {}):
         # gather all the timestamps and ['lat', 'lon'] pairs from trace
         for i, client in clients.iterrows():
 
-            db_name = ('/%s/%s' % ('interval-data', client['mac']))
-            if db_name not in database.keys():
+            interval_db = ('/%s/%s' % ('interval-data', client['mac']))
+            if interval_db not in database.keys():
                 continue
 
             # load data for a client mac
-            data = database.select(db_name)
+            data = database.select(interval_db)
             if data.empty:
                 continue
 
@@ -455,12 +462,12 @@ def combine(input_dir, to_combine, new_trace_nr, replace = {}):
 
         for i, client in clients.iterrows():
 
-            db_name = ('/%s/%s' % ('interval-data', client['mac']))
-            if db_name not in database.keys():
+            interval_db = ('/%s/%s' % ('interval-data', client['mac']))
+            if interval_db not in database.keys():
                 continue
 
             # load data for a client mac
-            data = database.select(db_name)
+            data = database.select(interval_db)
             if data.empty:
                 continue
 
