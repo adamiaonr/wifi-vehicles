@@ -116,11 +116,11 @@ def vs(
 
     legend = ax.legend(
         fontsize = 10, 
-        ncol = 4, loc = 'upper right',
+        ncol = 1, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5, 
         markerscale = (plot_configs['markersize'] if plot_configs['markersize'] > 3.0 else 3.0))
 
-def save_hash(output_dir, plot_hash, methods, plot_configs):
+def save_hash(output_dir, plot_hash, methods, configs):
 
     filename = os.path.join(output_dir, 'plot-info.csv')
 
@@ -133,6 +133,6 @@ def save_hash(output_dir, plot_hash, methods, plot_configs):
         plot_list = plot_list.append({
             'hash' : plot_hash,
             'method' : str(methods),
-            'params' : str(json.dumps(plot_configs, sort_keys = True))}, ignore_index = True)
+            'params' : str(json.dumps(configs, sort_keys = True))}, ignore_index = True)
 
         plot_list.to_csv(filename, mode = 'a', header = False, index = False, sep = ',')

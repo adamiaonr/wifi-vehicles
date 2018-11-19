@@ -36,43 +36,42 @@ matplotlib.rcParams.update({'font.size': 16})
 def rssi(axs, input_dir, trace_nr, 
     gt_metric,
     compare_to,
-    plot_configs,
+    configs,
     time_limits = None):
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
     # for quick access to aps and clients
     clients = mac_addrs[mac_addrs['type'] == 'client']
-
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    # save data on .hdf5 database
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))    
+    database = analysis.trace.get_db(input_dir, trace_nr)
 
     # (1) load groud truth metric data : this determines the ground truth in terms of the best ap to choose
     # usually the perf. metric is 'throughput'
-    gt_db_name = ('/%s/%s' % ('best', gt_metric))
-    if gt_db_name not in database.keys():
-        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (gt_db_name))
-        return
-
-    gt_data = database.select(gt_db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
-    # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
-    gt_data = gt_data.drop_duplicates(subset = ['interval-tmstmp'])
-    # some pre-processing
-    gt_data.rename(index = str, columns = {'best' : 'gt'}, inplace = True)
-    # extract gt metric values of the best ap, for each row
-    gt_data['gt-val'] = 0.0
-    for mac in gt_data['gt'].unique():
-        gt_data.loc[(gt_data['gt'] == mac), 'gt-val'] = gt_data[gt_data['gt'] == mac][mac]
+    gt_data = analysis.trace.load_best(database, gt_metric)
 
     # (2) load data of ap selection method to evaluate
     base_db_name = ''
-    if plot_configs['method'] == 'periodic':
-        base_db_name = ('/%s/%s/%d/%d' % ('best-rssi', 'periodic', int(plot_configs['args']['scan-period']), int(plot_configs['args']['scan-time'])))
-    elif plot_configs['method'] == 'band-steering':
-        base_db_name = ('/%s/%s/%s/%s/%s/%s' % ('best-rssi', plot_configs['method'], plot_configs['args']['scan-period'], plot_configs['args']['scan-time'], plot_configs['args']['cell-size'], plot_configs['args']['aid-metric']))
+    if configs['method'] == 'periodic':
+        base_db_name = ('/%s/%s/%d/%d' % ('best-rssi', 'periodic', int(configs['args']['scan-period']), int(configs['args']['scan-time'])))
+
+    elif configs['method'] == 'band-steering':
+        base_db_name = ('/%s/%s/%s/%s/%s/%s/%s/%s/%s' % (
+            'best-rssi', configs['method'], 
+            configs['args']['scan-period'], configs['args']['scan-time'], 
+            configs['args']['cell-size'], 
+            configs['args']['metric'], configs['args']['stat'], ('-'.join([str(v) for v in configs['args']['stat-args'].values()])),
+            ('%d-%d' % (configs['args']['use-current-lap'], configs['args']['use-direction']))))
+
+    elif configs['method'] == 'history':
+        base_db_name = ('/%s/%s/%s/%s/%s/%s/%s/%s/%s' % (
+            'best-rssi', configs['method'], 
+            configs['args']['scan-period'], configs['args']['scan-time'], 
+            configs['args']['cell-size'], 
+            configs['args']['metric'], configs['args']['stat'], ('-'.join([str(v) for v in configs['args']['stat-args'].values()])),
+            ('%d-%d' % (configs['args']['use-current-lap'], configs['args']['use-direction']))))
+
     else:
-        sys.stderr.write("""[ERROR] method %s not implemented yet. abort.\n""" % (plot_configs['method']))
+        sys.stderr.write("""[ERROR] method %s not implemented yet. abort.\n""" % (configs['method']))
 
     base_data = database.select(base_db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
 
@@ -125,20 +124,23 @@ def rssi(axs, input_dir, trace_nr,
 
     # ratio between selected metric and gt metric (in log10)
     base_data['ratio'] = 10.0 * (np.log10((base_data['best-val']) / base_data['cmp-best-val']))
-    print(base_data['ratio'])
     base_data['ratio'] = base_data['ratio'].fillna(0.0)
 
     yy_max = max(abs(np.amin(base_data[np.isfinite(base_data['ratio'])]['ratio'])), abs(np.amax(base_data[np.isfinite(base_data['ratio'])]['ratio'])))
     yy_max = analysis.metrics.custom_round(yy_max, prec = 1, base = 5)
-    print(yy_max)
     base_data.replace({'ratio' : {-np.Inf : -(yy_max - 1.5), np.Inf : (yy_max - 1.5)}}, inplace = True)
 
     # get segments of consecutive intervals in which the client is served by the same selected ap
     segments = base_data.groupby(['best','block'])['interval-tmstmp'].apply(np.array).reset_index(drop = False).sort_values(by = ['block'])
 
     # *** plot code section ***
-    axs[0].set_title(plot_configs['title'])
-    axs[1].set_title(plot_configs['sub-title'])
+    axs[0].set_title(configs['title'])
+
+    g = 1
+    if configs['show'] == 'all':
+        axs[g].set_title(configs['sub-title'])
+    else:
+        g = 0
 
     for ax in axs:
         ax.xaxis.grid(True)
@@ -161,7 +163,7 @@ def rssi(axs, input_dir, trace_nr,
     # (2) bar plots, for gt metric ratios between gt and selected values
     _data = base_data[base_data['ratio'] <= 0.0]
     if not _data.empty:
-        axs[1].bar(
+        axs[g].bar(
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s loss' % (gt_metric)),
@@ -169,14 +171,14 @@ def rssi(axs, input_dir, trace_nr,
 
     _data = base_data[base_data['ratio'] > 0.0]
     if not _data.empty:
-        axs[1].bar(
+        axs[g].bar(
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s gain' % (gt_metric)),
             width = .000015, linewidth = 0.0, alpha = 1.0, color = 'green')
 
     # (2.1) plot 'best-sel' throughput values on secondary axis
-    ax2 = axs[1].twinx()
+    ax2 = axs[g].twinx()
     for i, client in clients.iterrows():
 
         _data = base_data[base_data['best'] == client['mac']]
@@ -189,7 +191,7 @@ def rssi(axs, input_dir, trace_nr,
         # the values of ground truth metric, provided by the selected ap
         ax2.plot(
             dates,
-            _data['best-val'] * plot_configs['coef'],
+            _data['best-val'] * configs['coef'],
             linewidth = 0.0, 
             linestyle = '-', 
             color = client['color'], 
@@ -200,58 +202,48 @@ def rssi(axs, input_dir, trace_nr,
 
 
     # (3) plot gt metric values provided by selected aps
-    y_limits = [None, None]
-    for i, client in clients.iterrows():
+    if configs['show'] == 'all':
+        # y_limits = [None, None]
+        for i, client in clients.iterrows():
 
-        # _data = base_data[base_data['best'] == client['mac']]
-        _data = base_data[['interval-tmstmp', ('%s-orig' % (client['mac']))]]
-        if _data.empty:
-            continue
+            # _data = base_data[base_data['best'] == client['mac']]
+            _data = base_data[['interval-tmstmp', ('%s-orig' % (client['mac']))]]
+            if _data.empty:
+                continue
 
-        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
-        plot.utils.update_time_limits(time_limits, dates)
+            dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
+            plot.utils.update_time_limits(time_limits, dates)
 
-        # the values of ground truth metric, provided by the selected ap
-        axs[0].plot(
-            dates,
-            _data[('%s-orig' % (client['mac']))],
-            linewidth = 0.0, 
-            linestyle = '-', 
-            color = client['color'], 
-            label = client['label'], 
-            markersize = client['marker-size'], 
-            marker = client['marker'], 
-            markeredgewidth = 0.0)
+            # the values of ground truth metric, provided by the selected ap
+            axs[0].plot(
+                dates,
+                _data[('%s-orig' % (client['mac']))],
+                linewidth = 0.0, 
+                linestyle = '-', 
+                color = client['color'], 
+                label = client['label'], 
+                markersize = client['marker-size'], 
+                marker = client['marker'], 
+                markeredgewidth = 0.0)
 
-        # plot.utils.update_y_limits(y_limits, (_data['best-val'] * plot_configs['coef']))
-        plot.utils.update_y_limits(y_limits, (_data[('%s-orig' % (client['mac']))]))
+            # plot.utils.update_y_limits(y_limits, (_data['best-val'] * configs['coef']))
+            # plot.utils.update_y_limits(y_limits, (_data[('%s-orig' % (client['mac']))]))
 
-    axs[0].legend(
-        fontsize = 10, 
-        ncol = 4, loc = 'lower right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+        axs[0].legend(
+            fontsize = 10, 
+            ncol = 4, loc = 'lower right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    # # plot a black line w/ throughput for all mac addrs
-    # _data = base_data.iloc[::5, :]
-    # dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
-    # axs[0].plot(
-    #     dates,
-    #     _data['best-val'] * plot_configs['coef'],
-    #     alpha = .5,
-    #     linewidth = 0.75, 
-    #     linestyle = '-', 
-    #     color = 'black', 
-    #     marker = None)
+        axs[0].set_ylabel(configs['y-label'])
 
-    axs[1].legend(
+    axs[g].legend(
         fontsize = 10, 
         ncol = 1, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    axs[0].set_ylabel(plot_configs['y-label'])
-    axs[1].set_ylabel('log10(gain)')
-    ax2.set_ylabel(plot_configs['y-sec-label'])
-    axs[1].set_ylim([-yy_max, yy_max])
+    axs[g].set_ylabel('10.log10(gain)')
+    ax2.set_ylabel(configs['y-sec-label'])
+    axs[g].set_ylim([-yy_max, yy_max])
     # set ax2 limits so that the plot fits in-between [0, yy_max]
 
     # x-label
@@ -260,7 +252,7 @@ def rssi(axs, input_dir, trace_nr,
         # x-lims : set w/ time_limits
         ax.set_xlim(time_limits[0], time_limits[1])
         # x-ticks : every scan-period + scan-time seconds, starting from time_limits[0]
-        xticks = plot.utils.get_time_xticks(time_limits, duration = plot_configs['args']['scan-period'] + plot_configs['args']['scan-time'])
+        xticks = plot.utils.get_time_xticks(time_limits, duration = configs['args']['scan-period'] + configs['args']['scan-time'])
         ax.set_xticks(xticks)
         xticklabels = [''] * len(xticks)
         for i in list(np.arange(0, len(xticklabels), 5)):
@@ -270,7 +262,7 @@ def rssi(axs, input_dir, trace_nr,
 def cell(axs, input_dir, trace_nr, 
     gt_metric,
     compare_to,
-    plot_configs,
+    configs,
     time_limits = None):
 
     # get mac addr, info
@@ -278,29 +270,20 @@ def cell(axs, input_dir, trace_nr,
     # for quick access to aps and clients
     clients = mac_addrs[mac_addrs['type'] == 'client']
 
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    # save data on .hdf5 database
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))    
+    database = analysis.trace.get_db(input_dir, trace_nr)
 
     # (1) load groud truth metric data : this determines the ground truth in terms of the best ap to choose
     # usually the perf. metric is 'throughput'
-    gt_db_name = ('/%s/%s' % ('best', gt_metric))
-    if gt_db_name not in database.keys():
-        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (gt_db_name))
-        return
-
-    gt_data = database.select(gt_db_name).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
-    # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
-    gt_data = gt_data.drop_duplicates(subset = ['interval-tmstmp'])
-    # some pre-processing
-    gt_data = gt_data.rename(index = str, columns = {'best' : 'gt'})
-    # extract gt metric values of the best ap, for each row
-    gt_data['gt-val'] = 0.0
-    for mac in gt_data['gt'].unique():
-        gt_data.loc[(gt_data['gt'] == mac), 'gt-val'] = gt_data[gt_data['gt'] == mac][mac]
+    gt_data = analysis.trace.load_best(database, gt_metric)
 
     # (2) load data of ap selection to evaluate
-    base_db_name = ('/%s/%s/%s/%s' % ('best-cell', plot_configs['args']['cell-size'], 'every-other', 'no-direction'))
+    # base_db_name = ('/%s/%s/%s/%s/%s' % ('best-cell', configs['args']['cell-size'], 'every-other', 'no-direction', configs['args']['metric']))
+    base_db_name = ('/%s/%s/%s/%s/%s/%s' % (
+        'best-cell',
+        configs['args']['cell-size'],
+        configs['args']['metric'], configs['args']['stat'], ('-'.join([str(v) for v in configs['args']['stat-args'].values()])),
+        ('%d-%d' % (int(configs['args']['use-current-lap']), int(configs['args']['use-direction'])))))
+
     if base_db_name not in database.keys():
         sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (base_db_name))
         return
@@ -343,15 +326,19 @@ def cell(axs, input_dir, trace_nr,
 
     yy_max = max(abs(np.amin(base_data[np.isfinite(base_data['ratio'])]['ratio'])), abs(np.amax(base_data[np.isfinite(base_data['ratio'])]['ratio'])))
     yy_max = analysis.metrics.custom_round(yy_max, prec = 1, base = 5)
-    print(yy_max)
     base_data.replace({'ratio' : {-np.Inf : -(yy_max - 1.0), np.Inf : (yy_max - 1.0)}}, inplace = True)
 
     # get segments of consecutive intervals in which the client is served by the same selected ap
     segments = base_data.groupby(['best','block'])['interval-tmstmp'].apply(np.array).reset_index(drop = False).sort_values(by = ['block'])
 
     # *** plot code section ***
-    axs[0].set_title(plot_configs['title'])
-    axs[1].set_title(plot_configs['sub-title'])
+    axs[0].set_title(configs['title'])
+
+    g = 1
+    if configs['show'] == 'all':
+        axs[g].set_title(configs['sub-title'])
+    else:
+        g = 0
 
     for ax in axs:
         ax.xaxis.grid(True, linestyle = '-')
@@ -375,7 +362,7 @@ def cell(axs, input_dir, trace_nr,
     # (2) bar plots, for gt metric ratios between gt and selected values
     _data = base_data[base_data['ratio'] <= 0.0]
     if not _data.empty:
-        axs[1].bar(
+        axs[g].bar(
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s loss' % (gt_metric)),
@@ -383,14 +370,14 @@ def cell(axs, input_dir, trace_nr,
 
     _data = base_data[base_data['ratio'] > 0.0]
     if not _data.empty:
-        axs[1].bar(
+        axs[g].bar(
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s gain' % (gt_metric)),
             width = .000015, linewidth = 0.0, alpha = 1.0, color = 'green')
 
-    # (3) plot gt metric values provided by selected aps
-    y_limits = [None, None]
+    # (2.1) plot 'best-sel' throughput values on secondary axis
+    ax2 = axs[g].twinx()
     for i, client in clients.iterrows():
 
         _data = base_data[base_data['best'] == client['mac']]
@@ -401,9 +388,9 @@ def cell(axs, input_dir, trace_nr,
         plot.utils.update_time_limits(time_limits, dates)
 
         # the values of ground truth metric, provided by the selected ap
-        axs[0].plot(
+        ax2.plot(
             dates,
-            _data['best-val'] * plot_configs['coef'],
+            _data['best-val'] * configs['coef'],
             linewidth = 0.0, 
             linestyle = '-', 
             color = client['color'], 
@@ -412,33 +399,47 @@ def cell(axs, input_dir, trace_nr,
             marker = client['marker'], 
             markeredgewidth = 0.0)
 
-        plot.utils.update_y_limits(y_limits, (_data['best-val'] * plot_configs['coef']))
+    # (3) plot gt metric values provided by selected aps
+    # y_limits = [None, None]
+    if configs['show'] == 'all':
+        for i, client in clients.iterrows():
 
-    axs[0].legend(
-        fontsize = 10, 
-        ncol = 4, loc = 'upper right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+            _data = base_data[base_data['best'] == client['mac']]
+            if _data.empty:
+                continue
 
-    # # plot a black line w/ throughput for all mac addrs
-    # _data = base_data.iloc[::5, :]
-    # dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
-    # axs[0].plot(
-    #     dates,
-    #     _data['best-val'] * plot_configs['coef'],
-    #     alpha = .5,
-    #     linewidth = 0.75, 
-    #     linestyle = '-', 
-    #     color = 'black', 
-    #     marker = None)
+            dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
+            plot.utils.update_time_limits(time_limits, dates)
 
-    axs[1].legend(
+            # the values of ground truth metric, provided by the selected ap
+            axs[0].plot(
+                dates,
+                _data['best-val'] * configs['coef'],
+                linewidth = 0.0, 
+                linestyle = '-', 
+                color = client['color'], 
+                label = client['label'], 
+                markersize = client['marker-size'], 
+                marker = client['marker'], 
+                markeredgewidth = 0.0)
+
+            # plot.utils.update_y_limits(y_limits, (_data['best-val'] * configs['coef']))
+
+        axs[0].legend(
+            fontsize = 10, 
+            ncol = 4, loc = 'upper right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+        axs[0].set_ylabel(configs['y-label'])
+
+    axs[g].legend(
         fontsize = 10, 
         ncol = 1, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    axs[0].set_ylabel(plot_configs['y-label'])
-    axs[1].set_ylabel('log10(gain)')
-    axs[1].set_ylim([-yy_max, yy_max])
+    axs[g].set_ylabel('10.log10(gain)')
+    ax2.set_ylabel(configs['y-sec-label'])
+    axs[g].set_ylim([-yy_max, yy_max])
 
     # x-label
     te = datetime.datetime(1970, 1, 1)

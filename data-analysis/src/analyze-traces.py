@@ -63,7 +63,7 @@ def init(input_dir, output_dir, traces):
             # extract rx data w/ default options
             analysis.trace.extract_rx_features(input_dir, trace_nr, protocol = trace['proto'].values[-1])
 
-def plot_freq_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan data rate', 'throughput']):
+def plot_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan data rate', 'throughput']):
 
     plot_configs = {
         'wlan rssi' : {
@@ -108,12 +108,15 @@ def plot_freq_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan
     clients = mac_addrs[mac_addrs['type'] == 'client']
 
     # len(metrics) x 2 plots
-    fig = plt.figure(figsize = (2.0 * 4.0, len(metrics) * 2.0))
-
+    figs = defaultdict(plt.figure)
     axs = defaultdict(list)
     for m, metric in enumerate(metrics):
 
-        axs[metric] = [fig.add_subplot(len(metrics), 2, (2 * m) + 1), fig.add_subplot(len(metrics), 2, (2 * m) + 2)]
+        # add figure
+        figs[metric] = plt.figure(figsize = (2.0 * 3.0, 2.0))
+        # add ax objs to figure
+        axs[metric] = [figs[metric].add_subplot(1, 2, 1), figs[metric].add_subplot(1, 2, 2)]
+        # add titles to ax objs
         axs[metric][0].set_title('%s vs. dist.' % (metric))
         axs[metric][1].set_title('%s' % (metric))
 
@@ -172,8 +175,13 @@ def plot_freq_bands(input_dir, output_dir, traces, metrics = ['wlan rssi', 'wlan
 
             plot.utils.cdf(axs[metric][1], cdf[fb][metric], metric = metric, plot_configs = plot_configs[metric])
 
-    fig.tight_layout()
-    plt.savefig(os.path.join(output_dir, ("freq-band-stats-%s.pdf" % ('-'.join(sorted([('%03d' % (int(t))) for t in traces]))))), bbox_inches = 'tight', format = 'pdf')
+    band_dir = os.path.join(output_dir, ("freq-band-stats"))
+    if not os.path.isdir(band_dir):
+        os.makedirs(band_dir)
+
+    for metric in figs:
+        figs[metric].tight_layout()
+        figs[metric].savefig(os.path.join(band_dir, ("%s-%s.pdf" % (metric.replace(' ', '-'), '-'.join(sorted([('%03d' % (int(t))) for t in traces]))))), bbox_inches = 'tight', format = 'pdf')
 
 def handle_list_traces(input_dir):
 
@@ -243,7 +251,7 @@ if __name__ == "__main__":
     #   - consider all traces in the list (tcp or udp)
     #   - 'rssi' vs. 'dist' for each band : 2.4 Ghz and 5.0 Ghz
     #   - 'throughput' vs. 'dist' for each band : 2.4 Ghz and 5.0 Ghz
-    plot_freq_bands(args.input_dir, args.output_dir, traces)
+    plot_bands(args.input_dir, args.output_dir, traces)
 
     # analysis.trace.combine(args.input_dir, to_combine = [49, 46],
     #     new_trace_nr = 55, 

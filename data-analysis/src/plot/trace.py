@@ -113,7 +113,7 @@ def distances(ax, input_dir, trace_nr, time_limits = None):
 
 def best(ax, input_dir, trace_nr, 
     metric = 'throughput',
-    plot_configs = {
+    configs = {
         'throughput' : {
             'y-label' : 'throughput (Mbps)',
             'coef' : 1.0 / 1000000.0
@@ -184,7 +184,7 @@ def best(ax, input_dir, trace_nr,
 
         ax.plot(
             dates,
-            _data[client['mac']] * plot_configs[metric]['coef'],
+            _data[client['mac']] * configs[metric]['coef'],
             linewidth = 0.0, 
             linestyle = '-', 
             color = client['color'], 
@@ -198,7 +198,7 @@ def best(ax, input_dir, trace_nr,
     # dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
     # ax.plot(
     #     dates,
-    #     (_data[macs].max(axis = 1).values) * plot_configs[metric]['coef'],
+    #     (_data[macs].max(axis = 1).values) * configs[metric]['coef'],
     #     alpha = .5,
     #     linewidth = 0.75, 
     #     linestyle = '-', 
@@ -210,7 +210,7 @@ def best(ax, input_dir, trace_nr,
         ncol = 4, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    ax.set_ylabel(plot_configs[metric]['y-label'])
+    ax.set_ylabel(configs[metric]['y-label'])
 
     # x-label
     ax.set_xlabel('time')
@@ -254,20 +254,33 @@ def create_grid(x_cell_num, y_cell_num, lat = [LATN, LATS], lon = [LONW, LONE]):
 
     return grid
 
-def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0):
+def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = False):
+
+    maps_dir = os.path.join(trace_output_dir, ("maps"))
+    if not os.path.isdir(maps_dir):
+        os.makedirs(maps_dir)
+        
+    maps_dir = os.path.join(maps_dir, ("%s" % (cell_size)))
+    if not os.path.isdir(maps_dir):
+        os.makedirs(maps_dir)
+    elif not redraw:
+        sys.stderr.write("""[INFO] %s exists. skipping plotting.\n""" % (maps_dir))
+        return
 
     # get mac addr, info
     mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
     # for quick access to aps and clients
     clients = mac_addrs[mac_addrs['type'] == 'client']
 
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database = analysis.trace.get_db(input_dir, trace_nr)
 
     # get gps pos of trace
-    gps_data, lap_tmstmps = analysis.gps.get_data(input_dir, trace_dir, tag_laps = False)
-    gps_data['interval-tmstmp'] = [ (float(ts)) for ts in gps_data['timestamp'] ]
-    gps_data = gps_data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    dist_db = ('/%s' % ('dist-data'))
+    if dist_db not in database.keys():
+        sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (dist_db))
+        return
+
+    gps_data = database.select(dist_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)[['interval-tmstmp', 'lat', 'lon', 'lap-number', 'direction']]
 
     # merge gps data w/ throughput data
     macs = []
@@ -285,18 +298,15 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0):
         data[client['mac']] = data['throughput']
         macs.append(client['mac'])
 
+        # FIXME : 'interval-data' already has gps info. why are we merging it again?
         gps_data = pd.merge(gps_data, data[ ['interval-tmstmp', client['mac']] ], on = ['interval-tmstmp'], how = 'outer')
 
     # drop rows w/ undefined throughput values for all mac addrs
     gps_data = gps_data.dropna(subset = macs, how = 'all').drop_duplicates(subset = ['interval-tmstmp']).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
-    # keep data of moving period only, i.e. when the bike is moving and getting gps positions
-    gps_data = analysis.trace.extract_moving_data(gps_data)
     # fix timestamp gaps
-    gps_data.loc[np.isnan(gps_data['timestamp']), 'timestamp'] = gps_data[np.isnan(gps_data['timestamp'])]['interval-tmstmp'].astype(int)
-    # fix lat and lon gaps
-    analysis.trace.fix_gaps(gps_data, subset = ['lat', 'lon'])
+    gps_data['timestamp'] = gps_data['interval-tmstmp'].astype(int)
 
-    plot.gps.heatmap(gps_data.groupby(['lat', 'lon']).size().reset_index(name = 'counts'), trace_output_dir, 
+    plot.gps.heatmap(gps_data.groupby(['lat', 'lon']).size().reset_index(name = 'counts'), maps_dir, 
         map_cntr = [LAT, LON], map_types = ['heatmap', 'clustered-marker'])
 
     # add cell ids
@@ -326,7 +336,7 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0):
     ax.set_yticks(np.arange(0.0, 1.1, 0.25))
 
     plt.tight_layout()
-    plt.savefig(os.path.join(trace_output_dir, "cell-cdfs.pdf"), bbox_inches = 'tight', format = 'pdf')
+    plt.savefig(os.path.join(maps_dir, "cell-cdfs.pdf"), bbox_inches = 'tight', format = 'pdf')
 
     # print coverage map of cells
     bbox = [LONW, LATS, LONE, LATN]
@@ -424,4 +434,139 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0):
             color = 'white' if row['count'] > 200 else 'black')
 
     plt.tight_layout()
-    plt.savefig(os.path.join(trace_output_dir, "cell-map.pdf"), bbox_inches = 'tight', format = 'pdf')
+    plt.savefig(os.path.join(maps_dir, "cell-map.pdf"), bbox_inches = 'tight', format = 'pdf')
+
+def compare(
+    input_dir, trace_nr, trace_output_dir, 
+    metric,
+    stat,
+    configs):
+
+    aliases = {
+        'throughput' : 'thghpt', 
+        'wlan data rate' : 'bitrate'}
+
+    compare_dir = os.path.join(trace_output_dir, ("compare"))
+    if not os.path.isdir(compare_dir):
+        os.makedirs(compare_dir)
+
+    plt.style.use('classic')
+
+    # plot independent figs for throughput and time
+    figs = { '0:thghpt' : plt.figure(figsize = (3.0, 3.5)), '1:time' : plt.figure(figsize = (3.0, 3.5)) }
+
+    axs = []
+    for fig in sorted(figs.keys()):
+        axs.append(figs[fig].add_subplot(1, 1, 1))
+
+    ax2 = axs[0].twinx()
+
+    for ax in axs:
+        ax.xaxis.grid(True)
+        ax.yaxis.grid(True)
+
+    # keep track of xticks and labels
+    xx = 0.0
+    xticks = []
+    xtickslabels = []
+    # fixed bar graph parameters
+    barwidth = 0.5
+    # space between big groups of bars
+    interspace = 3.0 * barwidth
+    # space between bars withing groups
+    intraspace = 1.0 * barwidth
+
+    database = analysis.trace.get_db(input_dir, trace_nr)
+
+    # (1) load (ground truth) metric data
+    gt_data = analysis.trace.load_best(database, metric)
+    # (2) load data & plot, for each algorithm
+    label = {
+        'txed-data' : 'data vol.', 
+        'thghpt' : ('median %s' % (aliases[metric])),
+        'conn' : 'conn.', 
+        'disconn' : 'disconn.'}
+    for i, algo in enumerate(sorted(configs.keys())):
+
+        if configs[algo]['data'] == ('/best/%s' % (metric)):
+            data = gt_data
+            data['best-val'] = data['gt-val']
+        else:
+            data = analysis.trace.load_and_merge(database, configs[algo]['data'], gt_data)
+
+        data['diff'] = data['interval-tmstmp'] - data['interval-tmstmp'].shift(1)
+
+        coef = float(configs[algo]['coef'])
+
+        # data volume
+        axs[0].bar(xx - barwidth,
+            ((data['best-val'] * 0.5).sum() * coef) / 8.0,
+            width = barwidth, linewidth = 0.250, alpha = .75, 
+            color = 'red', label = label['txed-data'])
+
+        # median throughput
+        ax2.bar(xx,
+            (data['best-val']).median() * coef,
+            width = barwidth, linewidth = 0.250, alpha = .75, 
+            color = 'blue', label = label['thghpt'])
+        # trick to add ax2's legend to ax's legend
+        axs[0].bar(np.nan, np.nan, label = label['thghpt'], linewidth = 0.250, alpha = .75, color = 'blue')
+
+        axs[1].bar(xx - barwidth,
+            (len(data[data['best-val'] == 0.0]) * 0.5) + (data['diff'] - 0.5).sum(),
+            width = barwidth, linewidth = 0.250, alpha = .75, 
+            color = 'red', label = label['disconn'])
+
+        # median throughput
+        axs[1].bar(xx,
+            (len(data[data['best-val'] > 0.0]) * 0.5),
+            width = barwidth, linewidth = 0.250, alpha = .75, 
+            color = 'green', label = label['conn'])
+
+        label['txed-data'] = ''
+        label['thghpt'] = ''
+        label['conn'] = ''
+        label['disconn'] = ''
+
+        # xticks & xticklabel
+        xticks.append(xx)
+        xtickslabels.append(configs[algo]['x-label'])
+
+        if i < (len(configs.keys()) - 1):
+            xx += interspace
+
+        # FIXME: force garbage collector to delete (?)
+        data = None
+
+    # legend
+    axs[0].legend(
+        fontsize = 10, 
+        ncol = 1, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    axs[1].legend(
+        fontsize = 10, 
+        ncol = 1, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    # x-axis
+    for ax in axs:
+        ax.set_xlim(-(1.5 * barwidth), xx + (1.5 * barwidth))
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xtickslabels, rotation = 45, ha = 'right')
+
+    # y-axis
+    axs[0].set_ylim(0.0, (axs[0].get_ylim()[1] * 1.25))
+    k = float(len(axs[0].get_yticks()) - 1)
+    ax2.set_ylim(0.0, k * np.ceil(float(ax2.get_ylim()[1]) / k))
+    axs[1].set_ylim(0.0, (axs[1].get_ylim()[1] * 1.25))
+
+    axs[0].set_ylabel('data volume (MByte)')
+    ax2.set_ylabel('median throughput (Mbps)')
+    axs[1].set_ylabel('time (sec)')
+
+    for fig in figs:
+        figs[fig].tight_layout()
+        figs[fig].savefig(
+            os.path.join(compare_dir, ("%s-%s-%s-%s-%s.pdf" % (aliases[metric], fig.split(':')[-1], stat['stat'], stat['stat-args'].replace('.', ''), stat['lap-usage']))), 
+            bbox_inches = 'tight', format = 'pdf')

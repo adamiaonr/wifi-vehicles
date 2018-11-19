@@ -61,6 +61,54 @@ Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) / CELL
 
 ref = {'lat' : 41.178685, 'lon' : -8.597872}
 
+def load_best(database, metric):
+
+    # 1) db key
+    gt_db = ('/%s/%s' % ('best', metric))
+    if gt_db not in database.keys():
+        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (gt_db))
+        return
+
+    # 2) load
+    gt_data = database.select(gt_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    # 3) some data cleaning...
+    # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
+    gt_data = gt_data.drop_duplicates(subset = ['interval-tmstmp'])
+    # rename 'best' to 'get'
+    # FIXME : this shouldn't be necessary but...
+    gt_data.rename(index = str, columns = {'best' : 'gt'}, inplace = True)
+    # 3) fill column with best values
+    gt_data['gt-val'] = 0.0
+    for mac in gt_data['gt'].unique():
+        gt_data.loc[(gt_data['gt'] == mac), 'gt-val'] = gt_data[gt_data['gt'] == mac][mac]
+
+    return gt_data
+
+def load_and_merge(database, key, to_merge):
+
+    # 1) load
+    data = database.select(key).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    # 2) merge w/ to_merge
+    data = pd.merge(data[['interval-tmstmp', 'best']], to_merge, on = ['interval-tmstmp'], how = 'left')
+    # get rid of 'nans'
+    data.dropna(subset = ['best'], inplace = True)
+    # 3) fill column with best values
+    data['best-val'] = 0.0
+    for mac in data['best'].unique():
+        data.loc[(data['best'] == mac), 'best-val'] = data[data['best'] == mac][mac]
+    # FIXME: fill any nan values w/ 0.0 (is this necessary?)
+    data['best-val'] = data['best-val'].fillna(0.0)
+
+    return data
+
+def get_db(input_dir, trace_nr):
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    database_file = os.path.join(trace_dir, "processed/database.hdf5")
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+    return database
+
 def get_list(input_dir):
 
     filename = os.path.join(input_dir, ("trace-info.csv"))
