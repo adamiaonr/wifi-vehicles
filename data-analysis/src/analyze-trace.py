@@ -62,10 +62,14 @@ def get_h(configs):
     return h
 
 def get_bandmax(data, macs):
-    data['2.4'] = ''
-    data['5.0'] = ''
+    
+    data['2.4'] = 0.0
+    data['5.0'] = 0.0
+    
     for band in ['2.4', '5.0']:
         data[band] = data[macs[band]].max(axis = 1)
+        # smoothen data
+        analysis.metrics.smoothen(data, column = band, span = 5)
 
 def plot_bands(
     input_dir, trace_nr, output_dir,
@@ -98,7 +102,9 @@ def plot_bands(
     macs = defaultdict(list)
     macs['2.4'] = list(set(clients[clients['band'] == 2.4]['mac'].tolist()))
     macs['5.0'] = list(set(clients[clients['band'] == 5.0]['mac'].tolist()))
-    # get bandmax()
+    # isolate the max() values for each band (for both thghpt and rss)
+    # FIXME : nan thghpt values get a 0.0
+    gt_data = gt_data.fillna(0.0)
     get_bandmax(gt_data, macs)
     get_bandmax(rssi_data, macs)
 
@@ -563,49 +569,59 @@ if __name__ == "__main__":
 
     if compare:
 
-        # plot_bands(args.input_dir, args.trace_nr, trace_output_dir, configs = {'gt-metric' : 'throughput'})
+        plot_bands(args.input_dir, args.trace_nr, trace_output_dir, configs = {'gt-metric' : 'throughput'})
+        sys.exit(0)
 
         metric = 'throughput'
-        stat = {'stat' : 'max', 'stat-args' : '0.5-5', 'lap-usage' : '0-0'}
+        stat = {'stat' : 'ewma', 'stat-args' : '0.75-5', 'lap-usage' : '0-0'}
         plot.trace.compare(args.input_dir, args.trace_nr, trace_output_dir,
-            metric = metric,
-            stat = stat,
             configs = {
-                '0:best' : {
-                    'data' : ('/%s/%s' % ('best', metric)),
-                    'x-label' : 'best',
-                    # 'color' : 'yellow',
-                    'coef' : 1.0 / 1000000.0
+                'gt-metric' : metric,
+                'metric-alias' : 'thghpt',
+                'stat' : stat,
+                'types' : ['rate', 'time'],
+                'y-label' : {
+                    'rate' : 'throughput (Mbps)',
+                    'data' : 'data volume (MByte)',
+                    'time' : 'time (sec)'
                 },
-                '1:baseline' : {
-                    'data' : '/best-rssi/periodic/10/1',
-                    'x-label' : 'best RSS',
-                    # 'color' : 'red',
-                    'coef' : 1.0 / 1000000.0
-                },
-                '3:band-steering' : {
-                    'data' : ('/best-rssi/band-steering/10.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                    'x-label' : 'band steering',
-                    # 'color' : 'blue',
-                    'coef' : 1.0 / 1000000.0
-                },
-                '2:best-of-cell' : {
-                    'data' : ('/best-cell/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                    'x-label' : 'loc. history',
-                    # 'color' : 'green',
-                    'coef' : 1.0 / 1000000.0
-                },
-                '4:scan-history' : {
-                    'data' : ('/best-rssi/history/10.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                    'x-label' : 'scan + loc. hist.',
-                    # 'color' : 'magenta',
-                    'coef' : 1.0 / 1000000.0
-                },
-                '5:best-overall' : {
-                    'data' : ('/best-rssi/history/10.0/1.0/5000.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                    'x-label' : 'ap rank',
-                    # 'color' : 'cyan',
-                    'coef' : 1.0 / 1000000.0
+                'algorithms' : {
+                    '0:best' : {
+                        'data' : ('/%s/%s' % ('best', metric)),
+                        'x-ticklabel' : 'best',
+                        # 'color' : 'yellow',
+                        'coef' : 1.0 / 1000000.0
+                    },
+                    '1:baseline' : {
+                        'data' : '/best-rssi/periodic/10/1',
+                        'x-ticklabel' : 'best RSS',
+                        # 'color' : 'red',
+                        'coef' : 1.0 / 1000000.0
+                    },
+                    '3:band-steering' : {
+                        'data' : ('/best-rssi/band-steering/10.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+                        'x-ticklabel' : 'band steering',
+                        # 'color' : 'blue',
+                        'coef' : 1.0 / 1000000.0
+                    },
+                    '2:best-of-cell' : {
+                        'data' : ('/best-cell/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+                        'x-ticklabel' : 'loc. history',
+                        # 'color' : 'green',
+                        'coef' : 1.0 / 1000000.0
+                    },
+                    '4:scan-history' : {
+                        'data' : ('/best-rssi/history/10.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+                        'x-ticklabel' : 'scan + loc. hist.',
+                        # 'color' : 'magenta',
+                        'coef' : 1.0 / 1000000.0
+                    },
+                    '5:best-overall' : {
+                        'data' : ('/best-rssi/history/10.0/1.0/5000.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+                        'x-ticklabel' : 'ap rank',
+                        # 'color' : 'cyan',
+                        'coef' : 1.0 / 1000000.0
+                    }
                 }
             })
 

@@ -438,32 +438,32 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
 
 def compare(
     input_dir, trace_nr, trace_output_dir, 
-    metric,
-    stat,
     configs):
 
-    aliases = {
-        'throughput' : 'thghpt', 
-        'wlan data rate' : 'bitrate'}
-
     compare_dir = os.path.join(trace_output_dir, ("compare"))
+    if not os.path.isdir(compare_dir):
+        os.makedirs(compare_dir)
+
+    compare_dir = os.path.join(compare_dir, ("%s" % (configs['metric-alias'])))
     if not os.path.isdir(compare_dir):
         os.makedirs(compare_dir)
 
     plt.style.use('classic')
 
     # plot independent figs for throughput and time
-    figs = { '0:thghpt' : plt.figure(figsize = (3.0, 3.5)), '1:time' : plt.figure(figsize = (3.0, 3.5)) }
+    figs = defaultdict(plt.figure)
+    axs = defaultdict()
+    for key in configs['types']:
+        
+        figs[key] = plt.figure(figsize = (3.0, 3.5))
 
-    axs = []
-    for fig in sorted(figs.keys()):
-        axs.append(figs[fig].add_subplot(1, 1, 1))
+        axs[key] = figs[key].add_subplot(1, 1, 1)
+        axs[key].xaxis.grid(True)
+        axs[key].yaxis.grid(True)
 
-    ax2 = axs[0].twinx()
-
-    for ax in axs:
-        ax.xaxis.grid(True)
-        ax.yaxis.grid(True)
+    # create axs[0] 2nd axis for data volume
+    if 'data' in configs['y-label'].keys():
+        ax2 = axs['rate'].twinx()
 
     # keep track of xticks and labels
     xx = 0.0
@@ -479,94 +479,112 @@ def compare(
     database = analysis.trace.get_db(input_dir, trace_nr)
 
     # (1) load (ground truth) metric data
-    gt_data = analysis.trace.load_best(database, metric)
+    gt_data = analysis.trace.load_best(database, configs['gt-metric'])
     # (2) load data & plot, for each algorithm
     label = {
-        'txed-data' : 'data vol.', 
-        'thghpt' : ('median %s' % (aliases[metric])),
+        'data' : 'data vol.', 
+        'rate' : ('median %s' % (configs['metric-alias'])),
         'conn' : 'conn.', 
         'disconn' : 'disconn.'}
-    for i, algo in enumerate(sorted(configs.keys())):
 
-        if configs[algo]['data'] == ('/best/%s' % (metric)):
+    for i, algo in enumerate(sorted(configs['algorithms'].keys())):
+
+        if configs['algorithms'][algo]['data'] == ('/best/%s' % (configs['gt-metric'])):
             data = gt_data
             data['best-val'] = data['gt-val']
+
         else:
-            data = analysis.trace.load_and_merge(database, configs[algo]['data'], gt_data)
+            data = analysis.trace.load_and_merge(database, configs['algorithms'][algo]['data'], gt_data)
 
         data['diff'] = data['interval-tmstmp'] - data['interval-tmstmp'].shift(1)
-
-        coef = float(configs[algo]['coef'])
+        coef = float(configs['algorithms'][algo]['coef'])
 
         # data volume
-        axs[0].bar(xx - barwidth,
-            ((data['best-val'] * 0.5).sum() * coef) / 8.0,
-            width = barwidth, linewidth = 0.250, alpha = .75, 
-            color = 'red', label = label['txed-data'])
+        if 'data' in configs['y-label'].keys():
+    
+            ax2.bar(xx,
+                ((data['best-val'] * 0.5).sum() * coef) / 8.0,
+                width = barwidth, linewidth = 0.250, alpha = .75, 
+                color = 'red', label = label['data'])
 
-        # median throughput
-        ax2.bar(xx,
-            (data['best-val']).median() * coef,
-            width = barwidth, linewidth = 0.250, alpha = .75, 
-            color = 'blue', label = label['thghpt'])
-        # trick to add ax2's legend to ax's legend
-        axs[0].bar(np.nan, np.nan, label = label['thghpt'], linewidth = 0.250, alpha = .75, color = 'blue')
+            # trick to add ax2's legend to ax's legend
+            axs['rate'].bar(np.nan, np.nan, label = label['data'], linewidth = 0.250, alpha = .75, color = 'red')
+            label['data'] = ''
 
-        axs[1].bar(xx - barwidth,
-            (len(data[data['best-val'] == 0.0]) * 0.5) + (data['diff'] - 0.5).sum(),
-            width = barwidth, linewidth = 0.250, alpha = .75, 
-            color = 'red', label = label['disconn'])
+            # median throughput
+            axs['rate'].bar(xx - barwidth,
+                (data['best-val']).median() * coef,
+                width = barwidth, linewidth = 0.250, alpha = .75, 
+                color = 'blue', label = label['rate'])
 
-        # median throughput
-        axs[1].bar(xx,
-            (len(data[data['best-val'] > 0.0]) * 0.5),
-            width = barwidth, linewidth = 0.250, alpha = .75, 
-            color = 'green', label = label['conn'])
+        else:
 
-        label['txed-data'] = ''
-        label['thghpt'] = ''
-        label['conn'] = ''
-        label['disconn'] = ''
+            # median throughput
+            axs['rate'].bar(xx - (barwidth),
+                (data['best-val']).median() * coef,
+                width = (2.0 * barwidth), linewidth = 0.250, alpha = .75, 
+                color = 'blue', label = label['rate'])
+
+        label['rate'] = ''
+
+        if 'time' in axs.keys():
+            axs['time'].bar(xx - barwidth,
+                (len(data[data['best-val'] == 0.0]) * 0.5) + (data['diff'] - 0.5).sum(),
+                width = barwidth, linewidth = 0.250, alpha = .75, 
+                color = 'red', label = label['disconn'])
+
+            # median throughput
+            axs['time'].bar(xx,
+                (len(data[data['best-val'] > 0.0]) * 0.5),
+                width = barwidth, linewidth = 0.250, alpha = .75, 
+                color = 'green', label = label['conn'])
+
+            label['conn'] = ''
+            label['disconn'] = ''
 
         # xticks & xticklabel
         xticks.append(xx)
-        xtickslabels.append(configs[algo]['x-label'])
+        xtickslabels.append(configs['algorithms'][algo]['x-ticklabel'])
 
-        if i < (len(configs.keys()) - 1):
+        if i < (len(configs['algorithms'].keys()) - 1):
             xx += interspace
 
         # FIXME: force garbage collector to delete (?)
         data = None
 
     # legend
-    axs[0].legend(
+    axs['rate'].legend(
         fontsize = 10, 
         ncol = 1, loc = 'upper right',
         handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    axs[1].legend(
-        fontsize = 10, 
-        ncol = 1, loc = 'upper right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+    if 'time' in axs.keys():
+        axs['time'].legend(
+            fontsize = 10, 
+            ncol = 1, loc = 'upper right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    # x-axis
-    for ax in axs:
-        ax.set_xlim(-(1.5 * barwidth), xx + (1.5 * barwidth))
-        ax.set_xticks(xticks)
-        ax.set_xticklabels(xtickslabels, rotation = 45, ha = 'right')
+    for key in axs:
+        # x-axis
+        axs[key].set_xlim(-(1.5 * barwidth), xx + (1.5 * barwidth))
+        axs[key].set_xticks(xticks)
+        axs[key].set_xticklabels(xtickslabels, rotation = 45, ha = 'right')
+        # y-axis
+        axs[key].set_ylabel(configs['y-label'][key])
 
-    # y-axis
-    axs[0].set_ylim(0.0, (axs[0].get_ylim()[1] * 1.25))
-    k = float(len(axs[0].get_yticks()) - 1)
-    ax2.set_ylim(0.0, k * np.ceil(float(ax2.get_ylim()[1]) / k))
-    axs[1].set_ylim(0.0, (axs[1].get_ylim()[1] * 1.25))
+    # so that legend doesn't overlap w/ bars
+    axs['rate'].set_ylim(0.0, np.ceil(axs['rate'].get_ylim()[1] * 1.25))
+    if 'data' in configs['y-label'].keys():
+        # 2nd y-axis in 'rate' plot
+        k = float(len(axs['rate'].get_yticks()) - 1)
+        d = ax2.get_yticks()[1] - ax2.get_yticks()[0]
+        ax2.set_ylim(0.0, k * d)
+        ax2.set_ylabel('data volume (MByte)')
 
-    axs[0].set_ylabel('data volume (MByte)')
-    ax2.set_ylabel('median throughput (Mbps)')
-    axs[1].set_ylabel('time (sec)')
+    axs['time'].set_ylim(0.0, (axs['time'].get_ylim()[1] * 1.25))
 
     for fig in figs:
         figs[fig].tight_layout()
         figs[fig].savefig(
-            os.path.join(compare_dir, ("%s-%s-%s-%s-%s.pdf" % (aliases[metric], fig.split(':')[-1], stat['stat'], stat['stat-args'].replace('.', ''), stat['lap-usage']))), 
+            os.path.join(compare_dir, ("%s-%s-%s-%s-%s.pdf" % (configs['metric-alias'], fig.split(':')[-1], configs['stat']['stat'], configs['stat']['stat-args'].replace('.', ''), configs['stat']['lap-usage']))), 
             bbox_inches = 'tight', format = 'pdf')
