@@ -10,9 +10,15 @@
 # bits.
 #
 # By default this script does nothing.
-iptables -t nat -A POSTROUTING -s 10.10.10.0/24 ! -d 10.10.10.0/24 -j MASQUERADE
-iperf3 -s -V -p 5203 &
-iperf3 -s -V -p 5202 &
-iperf3 -s -V -p 5204 &
-iperf3 -s -V -p 5205 &
+
+# iptables -t nat -A POSTROUTING -s 10.10.10.0/24 ! -d 10.10.10.0/24 -j MASQUERADE
+# iperf3 -s -V -p 5203 &
+# iperf3 -s -V -p 5202 &
+# iperf3 -s -V -p 5204 &
+# iperf3 -s -V -p 5205 &
+
+# force default gw to be the unifi ac lite ap (and not the control network 10.10.13.0/24)
+sudo route delete default gw 10.10.13.1 wlxc46e1f26357b
+sudo route add default gw 10.10.15.1 wlx24050f615114
+
 exit 0
