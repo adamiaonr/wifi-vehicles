@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-if [ $# -lt 3 ]
+if [ $# -lt 2 ]
 then
 	echo "usage : $0 <encryption> <channel>"
 	echo "options : "
@@ -17,6 +17,7 @@ fi
 
 # ambiguity fix
 encryption=$1
+channel=$2
 if [ "$encryption" = "wpa" ]
 then
     encryption="wpa2"
