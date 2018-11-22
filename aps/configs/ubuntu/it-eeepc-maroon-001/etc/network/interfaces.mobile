@@ -1,0 +1,19 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto wlx24050f615114
+iface wlx24050f615114 inet static
+hostapd /etc/hostapd/hostapd.conf
+address 10.10.10.111
+netmask 255.255.255.0
+dns-nameservers 1.1.1.1 8.8.8.8
+
+auto wlx24050faaab5d
+iface wlx24050faaab5d inet manual
+wireless-mode monitor
+
+auto wlxc46e1f26357b
+iface wlxc46e1f26357b inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
+dns-nameservers 1.1.1.1 8.8.8.8
