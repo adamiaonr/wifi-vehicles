@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # options (self-explanatory)
     parser.add_argument(
         "--input-dir", 
-         help = """dir w/ trace data""")
+         help = """dir w/ data""")
 
     parser.add_argument(
         "--output-dir", 

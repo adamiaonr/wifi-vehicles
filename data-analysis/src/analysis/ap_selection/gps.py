@@ -154,7 +154,7 @@ def cell(input_dir, trace_nr,
     analysis.trace.fix_gaps(trace_data, subset = ['lat', 'lon'])
 
     # add cell ids
-    x_cell_num, y_cell_num = analysis.gps.get_cell_num(trace_data, cell_size = args['cell-size'], lat = [LATN, LATS], lon = [LONW, LONE])
+    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = args['cell-size'], lat = [LATN, LATS], lon = [LONW, LONE])
     trace_data['cell-x'] = trace_data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * x_cell_num))
     trace_data['cell-y'] = trace_data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * y_cell_num))
 

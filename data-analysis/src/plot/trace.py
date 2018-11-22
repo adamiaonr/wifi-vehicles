@@ -310,7 +310,7 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
         map_cntr = [LAT, LON], map_types = ['heatmap', 'clustered-marker'])
 
     # add cell ids
-    x_cell_num, y_cell_num = analysis.gps.get_cell_num(gps_data, cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
+    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
     gps_data['cell-x'] = gps_data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * x_cell_num))
     gps_data['cell-y'] = gps_data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * y_cell_num))
 

@@ -62,10 +62,7 @@ def get_cell_datetimes(gps_data):
 
     return sorted(timestamps)
 
-def get_cell_num(gps_data, 
-    cell_size,
-    lat = [LATN, LATS],
-    lon = [LONW, LONE]):
+def get_cell_num(cell_size, lat = [LATN, LATS], lon = [LONW, LONE]):
     
     # x-axis : longitude
     LAT = (LATN + LATS) / 2.0

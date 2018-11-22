@@ -260,7 +260,7 @@ def band_steering(input_dir, trace_nr,
     macs['5.0'] = list(set(clients[clients['band'] == 5.0]['mac'].tolist()) & set(macs['all']))
 
     # add cell ids to loc_data
-    x_cell_num, y_cell_num = analysis.gps.get_cell_num(loc_data, cell_size = args['cell-size'], lat = [LATN, LATS], lon = [LONW, LONE])
+    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = args['cell-size'], lat = [LATN, LATS], lon = [LONW, LONE])
     loc_data['cell-x'] = loc_data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * x_cell_num))
     loc_data['cell-y'] = loc_data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * y_cell_num))
     
