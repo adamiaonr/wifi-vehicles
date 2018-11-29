@@ -69,7 +69,7 @@ def cdf(
 
     ax.plot(cdf[metric] * plot_configs['coef'], cdf['counts'], 
         alpha = .75, 
-        linewidth = 0.75, 
+        linewidth = 1.00, 
         color = plot_configs['color'], 
         label = plot_configs['label'], 
         linestyle = '-')
@@ -81,16 +81,19 @@ def cdf(
         ax.set_xticks(plot_configs['x-ticks'])
     if 'x-ticklabels' in plot_configs:
         ax.set_xticklabels(plot_configs['x-ticklabels'])
+    if 'x-lim' in plot_configs:
+        ax.set_xlim(plot_configs['x-lim'])
 
     ax.set_yticks(np.arange(0.0, 1.1, 0.25))
 
-    legend = ax.legend(
-        fontsize = 10, 
-        ncol = 1, loc = 'lower right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+    if plot_configs['label'] != '':
+        legend = ax.legend(
+            fontsize = 10, 
+            ncol = 1, loc = 'lower right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
-    for legobj in legend.legendHandles:
-        legobj.set_linewidth(2.0)
+        for legobj in legend.legendHandles:
+            legobj.set_linewidth(2.0)
 
 def vs(
     ax,
