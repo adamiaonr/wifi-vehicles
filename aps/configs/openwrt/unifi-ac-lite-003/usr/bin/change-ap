@@ -5,7 +5,7 @@ then
 	echo "usage : $0 <encryption> <channel>"
 	echo "options : "
 	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
-	echo "    <channel>: { 2.4 GHz : { 20 MHz : [ 1, 6, 11 ] }, 5 GHz : { 20 MHz : [ 36, 40, 44 ], 40 MHz : [ 38, 46 ], 80 MHz : [42] }}"
+	echo "    <channel>: { 2.4 GHz : { 20 MHz : [ 1, 6, 11 ] }, 5 GHz : { 20 MHz : [ 36, 40 ], 40 MHz : [ 38, 46 ], 80 MHz : [42] }}"
 	exit 1
 fi
 

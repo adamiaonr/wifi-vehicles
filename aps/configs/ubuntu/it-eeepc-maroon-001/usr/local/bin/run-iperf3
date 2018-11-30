@@ -1,9 +1,10 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
+	echo "usage : $0 <usb-dev-file> <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
 	echo "options : "
+	echo "    <usb-dev-file> : e.g., '/dev/ttyACM0'"
 	echo "    <protocol> : 'tcp' or 'udp'"
 	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
 	echo "    <udp-bitrate> : target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
@@ -14,32 +15,52 @@ fi
 pkill -f iperf3-to-mobile
 pkill -f get-ntp-accuracy
 
+# get comm. iface channel & width
+channel=$(iw dev wlx24050f615114 info | awk '/channel/ {print $2}')
+bw=$(iw dev wlx24050f615114 info | awk '/channel/ {print $6}')
+
 # create dirs (if not available already)
-# output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}')
-# output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f615114 info | awk '/channel/ {print $2}')
-output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$2
+output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$3/$channel
 mkdir -p "$output_dir"
 
 # handle bitrate arg
 bitrate="X"
-if [ "$1" == "udp" ]
+if [ "$2" == "udp" ] || [ "$1" == "udp" ]
 then
 
-	if [ $# -lt 3 ]
+	if [ $# -lt 4 ]
 	then
-		echo "usage : $0 <protocol> <trace-nr> <udp-bitrate>"
+		echo "usage : $0 <usb-dev-file> <protocol> <trace-nr> <udp-bitrate>"
 		exit 1
 	fi
 
-	bitrate=$3
+	bitrate=$4
 fi
 
-# set wlan short and long retry options to 10 and 7, respectively...
+# set wlan short and long retry options...
 wiphy="phy"$(iw dev wlx24050f615114 info | awk '/wiphy/ {print $2}')
-iw phy $wiphy set retry short 10 long 7
+iw phy $wiphy set retry short 7 long 4
 
-# run scripts
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --iface wlx24050f615114 --output-dir "$output_dir" &
+# get the right signal next to HT40 or HT80 ('+' or '-')
+#	- HT40- : 2 x 20 MHz channels, primary channel is higher number, secondary channel is lower number 
+#             e.g. [36, 40] w/ 40 MHz channel width, iw dev <iface> will report channel as 40
+#	- HT40+ : 2 x 20 MHz channels, primary channel is lower number, secondary channel is higher number
+#             e.g. [36, 40] w/ 40 MHz channel width, iw dev <iface> will report channel as 36
+if [ $bw == '40' ]
+then
+    if [ $(($channel % 8)) ]
+    then
+        bw=$bw-
+    else
+        bw=$bw+
+    fi
+fi
+
+# change channel on the monitoring iface to that of the comm. iface
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode "$channel:HT$bw"
+# run experimental scripts
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --monitor-iface wlx24050faaab5d --output-dir "$output_dir" &
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --protocol $2 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --reverse --iface wlx24050f615114 --output-dir "$output_dir" &
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
 

@@ -41,6 +41,7 @@ iw phy $wiphy set retry short 10 long 7
 # get comm. iface channel & width
 channel=$(iw wlx24050fe57b6a info | awk '/channel/ {print $2}')
 bw=$(iw wlx24050fe57b6a info | awk '/width/ {print $2}')
+
 # get the right signal next to HT40 ('+' or '-')
 if [ $3 -gt 20 ]
 then

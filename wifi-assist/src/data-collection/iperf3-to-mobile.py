@@ -34,12 +34,17 @@ def restart_service(service = 'ntp'):
     cmd = ["service", service, "restart"]
     proc = subprocess.call(cmd)
 
-def capture(iface, output_file):
+def capture(iface, output_file, mode = 'ap'):
     # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
-    cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
+    cmd = ''
+    if mode == 'ap':
+        cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
+    elif mode == 'monitor':
+        cmd = ["tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
+
     proc = subprocess.Popen(cmd)
     
-def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 10):
+def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 120, reverse = False):
 
     output = "N/A"
 
@@ -51,6 +56,11 @@ def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 1
     else:
         sys.stderr.write("""%s:::start_iperf3() : [ERROR] unknown protocol : %s\n""" % (sys.argv[0], proto))
         return -1, output
+
+    # if reverse mode is used, don't gather server stats (we're the server already)
+    if reverse:
+        cmd.append('-R')
+        cmd.remove('--get-server-output')
 
     try:
         output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -113,13 +123,18 @@ if __name__ == "__main__":
         "--port", 
          help = """port used by iperf3 server. e.g.: '--port 5204'""")
 
+    parser.add_argument(
+        "--reverse", 
+         help = """reverse client & server roles in iperf3""",
+         action = 'store_true')
+
     # parser.add_argument(
     #     "--rounds", 
     #      help = """number of rounds for each parameter combination. e.g.: '--rounds 5'""")
 
     parser.add_argument(
         "--iface", 
-         help = """wifi iface on which to capture packets. e.g.: '--iface wlx24050f9e2cb1'""")
+         help = """wifi iface on which to capture packets. e.g.: '--iface wlx24050f615114'""")
 
     parser.add_argument(
         "--output-dir", 
@@ -191,9 +206,13 @@ if __name__ == "__main__":
     Range = namedtuple('Range', ['start', 'end'])
 
     # start capturing packets (if specified)
-    if args.iface:
-        capture_file = os.path.join(args.output_dir, ("iperf3-to-mobile.capture." + str(args.bitrate) + "." + timestamp + ".pcap"))
-        capture(args.iface, capture_file)
+    # if args.iface:
+    #     capture_file = os.path.join(args.output_dir, ("iperf3-to-mobile.capture." + str(args.bitrate) + "." + timestamp + ".pcap"))
+    #     capture(args.iface, capture_file)
+
+    reverse = False
+    if args.reverse:
+        reverse = True
 
     # keep iperfing till a CTRL+C is caught...
     stop_loop = False
@@ -204,7 +223,7 @@ if __name__ == "__main__":
             time.sleep(randint(0,1))
 
         start_timestamp = time.time()
-        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol)
+        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol, reverse = reverse)
         
         if code < 0:
             continue

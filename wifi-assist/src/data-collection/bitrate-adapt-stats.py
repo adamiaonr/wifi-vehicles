@@ -56,11 +56,15 @@ if __name__ == "__main__":
         'sum-success', 'sum-attempts',
         'ideal', 'lookaround', 'avg-agg-frames-ampdu']
 
-    report = pd.DataFrame(columns = ['timestamp', 'station', 'phy', 'dev'] + columns)
-    # load .hdfs database
-    database = pd.HDFStore(os.path.join(args.output_dir, "bitrate-adapt.hdf5"))
+    report = pd.DataFrame(columns = sorted(['timestamp', 'station', 'phy', 'dev'] + columns))
+    # # load .hdfs database
+    # database = pd.HDFStore(os.path.join(args.output_dir, "bitrate-adapt.hdf5"))
+    database = os.path.join(args.output_dir, "bitrate-adapt.csv")
+    report.to_csv(database)
 
     # keep iperfing till a CTRL+C is caught...
+    # register CTRL+C catcher
+    signal.signal(signal.SIGINT, signal_handler)
     stop_loop = False
     while (stop_loop == False):
 
@@ -74,8 +78,9 @@ if __name__ == "__main__":
             data['phy'] = filename.split('/')[-5]
 
             # report = pd.concat([report, data], ignore_index = True, sort = True)
-            database.append('/bitrate-adapt/rc-stats', data, data_columns = data.columns, format = 'table')
+            # database.append('/bitrate-adapt/rc-stats', data, data_columns = data.columns, format = 'table')
+            data.to_csv(database, mode = 'a', header = False, columns = sorted(data.columns))
 
-            time.sleep(1)
+        time.sleep(1.0)
 
     sys.exit(0)
