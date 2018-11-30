@@ -1,5 +1,5 @@
 config wifi-device  radio0
-	option type mac80211
+	option type 'mac80211'
 	option path 'platform/qca956x_wmac'
 	option channel '6'
 	option hwmode '11g'

@@ -1,5 +1,5 @@
 config wifi-device  radio0
-	option type mac80211
+	option type 'mac80211'
 	option path 'platform/qca956x_wmac'
 	option channel '1'
 	option hwmode '11g'
@@ -13,5 +13,4 @@ config wifi-iface
 	option network 'wwan'
 	option mode 'ap'
 	option ssid 'thomas-edison'
-	option encryption 'psk2'
-	option key 'xpto12x1'
+	option encryption none
