@@ -1,7 +1,7 @@
 config wifi-device 'radio1'
 	option type 'mac80211'
 	option path 'pci0000:00/0000:00:00.0'
-	option channel '42'
+	option channel '44'
 	option hwmode '11a'
 	option htmode 'VHT80'
 	option txpower '20'
