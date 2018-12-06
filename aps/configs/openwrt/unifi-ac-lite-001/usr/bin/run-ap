@@ -28,6 +28,7 @@ then
 fi
 
 # set wlan short and long retry options to 10 and 7, respectively...
+wiface="$(ifconfig | awk '/wlan/ {print $1}')"
 wiphy="phy"$(iw dev $wiface info | awk '/wiphy/ {print $2}')
 iw phy $wiphy set retry short 10 long 7
 
