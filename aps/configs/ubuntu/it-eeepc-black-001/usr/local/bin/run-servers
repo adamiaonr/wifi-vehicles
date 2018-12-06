@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <trace-nr>"
+	echo "options : "
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	exit 1
+fi
+
+# kill outstanding scritps
+pkill -f get-ntp-accuracy
+
+# kill and restart iperf3 servers
+/usr/local/bin/restart-iperf-servers &
+
+exit 0
