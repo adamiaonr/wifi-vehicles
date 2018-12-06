@@ -7,8 +7,8 @@ iface wlxc46e1f25d726 inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
-auto wlp2s0b1
-iface wlp2s0b1 inet dhcp
+auto wlxc46e1f25d759
+iface wlxc46e1f25d759 inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 

@@ -6,7 +6,7 @@ config interface 'loopback'
 	option netmask '255.0.0.0'
 
 config globals 'globals'
-	option ula_prefix 'fd37:b096:a196::/48'
+	option ula_prefix 'fdad:6dbd:3f3e::/48'
 
 config interface 'wwan'
 	option proto 'dhcp'
