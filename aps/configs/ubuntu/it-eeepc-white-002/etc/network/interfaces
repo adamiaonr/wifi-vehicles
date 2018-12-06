@@ -2,16 +2,16 @@
 auto lo
 iface lo inet loopback
 
-auto wlx24050fe57b6a
-iface wlx24050fe57b6a inet dhcp
+auto wlxc46e1f26357e
+iface wlxc46e1f26357e inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
-auto wlxc46e1f25d93c
-iface wlxc46e1f25d93c inet dhcp
+auto wlp2s0
+iface wlp2s0 inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
-auto wlx24050f9e2cb1
-iface wlx24050f9e2cb1 inet manual
+auto wlxc46e1f269fc0
+iface wlxc46e1f269fc0 inet manual
 wireless-mode monitor

@@ -49,6 +49,102 @@ LONW = -8.598336
 LAT  = (41.176796 + 41.179283) / 2.0
 LON = (-8.598336 + -8.593912) / 2.0
 
+def bitrate(input_dir, trace_nr, trace_output_dir, time_limits = None):
+
+    plt.style.use('classic')
+
+    # plot configs
+    best = {
+        '1:A'  : {'color' : 'green',  'linestyle' : '-', 'label' : 'A', 'x-label' : '', 'coef' : 1.0, 'marker' : None, 'markersize' : 0.0},
+        '2:B'  : {'color' : 'blue',   'linestyle' : '-', 'label' : 'B', 'x-label' : '', 'coef' : 1.0, 'marker' : None, 'markersize' : 0.0},
+        '3:C'  : {'color' : 'red',    'linestyle' : '-', 'label' : 'C', 'x-label' : '', 'coef' : 1.0, 'marker' : None, 'markersize' : 0.0},
+        '4:D'  : {'color' : 'orange', 'linestyle' : '-', 'label' : 'D', 'x-label' : '', 'coef' : 1.0, 'marker' : None, 'markersize' : 0.0},
+        '5:BP' : {'color' : 'blue',   'linestyle' : ':', 'label' : 'BP', 'x-label' : '', 'coef' : 1.0, 'marker' : 'o', 'markersize' : 1.5},
+        '6:CP' : {'color' : 'red', 'linestyle' : ':', 'label' : 'CP', 'x-label' : '', 'coef' : 1.0, 'marker' : 'o', 'markersize' : 2.5},
+        '7:DP' : {'color' : 'orange', 'linestyle' : ':', 'label' : 'DP', 'x-label' : '', 'coef' : 1.0, 'marker' : 'o', 'markersize' : 3.5}
+    }
+
+    # get mac addr, info
+    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
+    # for quick access to aps and clients
+    clients = mac_addrs[mac_addrs['type'] == 'client']
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    bitrates = pd.read_csv(os.path.join(trace_dir, ('bitrate-adapt.csv')))
+
+    # 1) 'best-rate' chain performance over time
+    if not time_limits:
+        time_limits = [None, None]
+
+    figs = [ plt.figure(figsize = (12.0, 1.0 * 2.0)), plt.figure(figsize = (6.0, 1.0 * 2.0)) ]
+    axs = [ figs[0].add_subplot(1, 2, 1), figs[0].add_subplot(1, 2, 2), figs[1].add_subplot(1, 2, 1), figs[1].add_subplot(1, 2, 2) ]
+
+    for b in sorted(best.keys()):
+
+        data = bitrates[bitrates['best-rate'] == b.split(':')[-1]]
+        if data.empty:
+            continue
+
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in data['timestamp'] ]
+        plot.utils.update_time_limits(time_limits, dates)
+
+        # note: why is the avg. thghpt so much lower than the expected bitrate w/ MCS14?
+        axs[0].plot_date(
+            dates,
+            data['avg-thghpt'],
+            linewidth = 0.5, linestyle = '-', color = best[b]['color'], label = b.split(':')[-1], 
+            marker = best[b]['marker'], markersize = best[b]['markersize'], markeredgewidth = 0.0)
+
+        axs[1].plot_date(
+            dates,
+            data['avg-prob'] / 100.0,
+            linewidth = 0.5, linestyle = '-', color = best[b]['color'], label = b.split(':')[-1], 
+            marker = best[b]['marker'], markersize = best[b]['markersize'], markeredgewidth = 0.0)
+
+        best[b]['x-label'] = 'avg. throughput (Mbps)'
+        plot.utils.cdf(axs[2], data, metric = 'avg-thghpt', plot_configs = best[b])
+
+        best[b]['x-label'] = 'avg. del. probability'
+        best[b]['x-lim'] = [0.60, 1.0]
+        best[b]['coef'] = 0.01
+        plot.utils.cdf(axs[3], data, metric = 'avg-prob', plot_configs = best[b])
+
+    for i in [0, 1]:
+
+        axs[i].xaxis.grid(True)
+        axs[i].yaxis.grid(True)
+
+        legend = axs[i].legend(
+            fontsize = 8, 
+            ncol = 3, loc = 'lower right',
+            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+        for legobj in legend.legendHandles:
+            legobj.set_linewidth(1.0)
+
+    axs[0].set_ylabel('bitrate (Mbps)')
+    axs[1].set_ylabel('del. probability')
+    axs[1].set_ylim([0.6, 1.1])
+
+    # x-label
+    for k in [0, 1]:
+
+        axs[k].set_xlabel('time (sec)')
+        # x-lims : set w/ time_limits
+        axs[k].set_xlim(time_limits[0], time_limits[1])
+        xticks = plot.utils.get_time_xticks(time_limits, duration = 10.0)
+        axs[k].set_xticks(xticks)
+        xticklabels = [''] * len(xticks)
+        for i in list(np.arange(0, len(xticklabels), 5)):
+            xticklabels[i] = (((xticks[i].astype('uint64') / 1e6).astype('uint32')) - ((xticks[0].astype('uint64') / 1e6).astype('uint32')))
+        axs[k].set_xticklabels(xticklabels, ha = 'center')
+
+    figs[0].tight_layout()
+    figs[0].savefig(os.path.join(trace_output_dir, ("bitrate-best-rates.pdf")), bbox_inches = 'tight', format = 'pdf')
+
+    figs[1].tight_layout()
+    figs[1].savefig(os.path.join(trace_output_dir, ("bitrate-best-rates-cdfs.pdf")), bbox_inches = 'tight', format = 'pdf')
+
 def distances(ax, input_dir, trace_nr, time_limits = None):
 
     ax.xaxis.grid(True)

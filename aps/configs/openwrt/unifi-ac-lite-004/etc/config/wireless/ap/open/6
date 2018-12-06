@@ -1,0 +1,16 @@
+config wifi-device  radio0
+	option type 'mac80211'
+	option path 'platform/qca956x_wmac'
+	option channel '6'
+	option hwmode '11g'
+	option htmode 'HT20'
+	option txpower '20'
+	option country 'PT'
+	option log_level '0'
+
+config wifi-iface
+	option device 'radio0'
+	option network 'wwan'
+	option mode 'ap'
+	option ssid 'thomas-edison'
+	option encryption none

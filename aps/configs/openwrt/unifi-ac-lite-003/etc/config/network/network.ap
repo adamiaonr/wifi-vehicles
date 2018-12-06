@@ -10,9 +10,9 @@ config globals 'globals'
 
 config interface 'wwan'
 	option proto 'static'
-	option ipaddr '10.10.15.1'
+	option ipaddr '10.10.16.1'
 	option netmask '255.255.255.0'
-	option gateway '10.10.12.1'
+	option gateway '10.10.11.1'
 	option dns '8.8.8.8 1.1.1.1'
 
 

@@ -392,6 +392,11 @@ if __name__ == "__main__":
          help = """don't extract data""",
          action = 'store_true')
 
+    parser.add_argument(
+        "--bitrate-only", 
+         help = """bitrate adaptation analysis (BETA)""",
+         action = 'store_true')
+
     args = parser.parse_args()
 
     if not args.input_dir:
@@ -438,6 +443,10 @@ if __name__ == "__main__":
         compare_only = args.compare_only
         compare = True
 
+    bitrate = False
+    if args.bitrate_only:
+        bitrate = True
+
     trace = trace_list[trace_list['trace-nr'] == int(args.trace_nr)]
     trace_dir = os.path.join(args.input_dir, ("trace-%03d" % (int(args.trace_nr))))
     trace_db_file = os.path.join(trace_dir, "processed/database.hdf5")
@@ -445,6 +454,10 @@ if __name__ == "__main__":
     trace_output_dir = os.path.join(args.output_dir, ("trace-%03d" % (int(args.trace_nr))))
     if not os.path.isdir(trace_output_dir):
         os.makedirs(trace_output_dir)
+
+    if bitrate:
+        plot.trace.bitrate(args.input_dir, args.trace_nr, trace_output_dir)
+        sys.exit(0)
 
     if not compare_only:
 

@@ -20,15 +20,10 @@ signal_handler() {
     stop_loop=true
 }
 
-# get mac addr of wifi iface
-wiface=""
-if [ "$(iwinfo wlan0 info | awk '/Access Point/ {print $3}')" == "24:05:0F:61:51:14" ]
+# get wifi iface name
+wiface="$(ifconfig | awk '/wlan/ {print $1}')"
+if [ "$wiface" == '' ]
 then
-	wiface="wlan0"
-elif [ "$(iwinfo wlan1 info | awk '/Access Point/ {print $3}')" == "24:05:0F:61:51:14" ]
-then  
-	wiface="wlan1"
-else
 	echo "error : no wlan iface. aborting."
 	exit 1
 fi

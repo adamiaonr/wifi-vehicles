@@ -67,12 +67,16 @@ def cdf(
     cdf['counts'] = np.array(cdf['counts'].cumsum(), dtype = float)
     cdf['counts'] = cdf['counts'] / cdf['counts'].values[-1]
 
+    linestyle = '-'
+    if 'linestyle' in plot_configs:
+        linestyle = plot_configs['linestyle']
+
     ax.plot(cdf[metric] * plot_configs['coef'], cdf['counts'], 
         alpha = .75, 
         linewidth = 1.00, 
         color = plot_configs['color'], 
         label = plot_configs['label'], 
-        linestyle = '-')
+        linestyle = linestyle)
 
     ax.set_xlabel(plot_configs['x-label'])
     ax.set_ylabel("CDF")
