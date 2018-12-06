@@ -58,6 +58,7 @@ then
 fi
 
 # change channel on the monitoring iface to that of the comm. iface
+echo "$channel:HT$bw"
 python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f9e2cb1 --set-monitor-mode "$channel:HT$bw"
 
 # run scripts
