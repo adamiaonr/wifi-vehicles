@@ -1,0 +1,5 @@
+#!/bin/sh
+
+kill -9 "$(cat /var/run/get-cbt.pid)"
+
+exit 0

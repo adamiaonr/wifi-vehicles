@@ -12,7 +12,7 @@ fi
 # mac addr w/ no ':' (NOT USED)
 mac_addr="$(ifconfig | awk '/wlan/ {print $5}' | awk '{gsub( "[:'\'']","" ); print}')"
 # first 3 octects of ip addr on eth* iface
-ip_addr="$(ifconfig eth0 | awk -F ' *|:' '/inet addr/{print $4}' | awk -F. '{OFS=".";NF--;print $0;}')"
+ip_addr="$(ifconfig eth0 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
 
 # nfs mount
 if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
