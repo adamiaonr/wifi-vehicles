@@ -40,7 +40,7 @@ iw phy $wiphy set retry short 10 long 7
 
 # get comm. iface channel & width
 channel=$(iw wlxc46e1f26357e info | awk '/channel/ {print $2}')
-bw=$(iw wlxc46e1f26357e info | awk '/width/ {print $2}')
+bw=$(iw wlxc46e1f26357e info | awk '/channel/ {print $6}')
 
 # get the right signal next to HT40 or HT80 ('+' or '-')
 #	- HT40- : 2 x 20 MHz channels, primary channel is higher number, secondary channel is lower number 
