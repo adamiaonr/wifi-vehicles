@@ -59,7 +59,7 @@ fi
 
 # change channel on the monitoring iface to that of the comm. iface
 echo "$channel:HT$bw"
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f9e2cb1 --set-monitor-mode "$channel:HT$bw"
+python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlxc46e1f269fc0 --set-monitor-mode "$channel:HT$bw"
 
 # run scripts
 python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --iface wlxc46e1f26357e --output-dir "$output_dir" &
