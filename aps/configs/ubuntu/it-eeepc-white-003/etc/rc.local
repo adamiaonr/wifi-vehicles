@@ -12,7 +12,7 @@
 # By default this script does nothing.
 
 # force default gw to be the unifi ac lite ap (and not the control network 10.10.13.0/24)
-sudo route delete default gw 10.10.13.1 wlp2s0b1
+sudo route delete default gw 10.10.13.1 wlxc46e1f25d759
 sudo route add default gw 10.10.16.1 wlxc46e1f25d726
 
 exit 0
