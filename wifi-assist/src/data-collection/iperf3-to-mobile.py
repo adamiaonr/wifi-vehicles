@@ -44,7 +44,7 @@ def capture(iface, output_file, mode = 'ap'):
 
     proc = subprocess.Popen(cmd)
     
-def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 120, reverse = False):
+def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 300, reverse = False):
 
     output = "N/A"
 
