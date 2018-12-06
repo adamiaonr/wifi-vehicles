@@ -69,8 +69,8 @@ then
 		cp /etc/config/wireless /etc/config/wireless.bak
 	fi
 
-	# by default, symlink the config for a wpa2-psk ap in the 5.0 GHz band
-	ln -svf "$configs_dir"/etc/config/wireless/ap/wpa/40 /etc/config/wireless
+	# by default, symlink the config for a wpa2-psk ap in the 2.4 GHz band
+	ln -svf "$configs_dir"/etc/config/wireless/ap/wpa/6 /etc/config/wireless
 
 	# /etc/config/dhcp
 	if [ ! -f "/etc/config/dhcp.bak" ]
