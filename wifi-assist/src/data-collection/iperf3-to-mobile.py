@@ -34,10 +34,23 @@ def restart_service(service = 'ntp'):
     cmd = ["service", service, "restart"]
     proc = subprocess.call(cmd)
 
-def capture(iface, output_file, mode = 'ap'):
-    # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
+def get_iface_mode(iface):
+
+    output = 'managed'
+    cmd = ['iw', 'dev', str(iface), 'info']
+
+    try:
+        output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
+    except subprocess.CalledProcessError:
+        return -1, output
+
+    output = output.splitlines()
+    return 0, output[output.index([s for s in output if 'type' in s][0])].split(' ')[-1]
+
+def capture(iface, output_file, mode = 'managed'):
+
     cmd = ''
-    if mode == 'ap':
+    if mode == 'managed':
         cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
     elif mode == 'monitor':
         cmd = ["tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
@@ -133,7 +146,7 @@ if __name__ == "__main__":
     #      help = """number of rounds for each parameter combination. e.g.: '--rounds 5'""")
 
     parser.add_argument(
-        "--iface", 
+        "--monitor-iface", 
          help = """wifi iface on which to capture packets. e.g.: '--iface wlx24050f615114'""")
 
     parser.add_argument(
@@ -206,9 +219,15 @@ if __name__ == "__main__":
     Range = namedtuple('Range', ['start', 'end'])
 
     # start capturing packets (if specified)
-    # if args.iface:
-    #     capture_file = os.path.join(args.output_dir, ("iperf3-to-mobile.capture." + str(args.bitrate) + "." + timestamp + ".pcap"))
-    #     capture(args.iface, capture_file)
+    if args.monitor_iface:
+
+        # if iface is in monitor mode, capture in 'monitor mode', otherwise in 'managed' mode (no IEEE802_11_RADIO flags)
+        rc, capture_mode = get_iface_mode(args.monitor_iface)
+        print(rc)
+        print(capture_mode)
+        if rc == 0:
+            capture_file = os.path.join(args.output_dir, ("%s.capture.%s.pcap" % (capture_mode, str(timestamp))))
+            capture(args.monitor_iface, capture_file)
 
     reverse = False
     if args.reverse:
