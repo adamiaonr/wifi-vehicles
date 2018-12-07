@@ -35,12 +35,12 @@ then
 fi
 
 # set wlan short and long retry options to 10 and 7, respectively...
-wiphy="phy"$(iw dev wlx24050f6dae36 info | awk '/wiphy/ {print $2}')
+wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
 iw phy $wiphy set retry short 10 long 7
 
 # get comm. iface channel & width
-channel=$(iw wlx24050f6dae36 info | awk '/channel/ {print $2}')
-bw=$(iw wlx24050f6dae36 info | awk '/channel/ {print $6}')
+channel=$(iw wlan-txrx info | awk '/channel/ {print $2}')
+bw=$(iw wlan-txrx info | awk '/channel/ {print $6}')
 
 # get the right signal next to HT40 or HT80 ('+' or '-')
 #	- HT40- : 2 x 20 MHz channels, primary channel is higher number, secondary channel is lower number 
@@ -59,10 +59,10 @@ fi
 
 # change channel on the monitoring iface to that of the comm. iface
 echo "$channel:HT$bw"
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlxc46e1f269fc0 --set-monitor-mode "$channel:HT$bw"
+python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 
 # run scripts
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --monitor-iface wlxc46e1f269fc0 --output-dir "$output_dir" &
+python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --monitor-iface wlan-monitor --output-dir "$output_dir" &
 python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
 
