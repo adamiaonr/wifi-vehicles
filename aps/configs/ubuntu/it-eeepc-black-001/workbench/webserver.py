@@ -32,9 +32,9 @@ def update_index(status):
 
 			if src in line:
 				if status_str != '':
-					line = ("""<p>%s : <font color="red">BAD (%s)</font></p>\n""" % (src, status_str))
+					line = ("""<p><font color="red" size="16">%s : BAD (%s)</font></p>\n""" % (src, status_str))
 				else:
-					line = ("""<p>%s : <font color="green">OK</font></p>\n""" % (src))
+					line = ("""<p><font color="green" size="16">%s : OK</font></p>\n""" % (src))
 
 			f.write(line)
 

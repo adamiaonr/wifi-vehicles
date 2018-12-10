@@ -32,7 +32,8 @@ def signal_handler(signal, frame):
     stop_loop = True
 
 def report(ip, port, status):
-    cmd = ['curl', '-d', ('"%s"' % (status)), '-X', 'POST', ('http://%s:%s/status' % (ip, port))]
+    cmd = ['curl', '-d', ('%s' % (status)), '-X', 'POST', ('http://%s:%s/status' % (ip, port))]
+    print(cmd)
     proc = subprocess.Popen(cmd)
 
 if __name__ == "__main__":
@@ -55,12 +56,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if not args.server_ip:
+    if not args.ip:
         sys.stderr.write("""%s: [ERROR] please supply an status server ip\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
 
-    if not args.server_port:
+    if not args.port:
         sys.stderr.write("""%s: [ERROR] please supply an status server port\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
