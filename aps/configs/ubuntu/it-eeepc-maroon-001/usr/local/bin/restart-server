@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ $# -lt 2 ]
+then
+    echo "usage : $0 <remote-login> <server-port>"
+    exit 1
+fi
+
+# re-directing io streams to /dev/null, so that ssh returns
+ssh -i $HOME/.ssh/it "$1" "ps -ef | grep iperf3 | grep $2 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -p $2 &> /dev/null < /dev/null &"
+
+exit

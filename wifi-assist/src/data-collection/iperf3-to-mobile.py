@@ -47,16 +47,19 @@ def get_iface_mode(iface):
     output = output.splitlines()
     return 0, output[output.index([s for s in output if 'type' in s][0])].split(' ')[-1]
 
-def restart_remote_iperf3(remote_login, port):
-    # kill -9 iperf3
-    # FIXME: this still requires:
-    #   - config on black-001 and black-002 for remote ssh access w/ private key
-    #   - config for no password w/ sudo on black-001 and black-002
-    #   - update start-iperf3 w/ --remote-login command
-    cmd = ['ssh', remote_login, ("\"ps -ef | grep iperf3 | grep %s | grep -v grep | awk \'{print \$2}\' | sudo xargs -r kill -9\"" % (port))]
-    proc = subprocess.Popen(cmd)
-    # start iperf3 server
-    cmd = ['ssh', remote_login, ("\"iperf3 -s -p %s &\"" % (port))]
+def restart_iperf3_server(remote_login, port):
+    # remotely execute 2 tasks:
+    # - kill iperf3 server w/ specific port
+    # - start iperf3 server
+    cmd = ['restart-iperf3-server', remote_login, port]
+
+    output = ''
+    try:
+        output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
+    except subprocess.CalledProcessError:
+        return -1, output
+
+    return 0, output
 
 def capture(iface, output_file, mode = 'managed'):
 
@@ -141,7 +144,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--control-login", 
-         help = """used for remote command execution. e.g., --remote-login it@10.10.13.175""")
+         help = """used for remote command execution. e.g., --control-login it@10.10.13.175""")
 
     parser.add_argument(
         "--ip-server", 
@@ -238,8 +241,6 @@ if __name__ == "__main__":
 
         # if iface is in monitor mode, capture in 'monitor mode', otherwise in 'managed' mode (no IEEE802_11_RADIO flags)
         rc, capture_mode = get_iface_mode(args.monitor_iface)
-        print(rc)
-        print(capture_mode)
         if rc == 0:
             capture_file = os.path.join(args.output_dir, ("%s.capture.%s.pcap" % (capture_mode, str(timestamp))))
             capture(args.monitor_iface, capture_file)
@@ -258,8 +259,8 @@ if __name__ == "__main__":
 
         start_timestamp = time.time()
 
-        # restart iperf3 server on the remote side
-        restart_remote_iperf3(args.remote_login, args.port)
+        # restart iperf3 server on remote side
+        restart_iperf3_server(args.control_login, args.port)
         # start client run
         code, output = start_iperf3(
             ip_server = args.ip_server, port = args.port, 
