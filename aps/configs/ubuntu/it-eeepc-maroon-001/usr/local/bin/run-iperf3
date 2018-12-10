@@ -46,7 +46,7 @@ iw phy $wiphy set retry short 7 long 4
 #             e.g. [36, 40] w/ 40 MHz channel width, iw dev <iface> will report channel as 40
 #	- HT40+ : 2 x 20 MHz channels, primary channel is lower number, secondary channel is higher number
 #             e.g. [36, 40] w/ 40 MHz channel width, iw dev <iface> will report channel as 36
-if [ $bw == '40' ]
+if [ "$bw" == "40" ]
 then
     if [ $(($channel % 8)) ]
     then
