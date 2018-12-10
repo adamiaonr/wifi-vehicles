@@ -1,7 +1,11 @@
 #!/bin/bash
 
-pkill -f --signal 2 iperf3-to-mobile
+# pkill -f --signal 2 iperf3-to-mobile
+ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
 pkill -f --signal 2 get-ntp-accuracy
 pkill -f --signal 2 bitrate-adapt-stats
+kill -9 "$(cat /var/run/get-cpu.pid)"
+
+pkill -f iperf3
 
 exit 0
