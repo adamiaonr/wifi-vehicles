@@ -62,7 +62,14 @@ echo "$channel:HT$bw"
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 
 # run scripts
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.11.1 --port 5203 --reverse --monitor-iface wlan-monitor --output-dir "$output_dir" &
+# iperf3-to-mobile.py not used anymore, instead we use:
+#	- call tcpdump directly in script
+#	- a restart-iperf3-client, which starts a iperf3 client in -R mode, and re-spawns server on remote side
+# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.11.1 --port 5203 --reverse --monitor-iface wlan-monitor --output-dir "$output_dir" &
+tcpdump -i wlan-monitor -y IEEE802_11_RADIO -s0 -w "$output_dir"/monitor.$(date +"%s").pcap &
+/usr/local/bin/restart-client "$output_dir" "adamiaonr@10.10.13.208" 10.10.11.1 5203 $2 $bitrate &
+
+# extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract bitrate adaptation algorithm stats
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
