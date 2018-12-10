@@ -2,11 +2,15 @@
 
 if [ $# -lt 5 ]
 then
-    echo "usage : $0 <output-dir> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
+    echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
     exit 1
 fi
 
-output_dir=$1
+trace_nr=$1
+
+output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
+mkdir -p "$output_dir"
+
 login=$2
 ip=$3
 port=$4
@@ -35,7 +39,7 @@ fi
 echo -e "$filename"
 
 # restart iperf3 server
-restart-server "$login" "$port"
+restart-server "$login" "$port" "$trace_nr"
 
 # start iperf3 client for 1st time
 bitrate='X'
@@ -44,7 +48,7 @@ then
 
 	if [ $# -lt 6 ]
 	then
-		echo "usage : $0 <output-dir> <login> <server-ip> <server-port> <protocol> <bitrate>"
+		echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> <bitrate>"
 		exit 1
 	fi
 
@@ -71,7 +75,7 @@ while [ "$stop_loop" = false ]; do
 	then
 
 		# restart iperf3 server
-		restart-server "$login" "$port"
+		restart-server "$login" "$port" "$trace_nr"
 
 		# kill current iperf3 client
 		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
