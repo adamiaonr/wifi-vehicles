@@ -47,6 +47,17 @@ def get_iface_mode(iface):
     output = output.splitlines()
     return 0, output[output.index([s for s in output if 'type' in s][0])].split(' ')[-1]
 
+def restart_remote_iperf3(remote_login, port):
+    # kill -9 iperf3
+    # FIXME: this still requires:
+    #   - config on black-001 and black-002 for remote ssh access w/ private key
+    #   - config for no password w/ sudo on black-001 and black-002
+    #   - update start-iperf3 w/ --remote-login command
+    cmd = ['ssh', remote_login, ("\"ps -ef | grep iperf3 | grep %s | grep -v grep | awk \'{print \$2}\' | sudo xargs -r kill -9\"" % (port))]
+    proc = subprocess.Popen(cmd)
+    # start iperf3 server
+    cmd = ['ssh', remote_login, ("\"iperf3 -s -p %s &\"" % (port))]
+
 def capture(iface, output_file, mode = 'managed'):
 
     cmd = ''
@@ -57,7 +68,7 @@ def capture(iface, output_file, mode = 'managed'):
 
     proc = subprocess.Popen(cmd)
     
-def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 300, reverse = False):
+def start_iperf3(ip_server, port = 5201, proto = 'udp', bitrate = '54', time = 180, reverse = False):
 
     output = "N/A"
 
@@ -127,6 +138,10 @@ if __name__ == "__main__":
     # parser.add_argument(
     #     "--duration", 
     #      help = """duration of the test (in seconds). e.g.: '--duration 120'""")
+
+    parser.add_argument(
+        "--control-login", 
+         help = """used for remote command execution. e.g., --remote-login it@10.10.13.175""")
 
     parser.add_argument(
         "--ip-server", 
@@ -237,12 +252,19 @@ if __name__ == "__main__":
     stop_loop = False
     while (stop_loop == False):
 
-        # wait a random interval (0 to 1 sec) before (re-)starting
-        if args.protocol == 'udp':
-            time.sleep(randint(0,1))
+        # # wait a random interval (0 to 1 sec) before (re-)starting
+        # if args.protocol == 'udp':
+        #     time.sleep(randint(0,1))
 
         start_timestamp = time.time()
-        code, output = start_iperf3(ip_server = args.ip_server, port = args.port, bitrate = args.bitrate, proto = args.protocol, reverse = reverse)
+
+        # restart iperf3 server on the remote side
+        restart_remote_iperf3(args.remote_login, args.port)
+        # start client run
+        code, output = start_iperf3(
+            ip_server = args.ip_server, port = args.port, 
+            proto = args.protocol, bitrate = args.bitrate, 
+            reverse = reverse)
         
         if code < 0:
             continue

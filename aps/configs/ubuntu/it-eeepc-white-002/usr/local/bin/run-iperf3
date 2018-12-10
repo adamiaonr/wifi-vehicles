@@ -15,9 +15,9 @@ pkill -f iperf3-to-mobile
 pkill -f get-ntp-accuracy
 
 # create dirs (if not available already)
-# output_dir=/home/it/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}')
-# output_dir=/home/it/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050fe57b6a info | awk '/channel/ {print $2}')
-output_dir=/home/it/workbench/range-tests/vehicular-traces/trace-$2
+# output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050f9e2cb1 info | awk '/channel/ {print $2}')
+# output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050fe57b6a info | awk '/channel/ {print $2}')
+output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$2
 mkdir -p "$output_dir"
 
 # handle bitrate arg
@@ -59,11 +59,14 @@ fi
 
 # change channel on the monitoring iface to that of the comm. iface
 echo "$channel:HT$bw"
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 
 # run scripts
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --monitor-iface wlan-monitor --output-dir "$output_dir" &
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
-python /home/it/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --restart-ntp --protocol $1 --bitrate $bitrate --ip-server 10.10.12.1 --port 5203 --reverse --monitor-iface wlan-monitor --output-dir "$output_dir" &
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+# extract bitrate adaptation algorithm stats
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
+# extract cpu stats
+$HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $2 "$output_dir" &
 
 exit 0

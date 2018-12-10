@@ -11,13 +11,15 @@ fi
 # kill outstanding scritps
 pkill -f get-ntp-accuracy
 
-# kill and restart iperf3 servers
-/usr/local/bin/restart-iperf-servers &
+# # kill and restart iperf3 servers
+# /usr/local/bin/restart-iperf-servers &
 
 # create dirs (if not available already)
-output_dir=/home/adamiaonr/workbench/range-tests/vehicular-traces/trace-$1
+output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$1
 mkdir -p "$output_dir"
 # run ntp accuracy stats
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+# extract cpu stats
+$HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $1 "$output_dir" &
 
 exit 0

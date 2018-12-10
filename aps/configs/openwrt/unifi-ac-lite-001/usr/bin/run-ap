@@ -34,5 +34,7 @@ iw phy $wiphy set retry short 10 long 7
 
 # log channel utilization
 /root/workbench/get-cbt.sh $1 "$output_dir" &
+# extract cpu stats
+/root/workbench/get-cpu.sh $1 "$output_dir" &
 
 exit 0
