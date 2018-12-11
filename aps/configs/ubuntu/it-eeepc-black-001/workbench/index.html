@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html>
+<head>
+<style>
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+th, td {
+	padding: 5px;
+}
+th {
+	text-align: left;
+}
+</style>
+</head>
 <body>
 <h3>UPDATE</h3>
 <p>last update : 1544468996</p>
 <h3>CLIENTS</h3>
-<p><font color="red" size="16">maroon-001 : BAD (iperf3,ntp,cpu,gps,)</font></p>
-<p><font color="green" size="16">white-001 : OK</font></p>
-<p><font color="green" size="16">white-002 : OK</font></p>
-<p><font color="red" size="16">white-003 : BAD : gps</font></p>
-<h3>APs</h3>
-<p>ap-001 (westinghouse) : <font color="green">OK</font></p>
-<p>ap-002 (tesla) : <font color="green">OK</font></p>
-<p>ap-003 (edison) : <font color="green">OK</font></p>
-<p>ap-004 (ford): <font color="red">BAD : gps</font></p>
+<table style="width:75%">
+<tr><th>node</th><th>iperf</th><th>ntp</th><th>gps</th><th>cpu</th><th>bitrate</th></tr>
+<tr><td>maroon-001</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td></tr>
+<tr><td>white-001</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td></tr>
+<tr><td>white-002</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td></tr>
+<tr><td>white-003</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td><td><font color="green">ok</td></tr>
+</table>
 
 </body>
 </html>

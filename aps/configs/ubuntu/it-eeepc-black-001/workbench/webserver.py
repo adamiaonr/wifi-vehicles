@@ -7,22 +7,12 @@ import json
 PORT = 8081
 
 def update_index(status):
-
-	# status line to print
-	status_str = ''
-	for cat in ['iperf3', 'ntp', 'cpu', 'gps']:
-		if status[cat] != 'ok':
-			status_str += ('%s,' % (cat))
-
+	
 	# open & update the index.html file
 	with open('index.html', 'r') as f:
 		lines = f.readlines()
 
-	print(lines)
-	print(status)
-
 	src = '-'.join(str(status['src']).split('-')[-2:])
-	print(src)
 	with open('index.html', 'w') as f:
 
 		for line in lines:
@@ -31,10 +21,18 @@ def update_index(status):
 				line = ("<p>last update : %s</p>\n" % (str(status['time'])))
 
 			if src in line:
-				if status_str != '':
-					line = ("""<p><font color="red" size="16">%s : BAD (%s)</font></p>\n""" % (src, status_str))
-				else:
-					line = ("""<p><font color="green" size="16">%s : OK</font></p>\n""" % (src))
+
+				tr = ("<tr><td>%s</td>" % (src))
+				for cat in ['iperf3', 'ntp', 'gps', 'cpu', 'bitrate']:
+					if cat not in status:
+						tr += """<td><font color="orange">n/a</td>"""
+					elif status[cat] != 'ok':
+						tr += """<td><font color="red">bad</td>"""
+					else:
+						tr += """<td><font color="green">ok</td>"""
+
+				tr += '</tr>\n'
+				line = tr
 
 			f.write(line)
 

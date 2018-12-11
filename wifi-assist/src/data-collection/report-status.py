@@ -87,31 +87,36 @@ if __name__ == "__main__":
         # check status of multiple parameters
 
         # gps
-        status['gps'] = 'bad'
+        status['gps'] = 'n/a'
         for filename in glob.glob(os.path.join(args.output_dir, ('gps-log.*.csv'))):
-            gps_log = open(filename, 'r')
-            line = gps_log.readlines()[-1]
-            gps_log.close()
 
-            if timestamp - int(float(line.split(',')[0])) < 5:
-                status['gps'] = 'ok'
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+
+                if len(lines) < 2:
+                    continue
+                line = lines[-1]
+                if timestamp - int(float(line.split(',')[0])) < 5:
+                    status['gps'] = 'ok'
+                else:
+                    status['gps'] = 'bad'
 
         # ntpstat
-        status['ntp'] = 'bad'
+        status['ntp'] = 'n/a'
         for filename in glob.glob(os.path.join(args.output_dir, ('ntpstat.*.csv'))):
-            log = open(filename, 'r')
-            line = log.readlines()[-1]
-            log.close()
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+                line = lines[-1]
 
-            if timestamp - int(float(line.split(',')[0])) < 5:
+                if (timestamp - int(float(line.split(',')[0]))) < 5:
 
-                if int(line.split(',')[3]) > 20:
-                    status['ntp'] = 'unsync'
-                else:
-                    status['ntp'] = 'ok'
+                    if int(line.split(',')[3]) > 20:
+                        status['ntp'] = 'unsync'
+                    else:
+                        status['ntp'] = 'ok'
 
         # cpu
-        status['cpu'] = 'bad'
+        status['cpu'] = 'n/a'
         for filename in glob.glob(os.path.join(args.output_dir, ('cpu.*.csv'))):
             log = open(filename, 'r')
             line = log.readlines()[-1]
@@ -119,21 +124,22 @@ if __name__ == "__main__":
 
             if timestamp - int(float(line.split(',')[0])) < 5:
                 status['cpu'] = 'ok'
+            else:
+                status['cpu'] = 'bad'
 
         # iperf3
         status['iperf3'] = 'bad'
-
+        # get iperf3.*.out w/ largest index
         iperf3_logs = glob.glob(os.path.join(args.output_dir, ('iperf3.*.out')))
-        to_read = max([int(l.split('.')[1]) for l in iperf3_logs])
+        m = max([int(l.split('.')[1]) for l in iperf3_logs])
+        filename = os.path.join(args.output_dir, ('iperf3.%d.out' % (m)))
+        with open(filename, 'r') as f:
 
-        filename = os.path.join(args.output_dir, ('iperf3.%d.out' % (to_read)))
-        iperf3_log = open(filename, 'r')
-        line = iperf3_log.readlines()[-1]
-        iperf3_log.close()
-
-        if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
-            status['iperf3'] = 'ok'
-
+            lines = f.readlines()
+            if len(lines) > 0:
+                line = lines[-1]
+                if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
+                    status['iperf3'] = 'ok'
 
         print(json.dumps(status))
         report(args.ip, args.port, json.dumps(status))
