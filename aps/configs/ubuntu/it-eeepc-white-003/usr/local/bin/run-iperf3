@@ -76,6 +76,6 @@ python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-ada
 # extract cpu stats
 $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $2 "$output_dir" &
 # report status to webserver
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --output-dir "$output_dir" --mode = "client" &
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --output-dir "$output_dir" --mode "client" &
 
 exit 0
