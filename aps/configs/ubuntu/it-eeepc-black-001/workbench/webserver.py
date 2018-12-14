@@ -20,6 +20,8 @@ def update_index(status):
 	else:
 		cats = ['iperf3', 'ntp', 'cpu', 'batt', 'gps', 'bitrate']
 
+	print(status)
+
 	src = '-'.join(str(status['src']).split('-')[-2:])
 	with open(HTML_FILE, 'w') as f:
 
@@ -33,6 +35,8 @@ def update_index(status):
 				tr = ("<tr><td>%s</td>" % (src))
 				for cat in cats:
 					if cat not in status:
+						tr += """<td><font color="orange">n/a</td>"""
+					elif status[cat] == 'n/a':
 						tr += """<td><font color="orange">n/a</td>"""
 					elif status[cat] == 'bad':
 						tr += """<td><font color="red">bad</td>"""
@@ -65,5 +69,6 @@ class myHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 Handler = myHandler
 httpd = SocketServer.TCPServer(("", PORT), Handler)
 
-print "serving at port", PORT
+os.chdir(HTML_FILE.rstrip('index.html'))
+print("serving at port %s and dir %s" % (PORT, HTML_FILE.rstrip('index.html')))
 httpd.serve_forever()

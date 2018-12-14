@@ -99,7 +99,7 @@ def cbt_status(status, logdir, timestamp):
     trace = logdir.split('/')[-1]
     print(trace)
     print(logdir.rstrip(trace))
-    for filename in glob.glob(os.path.join(logdir.rstrip(trace), ('/it-unifi-ac-lite-*/%s/cbt.*.csv' % (trace)))):
+    for filename in glob.glob(os.path.join(logdir.rstrip(trace), ('it-unifi-ac-lite-*/%s/cbt.*.csv' % (trace)))):
         print(filename)
         log = open(filename, 'r')
         line = log.readlines()[-1]
@@ -218,7 +218,7 @@ if __name__ == "__main__":
             batt_status(status)
 
         print(json.dumps(status))
-        # report(args.ip, args.port, json.dumps(status))
+        report(args.ip, args.port, json.dumps(status))
 
         time.sleep(5)
 
