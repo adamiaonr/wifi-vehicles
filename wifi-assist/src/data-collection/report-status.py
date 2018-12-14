@@ -74,8 +74,12 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
             return
 
         output = output.splitlines()
-        iperf3_lines = [s for s in output if (('iperf3' in s) and ('grep' not in s))]
-        print(iperf3_lines)
+        lines = [s.split('-p')[-1].replace(' ', '') for s in output if (('iperf3' in s) and ('grep' not in s))]
+        print(lines)
+        if all(e in lines for e in ['5203', '5204']):
+            status['iperf3'] = 'ok'
+        else:
+            status['iperf3'] = 'bad'
 
     else:
         # get iperf3.*.out w/ largest index
@@ -93,7 +97,10 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
 def cbt_status(status, logdir, timestamp):
     status['cbt'] = 'n/a'
     trace = logdir.split('/')[-1]
+    print(trace)
+    print(logdir.rstrip(trace))
     for filename in glob.glob(os.path.join(logdir.rstrip(trace), ('/it-unifi-ac-lite-*/%s/cbt.*.csv' % (trace)))):
+        print(filename)
         log = open(filename, 'r')
         line = log.readlines()[-1]
         log.close()
@@ -177,9 +184,10 @@ if __name__ == "__main__":
         timestamp = int(time.time())
         status = defaultdict(str)
 
-        # 
+        # src, time, mode
         status['src'] = platform.uname()[1]
         status['time'] = str(timestamp)
+        status['mode'] = args.mode
 
         if args.mode == 'backbone':
 

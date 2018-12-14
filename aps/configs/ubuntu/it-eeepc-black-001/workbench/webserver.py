@@ -1,19 +1,27 @@
 import SimpleHTTPServer
 import SocketServer
 import logging
-
+import os
 import json
 
 PORT = 8081
 
+HTML_FILE=('%s/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/index.html' % (os.environ['HOME']))
+
 def update_index(status):
 	
 	# open & update the index.html file
-	with open('index.html', 'r') as f:
+	with open(HTML_FILE, 'r') as f:
 		lines = f.readlines()
 
+	cats = []
+	if status['mode'] == 'backbone':
+		cats = ['iperf3', 'ntp', 'cpu', 'batt', 'cbt']
+	else:
+		cats = ['iperf3', 'ntp', 'cpu', 'batt', 'gps', 'bitrate']
+
 	src = '-'.join(str(status['src']).split('-')[-2:])
-	with open('index.html', 'w') as f:
+	with open(HTML_FILE, 'w') as f:
 
 		for line in lines:
 
@@ -23,13 +31,15 @@ def update_index(status):
 			if src in line:
 
 				tr = ("<tr><td>%s</td>" % (src))
-				for cat in ['iperf3', 'ntp', 'gps', 'cpu', 'bitrate', 'cbt', 'batt']:
+				for cat in cats:
 					if cat not in status:
 						tr += """<td><font color="orange">n/a</td>"""
-					elif status[cat] != 'ok':
+					elif status[cat] == 'bad':
 						tr += """<td><font color="red">bad</td>"""
-					else:
+					elif status[cat] == 'ok':
 						tr += """<td><font color="green">ok</td>"""
+					else:
+						tr += ("""<td><font color="black">%s</td>""" % (status[cat]))
 
 				tr += '</tr>\n'
 				line = tr
