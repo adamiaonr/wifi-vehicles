@@ -23,7 +23,7 @@ def update_index(status):
 			if src in line:
 
 				tr = ("<tr><td>%s</td>" % (src))
-				for cat in ['iperf3', 'ntp', 'gps', 'cpu', 'bitrate']:
+				for cat in ['iperf3', 'ntp', 'gps', 'cpu', 'bitrate', 'cbt', 'batt']:
 					if cat not in status:
 						tr += """<td><font color="orange">n/a</td>"""
 					elif status[cat] != 'ok':
