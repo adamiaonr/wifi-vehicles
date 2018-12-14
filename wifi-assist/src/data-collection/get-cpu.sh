@@ -32,7 +32,7 @@ while [ "$stop_loop" = false ]; do
 	# send csv line to rsyslog (headed by a timestamp)
 	echo "$cpu" >> $output_file
 
-	sleep 2
+	sleep 5
 
 done
 

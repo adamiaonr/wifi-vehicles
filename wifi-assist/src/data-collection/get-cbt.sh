@@ -58,7 +58,7 @@ while [ "$stop_loop" = false ]; do
 	echo -e "$(date +"%s"),$freq,$noiz,$cat,$cbt,$crt,$ctt" >> $output_file
 	# echo "$(date +"%s"),$freq,$noiz,$cat,$cbt,$crt,$ctt" |  logger -t "$logger_prefix|cbt"
 
-	sleep 1
+	sleep 2
 
 done
 
