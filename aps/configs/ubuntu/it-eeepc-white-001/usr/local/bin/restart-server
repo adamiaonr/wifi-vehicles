@@ -10,7 +10,7 @@ fi
 # iperf3 server on backbone
 ssh -i $HOME/.ssh/it "$1" "ps -ef | grep iperf3 | grep $2 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -p $2 &> /dev/null < /dev/null &"
 # FIXME: do this only in ONE client
-ssh -i $HOME/.ssh/it "$1" "run-servers $3 &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$1" "kill-server; run-servers $3 &> /dev/null < /dev/null &"
 # ap scripts
 ip=$(ifconfig wlx24050fe57b6a | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap; (run-ap $3 > /dev/null 2>&1)&"
