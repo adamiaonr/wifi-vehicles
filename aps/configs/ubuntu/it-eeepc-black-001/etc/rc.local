@@ -18,6 +18,9 @@ sudo iptables -t nat -A POSTROUTING -s 10.10.13.0/24 ! -d 10.10.13.0/24 -j MASQU
 # FIXME : shouldn't we check if it exists first?
 sudo route add -net 10.10.11.0/24 gw 10.10.13.208 dev wlxc46e1f263536
 
+# run the webserver for node status
+python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/webserver.py &
+
 # this is here to make the usb gps dongle work...
 #sudo systemctl stop gpsd; sudo systemctl disable gpsd;
 #sudo systemctl stop gpsd.socket; sudo systemctl disable gpsd.socket;
