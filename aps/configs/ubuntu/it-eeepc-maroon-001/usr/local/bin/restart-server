@@ -12,7 +12,7 @@ ssh -i $HOME/.ssh/it "$1" "ps -ef | grep iperf3 | grep $2 | grep -v grep | awk '
 # FIXME: do this only in ONE client
 ssh -i $HOME/.ssh/it "$1" "kill-server; run-servers $3 &> /dev/null < /dev/null &"
 # ap scripts
-ip=$(ifconfig wlx24050f615114 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap; (run-ap $3 > /dev/null 2>&1)&"
 
 exit

@@ -18,7 +18,7 @@
 # iperf3 -s -V -p 5205 &
 
 # force default gw to be the unifi ac lite ap (and not the control network 10.10.13.0/24)
-sudo route delete default gw 10.10.13.1 wlxc46e1f26357b
-sudo route add default gw 10.10.15.1 wlx24050f615114
+sudo route delete default gw 10.10.13.1 wlan-monitor
+sudo route add default gw 10.10.15.1 wlan-txrx
 
 exit 0

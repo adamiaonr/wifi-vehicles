@@ -2,16 +2,16 @@
 auto lo
 iface lo inet loopback
 
-auto wlx24050fe57b6a
-iface wlx24050fe57b6a inet dhcp
+auto wlan-txrx
+iface wlan-txrx inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
-auto wlxc46e1f25d93c
-iface wlxc46e1f25d93c inet dhcp
+auto wlan-cntrl
+iface wlan-cntrl inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
-auto wlx24050f9e2cb1
-iface wlx24050f9e2cb1 inet manual
+auto wlan-monitor
+iface wlan-monitor inet manual
 wireless-mode monitor

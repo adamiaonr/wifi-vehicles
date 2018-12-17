@@ -27,6 +27,6 @@ then
     fi
 fi
 echo "$2:HT$bw"
-python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050faaab5d --set-monitor-mode "$2:HT$bw"
+python /home/adamiaonr/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-txrx --set-monitor-mode "$2:HT$bw"
 
 exit 0

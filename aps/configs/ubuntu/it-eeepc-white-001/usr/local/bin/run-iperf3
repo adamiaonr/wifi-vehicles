@@ -16,8 +16,8 @@ pkill -f iperf3-to-mobile
 pkill -f get-ntp-accuracy
 
 # get comm. iface channel & width
-channel=$(iw dev wlx24050fe57b6a info | awk '/channel/ {print $2}')
-bw=$(iw dev wlx24050fe57b6a info | awk '/channel/ {print $6}')
+channel=$(iw dev wlan-txrx info | awk '/channel/ {print $2}')
+bw=$(iw dev wlan-txrx info | awk '/channel/ {print $6}')
 
 # create dirs (if not available already)
 output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$3
@@ -38,7 +38,7 @@ then
 fi
 
 # set wlan short and long retry options...
-wiphy="phy"$(iw dev wlx24050fe57b6a info | awk '/wiphy/ {print $2}')
+wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
 iw phy $wiphy set retry short 7 long 4
 
 # get the right signal next to HT40 or HT80 ('+' or '-')
@@ -57,15 +57,15 @@ then
 fi
 
 # change channel on the monitoring iface to that of the comm. iface
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlx24050f9e2cb1 --set-monitor-mode "$channel:HT$bw"
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 # run experimental scripts
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --output-dir "$output_dir" &
 
 # iperf3-to-mobile.py not used anymore, instead we use:
 #	- call tcpdump directly in script
 #	- a restart-iperf3-client, which starts a iperf3 client in -R mode, and re-spawns server on remote side
-# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --protocol $2 --bitrate $bitrate --ip-server 10.10.11.1 --port 5204 --reverse --monitor-iface wlx24050f9e2cb1 --output-dir "$output_dir" &
-tcpdump -i wlx24050f9e2cb1 -y IEEE802_11_RADIO -s0 -w "$output_dir"/monitor.$(date +"%s").pcap &
+# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --protocol $2 --bitrate $bitrate --ip-server 10.10.11.1 --port 5204 --reverse --monitor-iface wlan-monitor --output-dir "$output_dir" &
+tcpdump -i wlan-monitor -y IEEE802_11_RADIO -s0 -w "$output_dir"/monitor.$(date +"%s").pcap &
 /usr/local/bin/restart-client "$3" "adamiaonr@10.10.13.208" 10.10.11.1 5204 $2 $bitrate &
 
 # extract accuracy of time synch via ntp w/ local server
