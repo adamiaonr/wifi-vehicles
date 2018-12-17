@@ -20,7 +20,7 @@ sudo route add -net 10.10.11.0/24 gw 10.10.13.208 dev wlxc46e1f263536
 
 # run the webserver for node status
 pkill -f --signal 2 webserver.py
-python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/webserver.py &
+python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/webserver.py &> /dev/null < /dev/null &
 
 # this is here to make the usb gps dongle work...
 #sudo systemctl stop gpsd; sudo systemctl disable gpsd;

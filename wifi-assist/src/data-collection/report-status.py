@@ -27,37 +27,48 @@ from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
 
+def get_latest_file(logdir, filename):
+
+    # extract prefix and extension from filename
+    prefix = filename.split('.')[0]
+    ext = filename.split('.')[-1]
+
+    # get <prefix>.*.<ext> file w/ largest index
+    logs = glob.glob(os.path.join(logdir, ('%s.*.%s' % (prefix, ext))))
+    m = max([int(l.split('.')[1]) for l in logs])
+
+    return os.path.join(logdir, ('%s.%d.%s' % (prefix, m, ext)))
+
 def gps_status(status, logdir, timestamp):
     status['gps'] = 'n/a'
-    for filename in glob.glob(os.path.join(logdir, ('gps-log.*.csv'))):
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            if len(lines) < 2:
-                continue
-            line = lines[-1]
-            if timestamp - int(float(line.split(',')[0])) < 5:
-                status['gps'] = 'ok'
-            else:
-                status['gps'] = 'bad'
+    filename = get_latest_file(logdir, 'gps-log.*.csv')
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        if len(lines) < 2:
+            continue
+        line = lines[-1]
+        if timestamp - int(float(line.split(',')[0])) < 5:
+            status['gps'] = 'ok'
+        else:
+            status['gps'] = 'bad'
 
 def ntp_status(status, logdir, timestamp):
     status['ntp'] = 'n/a'
-    for filename in glob.glob(os.path.join(logdir, ('ntpstat.*.csv'))):
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            line = lines[-1]
-            if (timestamp - int(float(line.split(',')[0]))) < 5:
-                if int(line.split(',')[3]) > 20:
-                    status['ntp'] = 'unsync'
-                else:
-                    status['ntp'] = 'ok'
+    filename = get_latest_file(logdir, 'ntpstat.*.csv')
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        line = lines[-1]
+        if (timestamp - int(float(line.split(',')[0]))) < 5:
+            if int(line.split(',')[3]) > 20:
+                status['ntp'] = 'unsync'
+            else:
+                status['ntp'] = 'ok'
 
 def cpu_status(status, logdir, timestamp):
     status['cpu'] = 'n/a'
-    for filename in glob.glob(os.path.join(logdir, ('cpu.*.csv'))):
-        log = open(filename, 'r')
-        line = log.readlines()[-1]
-        log.close()
+    filename = get_latest_file(logdir, 'cpu.*.csv')
+    with open(filename, 'r') as f:
+        line = f.readlines()[-1]
         if timestamp - int(float(line.split(',')[0])) < 5:
             status['cpu'] = 'ok'
         else:
@@ -83,10 +94,10 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
 
     else:
         # get iperf3.*.out w/ largest index
-        iperf3_logs = glob.glob(os.path.join(logdir, ('iperf3.*.out')))
-        m = max([int(l.split('.')[1]) for l in iperf3_logs])
-
-        filename = os.path.join(logdir, ('iperf3.%d.out' % (m)))
+        # iperf3_logs = glob.glob(os.path.join(logdir, ('iperf3.*.out')))
+        # m = max([int(l.split('.')[1]) for l in iperf3_logs])
+        # filename = os.path.join(logdir, ('iperf3.%d.out' % (m)))
+        filename = get_latest_file(logdir, 'iperf3.*.out')
         with open(filename, 'r') as f:
             lines = f.readlines()
             if len(lines) > 0:
@@ -97,17 +108,15 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
 def cbt_status(status, logdir, timestamp):
     status['cbt'] = 'n/a'
     trace = logdir.split('/')[-1]
-    print(trace)
-    print(logdir.rstrip(trace))
-    for filename in glob.glob(os.path.join(logdir.rstrip(trace), ('it-unifi-ac-lite-*/%s/cbt.*.csv' % (trace)))):
+    for _logdir in glob.glob(os.path.join(logdir.rstrip(trace), ('it-unifi-ac-lite-*/%s' % (trace)))):
+        filename = get_latest_file(_logdir, 'cbt.*.csv')
         print(filename)
-        log = open(filename, 'r')
-        line = log.readlines()[-1]
-        log.close()
-        if timestamp - int(float(line.split(',')[0])) < 5:
-            status['cbt'] = 'ok'
-        else:
-            status['cbt'] = 'bad'
+        with open(filename, 'r') as f:
+            line = f.readlines()[-1]
+            if timestamp - int(float(line.split(',')[0])) < 5:
+                status['cbt'] = 'ok'
+            else:
+                status['cbt'] = 'bad'
 
 def batt_status(status):
     status['batt'] = 'n/a'
