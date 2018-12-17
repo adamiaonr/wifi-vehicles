@@ -7,7 +7,7 @@ pkill -f --signal 2 bitrate-adapt-stats
 pkill -f --signal 2 mobile-ap
 pkill -f --signal 2 report-status
 kill -9 "$(cat /var/run/get-cpu.pid)"
-kill-server "adamiaonr@10.10.13.1"
+/usr/local/bin/kill-server "adamiaonr@10.10.13.1"
 pkill -f iperf3
 
 exit 0

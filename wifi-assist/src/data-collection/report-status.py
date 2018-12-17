@@ -35,44 +35,59 @@ def get_latest_file(logdir, filename):
 
     # get <prefix>.*.<ext> file w/ largest index
     logs = glob.glob(os.path.join(logdir, ('%s.*.%s' % (prefix, ext))))
-    m = max([int(l.split('.')[1]) for l in logs])
+    if not logs:
+        return
 
+    m = max([int(l.split('.')[1]) for l in logs])
     return os.path.join(logdir, ('%s.%d.%s' % (prefix, m, ext)))
 
 def gps_status(status, logdir, timestamp):
     status['gps'] = 'n/a'
     filename = get_latest_file(logdir, 'gps-log.*.csv')
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        if len(lines) < 2:
-            return
-        line = lines[-1]
-        if timestamp - int(float(line.split(',')[0])) < 5:
-            status['gps'] = 'ok'
-        else:
-            status['gps'] = 'bad'
+
+    try:
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+            if len(lines) < 2:
+                return
+            line = lines[-1]
+            if timestamp - int(float(line.split(',')[0])) < 5:
+                status['gps'] = 'ok'
+            else:
+                status['gps'] = 'bad'
+    except Exception:
+        sys.stderr.write("""%s::gps_status() : [ERROR] exception found\n""" % sys.argv[0])
 
 def ntp_status(status, logdir, timestamp):
     status['ntp'] = 'n/a'
     filename = get_latest_file(logdir, 'ntpstat.*.csv')
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        line = lines[-1]
-        if (timestamp - int(float(line.split(',')[0]))) < 5:
-            if int(line.split(',')[3]) > 20:
-                status['ntp'] = 'unsync'
-            else:
-                status['ntp'] = 'ok'
+
+    try:
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+            line = lines[-1]
+            if (timestamp - int(float(line.split(',')[0]))) < 5:
+                if int(line.split(',')[3]) > 20:
+                    status['ntp'] = 'unsync'
+                else:
+                    status['ntp'] = 'ok'
+    except Exception:
+        sys.stderr.write("""%s::ntp_status() : [ERROR] exception found\n""" % sys.argv[0])
 
 def cpu_status(status, logdir, timestamp):
     status['cpu'] = 'n/a'
     filename = get_latest_file(logdir, 'cpu.*.csv')
-    with open(filename, 'r') as f:
-        line = f.readlines()[-1]
-        if timestamp - int(float(line.split(',')[0])) < 5:
-            status['cpu'] = 'ok'
-        else:
-            status['cpu'] = 'bad'
+
+    try:
+        with open(filename, 'r') as f:
+            line = f.readlines()[-1]
+            if timestamp - int(float(line.split(',')[0])) < 5:
+                status['cpu'] = 'ok'
+            else:
+                status['cpu'] = 'bad'
+
+    except Exception:
+        sys.stderr.write("""%s::cpu_status() : [ERROR] exception found\n""" % sys.argv[0])
 
 def iperf3_status(status, logdir, timestamp, mode = 'client'):
     status['iperf3'] = 'bad'
@@ -98,12 +113,17 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
         # m = max([int(l.split('.')[1]) for l in iperf3_logs])
         # filename = os.path.join(logdir, ('iperf3.%d.out' % (m)))
         filename = get_latest_file(logdir, 'iperf3.*.out')
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            if len(lines) > 0:
-                line = lines[-1]
-                if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
-                    status['iperf3'] = 'ok'
+
+        try:
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+                if len(lines) > 0:
+                    line = lines[-1]
+                    if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
+                        status['iperf3'] = 'ok'
+
+        except Exception:
+            sys.stderr.write("""%s::iperf3_status() : [ERROR] exception found\n""" % sys.argv[0])
 
 def cbt_status(status, logdir, timestamp):
     status['cbt'] = 'n/a'
@@ -111,12 +131,17 @@ def cbt_status(status, logdir, timestamp):
     for _logdir in glob.glob(os.path.join(logdir.rstrip(trace), ('it-unifi-ac-lite-*/%s' % (trace)))):
         filename = get_latest_file(_logdir, 'cbt.*.csv')
         print(filename)
-        with open(filename, 'r') as f:
-            line = f.readlines()[-1]
-            if timestamp - int(float(line.split(',')[0])) < 5:
-                status['cbt'] = 'ok'
-            else:
-                status['cbt'] = 'bad'
+
+        try:
+            with open(filename, 'r') as f:
+                line = f.readlines()[-1]
+                if timestamp - int(float(line.split(',')[0])) < 5:
+                    status['cbt'] = 'ok'
+                else:
+                    status['cbt'] = 'bad'
+
+        except Exception:
+            sys.stderr.write("""%s::cbt_status() : [ERROR] exception found\n""" % sys.argv[0])
 
 def batt_status(status):
     status['batt'] = 'n/a'
