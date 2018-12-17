@@ -155,6 +155,20 @@ def batt_status(status):
     output = output.splitlines()
     status['batt'] = output[output.index([s for s in output if 'percentage' in s][0])].split(' ')[-1]
 
+def monitor_status(status, logdir, timestamp):
+    status['monitor'] = 'bad'
+    filename = get_latest_file(logdir, 'monitor.*.pcap')
+    try:
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+            if len(lines) > 0:
+                line = lines[-1]
+                if (timestamp - int(float(os.path.getmtime(filename))) < 5):
+                    status['monitor'] = 'ok'
+
+    except Exception:
+        sys.stderr.write("""%s::monitor_status() : [ERROR] exception found\n""" % sys.argv[0])
+
 def signal_handler(signal, frame):
     global stop_loop
     stop_loop = True
@@ -248,6 +262,7 @@ if __name__ == "__main__":
             gps_status(status, args.output_dir, timestamp)
             cpu_status(status, args.output_dir, timestamp)
             ntp_status(status, args.output_dir, timestamp)
+            monitor_status(status, args.output_dir, timestamp)
             iperf3_status(status, args.output_dir, timestamp, args.mode)
             batt_status(status)
 

@@ -18,7 +18,7 @@ def update_index(status):
 	if status['mode'] == 'backbone':
 		cats = ['iperf3', 'ntp', 'cpu', 'batt', 'cbt']
 	else:
-		cats = ['iperf3', 'ntp', 'cpu', 'batt', 'gps', 'bitrate']
+		cats = ['iperf3', 'ntp', 'cpu', 'batt', 'gps', 'bitrate', 'monitor']
 
 	print(status)
 
