@@ -45,7 +45,7 @@ def gps_status(status, logdir, timestamp):
     with open(filename, 'r') as f:
         lines = f.readlines()
         if len(lines) < 2:
-            continue
+            return
         line = lines[-1]
         if timestamp - int(float(line.split(',')[0])) < 5:
             status['gps'] = 'ok'
