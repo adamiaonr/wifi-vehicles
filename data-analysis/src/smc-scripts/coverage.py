@@ -127,8 +127,9 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
     
+    
     # extract_ap_stats(args.input_dir, args.output_dir)
     # extract_ap_locations(args.output_dir)
-    plot_coverage(args.output_dir)
+    # plot_coverage(args.output_dir)
 
     sys.exit(0)

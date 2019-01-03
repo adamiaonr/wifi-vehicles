@@ -323,9 +323,7 @@ def calc_best(input_dir, trace_nr,
             # fix lat and lon gaps
             data = data.sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
             analysis.trace.fix_gaps(data, subset = ['lat', 'lon'])
-            # finally, calc distance to mac addr.
-            pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
-            data[client['mac']] = [ mapping.utils.gps_to_dist(client['lat'], client['lon'], p[0], p[1]) for p in pos ]
+            data[client['mac']] = 0.0
 
         else:
             data[client['mac']] = data[metric]
@@ -340,6 +338,11 @@ def calc_best(input_dir, trace_nr,
 
     # calculate the mac w/ max. value at each row
     if metric == 'dist':
+
+        pos = [ [ row['lat'], row['lon'] ] for index, row in best[['lat', 'lon']].iterrows() ]
+        for i, client in clients.iterrows():
+            best[client['mac']] = [ mapping.utils.gps_to_dist(client['lat'], client['lon'], p[0], p[1]) for p in pos ]
+
         best['best'] = best[macs].idxmin(axis = 1)
 
         # FIXME: the collection of this dataset should not be done here...

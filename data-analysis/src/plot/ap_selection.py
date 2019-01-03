@@ -162,20 +162,20 @@ def rssi(axs, input_dir, trace_nr,
 
     # (2) bar plots, for gt metric ratios between gt and selected values
     _data = base_data[base_data['ratio'] <= 0.0]
-    if not _data.empty:
+    if (not _data.empty) and (configs['method'] != 'periodic'):
         axs[g].bar(
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s loss' % (gt_metric)),
-            width = .000015, linewidth = 0.0, alpha = 1.0, color = 'red')
+            width = .000005, linewidth = 0.0, alpha = 0.75, color = 'red')
 
     _data = base_data[base_data['ratio'] > 0.0]
-    if not _data.empty:
+    if (not _data.empty) and (configs['method'] != 'periodic'):
         axs[g].bar(
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s gain' % (gt_metric)),
-            width = .000015, linewidth = 0.0, alpha = 1.0, color = 'green')
+            width = .000005, linewidth = 0.0, alpha = 1.00, color = 'green')
 
     # (2.1) plot 'best-sel' throughput values on secondary axis
     ax2 = axs[g].twinx()
@@ -229,10 +229,10 @@ def rssi(axs, input_dir, trace_nr,
             # plot.utils.update_y_limits(y_limits, (_data['best-val'] * configs['coef']))
             # plot.utils.update_y_limits(y_limits, (_data[('%s-orig' % (client['mac']))]))
 
-        axs[0].legend(
-            fontsize = 10, 
-            ncol = 4, loc = 'lower right',
-            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+        # axs[0].legend(
+        #     fontsize = 10, 
+        #     ncol = 4, loc = 'lower right',
+        #     handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
         axs[0].set_ylabel(configs['y-label'])
 
@@ -243,6 +243,7 @@ def rssi(axs, input_dir, trace_nr,
 
     axs[g].set_ylabel('10.log10(gain)')
     ax2.set_ylabel(configs['y-sec-label'])
+    ax2.set_ylim([0.0, 45.0])
     axs[g].set_ylim([-yy_max, yy_max])
     # set ax2 limits so that the plot fits in-between [0, yy_max]
 
@@ -358,7 +359,6 @@ def cell(axs, input_dir, trace_nr,
             for ax in axs:
                 ax.axvspan(dates[0], dates[-1], linewidth = 0.0, facecolor = client['color'], alpha = 0.20)
 
-
     # (2) bar plots, for gt metric ratios between gt and selected values
     _data = base_data[base_data['ratio'] <= 0.0]
     if not _data.empty:
@@ -366,7 +366,7 @@ def cell(axs, input_dir, trace_nr,
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s loss' % (gt_metric)),
-            width = .000015, linewidth = 0.0, alpha = 1.0, color = 'red')
+            width = .000005, linewidth = 0.0, alpha = 0.75, color = 'red')
 
     _data = base_data[base_data['ratio'] > 0.0]
     if not _data.empty:
@@ -374,7 +374,7 @@ def cell(axs, input_dir, trace_nr,
             [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ],
             _data['ratio'],
             label = ('%s gain' % (gt_metric)),
-            width = .000015, linewidth = 0.0, alpha = 1.0, color = 'green')
+            width = .000005, linewidth = 0.0, alpha = 1.00, color = 'green')
 
     # (2.1) plot 'best-sel' throughput values on secondary axis
     ax2 = axs[g].twinx()
@@ -425,10 +425,10 @@ def cell(axs, input_dir, trace_nr,
 
             # plot.utils.update_y_limits(y_limits, (_data['best-val'] * configs['coef']))
 
-        axs[0].legend(
-            fontsize = 10, 
-            ncol = 4, loc = 'upper right',
-            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+        # axs[0].legend(
+        #     fontsize = 10, 
+        #     ncol = 4, loc = 'upper right',
+        #     handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
         axs[0].set_ylabel(configs['y-label'])
 
@@ -439,6 +439,7 @@ def cell(axs, input_dir, trace_nr,
 
     axs[g].set_ylabel('10.log10(gain)')
     ax2.set_ylabel(configs['y-sec-label'])
+    ax2.set_ylim([0.0, 45.0])
     axs[g].set_ylim([-yy_max, yy_max])
 
     # x-label

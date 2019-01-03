@@ -159,6 +159,9 @@ def distances(ax, input_dir, trace_nr, time_limits = None):
 
     # get dist. data
     dist_data = analysis.trace.get_distances(input_dir, trace_nr)
+
+    print(dist_data)
+
     # aux variables
     if not time_limits:
         time_limits = [None, None]
@@ -245,9 +248,14 @@ def best(ax, input_dir, trace_nr,
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(True)
-    ax.set_title('pos. w/ best %s per 0.5 sec segment (trace %s)' % (metric, trace_nr))
+
+    if metric == 'dist':
+        ax.set_title("""closest 'AP' per 0.5 sec segment (trace %s)""" % (trace_nr))
+    else:
+        ax.set_title("""'AP' w/ best %s per 0.5 sec segment (trace %s)""" % (metric, trace_nr))
 
     data = database.select(best_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+
     # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
     data = data.drop_duplicates(subset = ['interval-tmstmp'])
 
@@ -301,10 +309,10 @@ def best(ax, input_dir, trace_nr,
     #     color = 'black', 
     #     marker = None)
 
-    ax.legend(
-        fontsize = 10, 
-        ncol = 4, loc = 'upper right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+    # ax.legend(
+    #     fontsize = 10, 
+    #     ncol = 4, loc = 'upper right',
+    #     handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
     ax.set_ylabel(configs[metric]['y-label'])
 
