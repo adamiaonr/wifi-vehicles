@@ -44,224 +44,157 @@ import mapping.utils
 
 import geopandas as gp
 
-def get_road_data(input_dir, data, columns):
+def extract_signal_quality(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
-    # create a geopandas dataframe out of data, which has 'lat' and 'lon' columns
-    geodf = gp.GeoDataFrame(data)
-    # add a 'geometry' column, built out of Point objects, in turn created from [lon, lat] columns
-    geodf['geometry'] = [ shapely.geometry.Point(tuple(x)) for x in geodf[['lon' ,'lat']].values ]
+    # list of queries to make on mysql database
+    queries = {
 
-    if geodf.empty:
-        return
-
-    # load road cell coordinates
-    start_time = timeit.default_timer()
-    road_cells = gp.GeoDataFrame.from_file(os.path.join(input_dir, "roadcells-smc"))
-    print("%s::extract_road_data() : [INFO] read road-cells file in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
-    # intersection between road cells and data 
-    start_time = timeit.default_timer()
-    intersection = gp.sjoin(road_cells, geodf, how = "inner", op = 'intersects')[['index', 'geometry', 'cell_x', 'cell_y'] + columns]
-    print("%s::extract_road_data() : [INFO] intersection in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
-
-    return intersection
-
-def extract_signal_quality(input_dir, cell_size = 20, threshold = -80):
-
-    output_dir = os.path.join(input_dir, ("processed"))
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-
-    # save processed data on .hdf5 database
-    database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    # connect to SMC mysql database
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-
-    table = ('/signal-quality/total/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        # time mysql queries
-        start_time = timeit.default_timer()
-        # get rss stats per <cell, session> pair from mysql database
-        data = pd.read_sql(
-            """SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(rss) AS rss_mean, stddev(rss) AS rss_stddev
+        'rss' : {
+            'name' : ('/signal-quality/rss/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(rss) AS rss_mean, stddev(rss) AS rss_stddev
             FROM(
-                SELECT cell_x, cell_y, session_id, avg(lat) AS 'lat', avg(lon) AS 'lon', avg(rss) AS 'rss'
+                SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, session_id, avg(rss) AS rss
                 FROM original
+                WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id
                 ) AS T
-            GROUP BY cell_x, cell_y""",             
-            con = conn)
+            GROUP BY cell_x, cell_y""" % (in_road)),
+            'columns' : []},
+    }
 
-        print("%s::extract_signal_quality() : [INFO] data retrieved (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start_time))
-        # save data on .hdf5 database
-        parsing.utils.to_hdf5(data, ('/signal-quality/total/%s/%s' % (cell_size, int(abs(threshold)))), database)
+    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-    else:
-        data = database.select(table)
+def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
-    # only road cells now...
-    table = ('/signal-quality/road/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        intersection = get_road_data(input_dir, data, columns = ['rss_mean', 'rss_stddev'])
-        # save numeric data on database
-        parsing.utils.to_hdf5(intersection[['cell_x', 'cell_y'] + ['rss_mean', 'rss_stddev']], table, database)
-        # save intersection shapefile (for map printing)
-        map_dir = os.path.join(output_dir, "signal-quality")
-        if not os.path.isdir(map_dir):
-            os.makedirs(map_dir)
+    # list of queries to make on mysql database
+    queries = {
 
-        intersection.to_file(os.path.join(map_dir, ("%s-%s" % (cell_size, int(abs(threshold))))), driver = 'ESRI Shapefile')
+        'bssid_cnt' : {
+            'name' : ('/operators/bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT operator, operator_public, count(distinct bssid) as bssid_cnt
+            FROM original
+            WHERE in_road = %d
+            GROUP BY operator, operator_public""" % (in_road)),
+            'columns' : ['operator', 'operator_public', 'bssid_cnt']},
 
-def extract_esses(input_dir, cell_size = 20, threshold = -80):
+        'cell_coverage' : {
+            'name' : ('/operators/cell_coverage/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT operator, operator_public, count(distinct cell_x, cell_y) as cell_cnt
+            FROM original
+            WHERE in_road = %d
+            GROUP BY operator, operator_public""" % (in_road)),
+            'columns' : ['operator', 'operator_public', 'cell_cnt']},
 
-    output_dir = os.path.join(input_dir, ("processed"))
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
+        'cell_coverage_all' : {
+            'name' : ('/operators/cell_coverage_all/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT operator_public, count(distinct cell_x, cell_y) as cell_cnt
+            FROM original
+            WHERE operator_known = 1 AND in_road = %d 
+            GROUP BY operator_public""" % (in_road)),
+            'columns' : ['operator', 'operator_public', 'cell_cnt']},
 
-    database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-
-    # 2 types data, saved in dict:
-    #   - 'counts' : avg. nr. of bssids, essids and operators observed per session, at each cell
-    #   - 'aps' : nr. of distinct bssids per essid, for all cells
-
-    tables = {
-        'counts' : {
-            'name' : ('/esses/total/counts/%s/%s' % (cell_size, int(abs(threshold)))), 
-            'query' : """SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(essid_cnt) AS essid_cnt, avg(bssid_cnt) AS bssid_cnt, avg(operator_cnt) AS operator_cnt
+        'session_cnt' : {
+            'name' : ('/operators/session_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT operator_cnt, count(distinct session_id) as session_cnt
             FROM(
-                SELECT cell_x, cell_y, session_id, avg(lat) AS lat, avg(lon) AS lon, count(distinct essid) AS essid_cnt, count(distinct bssid) AS bssid_cnt, count(distinct operator) AS operator_cnt
+                SELECT cell_x, cell_y, session_id, count(distinct operator) AS operator_cnt
                 FROM original
+                WHERE operator_known = 1 AND in_road = %d
                 GROUP BY cell_x, cell_y, session_id
                 ) AS T
-            GROUP BY cell_x, cell_y""",
-            'columns' : ['essid_cnt', 'bssid_cnt', 'operator_cnt']},
+            GROUP BY operator_cnt""" % (in_road)),
+            'columns' : ['operator_cnt', 'session_cnt']},
 
-        'aps' : {
-            'name' : ('/esses/total/aps/%s/%s' % (cell_size, int(abs(threshold)))), 
-            'query' : """SELECT bssid_cnt, count(essid) as essid_cnt
+        'cell_bssid_cnt' : {
+            'name' : ('/operators/cell_bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_x, cell_y, operator, operator_public, count(distinct bssid) as bssid_cnt
+                FROM original
+                WHERE in_road = %d
+                GROUP BY cell_x, cell_y, operator, operator_public""" % (in_road)),
+            'columns' : ['cell_x, cell_y, operator, operator_public', 'bssid_cnt']},
+    }
+
+    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+
+def extract_esses(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+
+    queries = {
+        'bssid_cnt' : {
+            'name' : ('/esses/bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(essid_cnt) AS essid_cnt, avg(bssid_cnt) AS bssid_cnt
+            FROM(
+                SELECT cell_x, cell_y, session_id, avg(lat) AS lat, avg(lon) AS lon, count(distinct essid) AS essid_cnt, count(distinct bssid) AS bssid_cnt
+                FROM original
+                WHERE in_road = %d
+                GROUP BY cell_x, cell_y, session_id
+                ) AS T
+            GROUP BY cell_x, cell_y""" % (in_road)),
+            'columns' : []},
+
+        'essid_cnt' : {
+            'name' : ('/esses/essid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT bssid_cnt, count(essid) as essid_cnt
             FROM(
                 SELECT essid, count(distinct bssid) AS bssid_cnt
                 FROM original 
+                WHERE in_road = %d
                 GROUP BY essid
                 ) AS T
-            GROUP BY bssid_cnt""",
+            GROUP BY bssid_cnt""" % (in_road)),
             'columns' : []}
     }
 
-    data = defaultdict(pd.DataFrame)
-    for table in tables:
-        if tables[table]['name'] not in database.keys():
-            start_time = timeit.default_timer()
-            data[table] = pd.read_sql(tables[table]['query'],con = conn)
-            print("%s::extract_esses() : [INFO] data retrieved (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start_time))
-            parsing.utils.to_hdf5(data[table], tables[table]['name'], database)
-        else:
-            data[table] = database.select(tables[table]['name'])
+    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-    table = ('/esses/road/counts/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        intersection = get_road_data(input_dir, data['counts'], columns = tables['counts']['columns'])
-        parsing.utils.to_hdf5(intersection[['cell_x', 'cell_y'] + tables['counts']['columns']], table, database)
-        map_dir = os.path.join(output_dir, "ess-cnt")
-        if not os.path.isdir(map_dir):
-            os.makedirs(map_dir)
+def extract_session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
-        intersection.to_file(os.path.join(map_dir, ("%s-%s" % (cell_size, int(abs(threshold))))), driver = 'ESRI Shapefile')
-
-def extract_session_nr(input_dir, cell_size = 20, threshold = -80):
-
-    output_dir = os.path.join(input_dir, ("processed"))
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-
-    database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-
-    table = ('/sessions/total/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        start_time = timeit.default_timer()
-        data = pd.read_sql(
-            """SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, count(distinct cell_x, cell_y, session_id) AS session_cnt
+    queries = {
+        'session_cnt' : {
+            'name' : ('/sessions/session_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, count(distinct cell_x, cell_y, session_id) AS session_cnt
             FROM original
-            GROUP BY cell_x, cell_y""",
-            con = conn)
+            WHERE in_road = %d
+            GROUP BY cell_x, cell_y""" % (in_road)),
+            'columns' : []}
+    }
 
-        print("%s::extract_channels() : [INFO] data retrieved (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start_time))
-        parsing.utils.to_hdf5(data, table, database)
+    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-    else:
-        data = database.select(table)
+def extract_channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
-    table = ('/sessions/road/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        intersection = get_road_data(input_dir, data, columns = ['session_cnt'])
-        parsing.utils.to_hdf5(intersection[['cell_x', 'cell_y'] + ['session_cnt']], table, database)
-
-def extract_channels(input_dir, cell_size = 20, threshold = -80):
-
-    output_dir = os.path.join(input_dir, ("processed"))
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-
-    database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-
-    table = ('/channels/total/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        start_time = timeit.default_timer()
-        data = pd.read_sql(
-            """SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, frequency, ap_cnt, count(distinct session_id) AS session_cnt
+    queries = {
+        'ap_cnt' : {
+            'name' : ('/channels/ap_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, frequency, ap_cnt, count(distinct session_id) AS session_cnt
             FROM(
                 SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, session_id, frequency, count(distinct bssid, frequency) AS ap_cnt
                 FROM original
+                WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id, frequency
                 ) AS T
-            GROUP BY cell_x, cell_y, frequency, ap_cnt""",
-            con = conn)
+            GROUP BY cell_x, cell_y, frequency, ap_cnt""" % (in_road)),
+            'columns' : []}
+    }
 
-        print("%s::extract_channels() : [INFO] data retrieved (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start_time))
-        parsing.utils.to_hdf5(data, table, database)
+    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-    else:
-        data = database.select(table)
+def extract_auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
-    table = ('/channels/road/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        intersection = get_road_data(input_dir, data, columns = ['frequency', 'ap_cnt', 'session_cnt'])
-        parsing.utils.to_hdf5(intersection[['cell_x', 'cell_y'] + ['frequency', 'ap_cnt', 'session_cnt']], table, database)
-
-def extract_auth(input_dir, cell_size = 20, threshold = -80):
-
-    output_dir = os.path.join(input_dir, ("processed"))
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-
-    database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-
-    table = ('/auth/total/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        start_time = timeit.default_timer()
-        data = pd.read_sql(
-            """SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, re_auth AS auth, ap_cnt, count(distinct session_id) AS session_cnt
+    queries = {
+        'ap_cnt' : {
+            'name' : ('/auth/ap_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, re_auth AS auth, ap_cnt, count(distinct session_id) AS session_cnt
             FROM(
                 SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, session_id, re_auth, count(distinct bssid, re_auth) AS ap_cnt
                 FROM original
+                WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id, re_auth
                 ) AS T
-            GROUP BY cell_x, cell_y, re_auth, ap_cnt""",
-            con = conn)
+            GROUP BY cell_x, cell_y, re_auth, ap_cnt""" % (in_road)),
+            'columns' : []}
+    }
 
-        print("%s::extract_channels() : [INFO] data retrieved (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start_time))
-        parsing.utils.to_hdf5(data, table, database)
-
-    else:
-        data = database.select(table)
-
-    table = ('/auth/road/%s/%s' % (cell_size, int(abs(threshold))))
-    if table not in database.keys():
-        intersection = get_road_data(input_dir, data, columns = ['auth', 'ap_cnt', 'session_cnt'])
-        parsing.utils.to_hdf5(intersection[['cell_x', 'cell_y'] + ['auth', 'ap_cnt', 'session_cnt']], table, database)
+    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
 def extract_bands(data, database):
 
@@ -287,20 +220,18 @@ def extract_bands(data, database):
     raw = data[data['cell'].isin(cells)].reset_index(drop = True)[['seconds', 'session_id', 'encode', 'snr', 'auth', 'frequency', 'new_lat', 'new_lon', 'new_err', 'ds', 'acc_scan', 'band', 'cell-x', 'cell-y']]
     raw['session_id'] = raw['session_id'].astype(str).apply(lambda x : x.split(',')[0]).astype(int)
     raw['encode'] = raw['encode'].astype(str)
-    print(raw)
     parsing.utils.to_hdf5(raw, ('/bands/raw'), database)
     
-def extract_coverage(data, processed_data):
+def _extract_contact(data, processed_data):
 
     # distances while under coverage, per block
-    distances = data.groupby(['session_id', 'encode', 'band', 'time-block']).apply(calc_dist).reset_index(drop = True).fillna(0.0)
+    distances = data.groupby(['session_id', 'encode', 'band', 'time-block']).apply(analysis.smc.utils.calc_dist).reset_index(drop = True).fillna(0.0)
     distances = distances.groupby(['session_id', 'encode', 'band', 'time-block'])['dist'].sum().reset_index(drop = False).sort_values(by = ['session_id', 'encode', 'band', 'time-block'])
-
     # times, distance & speed while under coverage, per block
     aps = data.groupby(['session_id', 'encode', 'band', 'time-block'])['seconds'].apply(np.array).reset_index(drop = False).sort_values(by = ['session_id', 'encode', 'band', 'time-block'])
     aps['time'] = aps['seconds'].apply(lambda x : x[-1] - x[0])
-    aps['dist'] = distances['dist']
-    aps['speed'] = (aps['dist'] / aps['time'].astype(float)).fillna(0.0)
+    aps['distance'] = distances['dist']
+    aps['speed'] = (aps['distance'] / aps['time'].astype(float)).fillna(0.0)
     aps['speed'] = aps['speed'].apply(analysis.metrics.custom_round)
 
     # - filter out low speeds (e.g., < 1.0 m/s)
@@ -309,42 +240,43 @@ def extract_coverage(data, processed_data):
     if aps.empty:
         return
 
-    for cat in ['time', 'speed']:
+    for cat in ['time', 'speed', 'distance']:
         processed_data[cat] = pd.concat([processed_data[cat], aps.groupby(['band', cat]).size().reset_index(drop = False, name = 'count')], ignore_index = True)
         processed_data[cat] = processed_data[cat].groupby(['band', cat]).sum().reset_index(drop = False)
 
-def extract(input_dir, cell_size = 5.0):
+def extract_contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1):
 
     output_dir = os.path.join(input_dir, ("processed"))
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # processed data 
-    processed_data = defaultdict(pd.DataFrame)
-
     # load .hdfs database
     database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    # remove '/band' data from database
-    if ('/bands/snr') in database.keys():
-        database.remove('/bands/snr')
-    if ('/bands/raw') in database.keys():
-        database.remove('/bands/raw')
+
+    to_extract = ['time', 'speed', 'distance']
+    for cat in to_extract:    
+        db = ('/contact/%s/%s/%s' % (cat, cell_size, int(abs(threshold))))
+        if db in database.keys():
+            to_extract.remove(cat)
+
+    if not to_extract:
+        return
 
     # read .csv dataset by chunks (> 3GB file)
     filename = os.path.join(input_dir, "all_wf.grid.csv")
     chunksize = 2.5 * (10 ** 4)
+    processed_data = defaultdict(pd.DataFrame)
     for chunk in pd.read_csv(filename, chunksize = chunksize):
 
         print("""%s: [INFO] handling %s sessions in chunk""" % (sys.argv[0], len(chunk['session_id'].unique())))
 
         # order by session id & timestamp
         chunk = chunk.sort_values(by = ['session_id', 'seconds']).reset_index(drop = True)
-
         # to speed up computation, filter out values which don't matter
         # - filter out low snrs
-        chunk = chunk[chunk['snr'] > -75.0].reset_index(drop = True)
+        chunk = chunk[chunk['snr'] > threshold].reset_index(drop = True)
         # - filter out invalid freq. bands
-        add_band(chunk)
+        analysis.smc.utils.add_band(chunk)
         chunk = chunk[chunk['band'] >= 0].reset_index(drop = True)
         
         if chunk.empty:
@@ -353,7 +285,7 @@ def extract(input_dir, cell_size = 5.0):
         # - filter out consecutive time blocks with too few data points
         chunk['time-block'] = ((chunk['seconds'] - chunk['seconds'].shift(1)) > 1.0).astype(int).cumsum()
         # to make computation lighter, get rid of time blocks w/ less than n entries
-        chunk = chunk.groupby(['session_id', 'encode', 'time-block']).apply(mark_size)
+        chunk = chunk.groupby(['session_id', 'encode', 'time-block']).apply(analysis.smc.utils.mark_size)
         chunk = chunk[chunk['block-size'] > 2].reset_index(drop = True)
 
         # abort if chunk is empty
@@ -361,16 +293,13 @@ def extract(input_dir, cell_size = 5.0):
             continue
 
         # add cell info
-        add_cells(chunk, cell_size)
+        analysis.smc.utils.add_cells(chunk, cell_size)
 
-        extract_bands(chunk, database)
-        extract_coverage(chunk, processed_data)
+        # extract_bands(chunk, database)
+        _extract_contact(chunk, processed_data)
 
     # save on database
-    for cat in ['time', 'speed']:
-    
-        db = ('/signal-quality/%s' % (cat))
-        if db in database.keys():
-            database.remove(db)
-
-        parsing.utils.to_hdf5(processed_data[cat], db, database)
+    for cat in to_extract:
+        db = ('/contact/%s/%s/%s' % (cat, cell_size, int(abs(threshold))))
+        if db not in database.keys():
+            parsing.utils.to_hdf5(processed_data[cat], db, database)

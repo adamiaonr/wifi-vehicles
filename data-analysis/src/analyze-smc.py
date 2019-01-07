@@ -89,15 +89,19 @@ if __name__ == "__main__":
 
     # plot_contact(database, args.output_dir)
     # plot_bands(database, args.output_dir)
+
+    analysis.smc.sessions.extract_contact(args.input_dir)    
     # analysis.smc.sessions.extract_signal_quality(args.input_dir)
     # analysis.smc.sessions.extract_esses(args.input_dir)
     # analysis.smc.sessions.extract_session_nr(args.input_dir)
     # analysis.smc.sessions.extract_channels(args.input_dir)
     # analysis.smc.sessions.extract_auth(args.input_dir)
+    # analysis.smc.sessions.extract_operators(args.input_dir)
 
-    plot.smc.sessions.signal_quality(args.input_dir, args.output_dir)
-    plot.smc.sessions.esses(args.input_dir, args.output_dir)
-    plot.smc.sessions.channels(args.input_dir, args.output_dir)
-    plot.smc.sessions.auth(args.input_dir, args.output_dir)
+    # plot.smc.sessions.signal_quality(args.input_dir, args.output_dir)
+    # plot.smc.sessions.esses(args.input_dir, args.output_dir)
+    # plot.smc.sessions.channels(args.input_dir, args.output_dir)
+    # plot.smc.sessions.auth(args.input_dir, args.output_dir)
+    # plot.smc.sessions.operators(args.input_dir, args.output_dir)
 
     sys.exit(0)

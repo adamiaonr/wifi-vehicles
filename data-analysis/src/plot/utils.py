@@ -55,8 +55,8 @@ def cdf(
     metric,
     plot_configs):
 
-    ax.xaxis.grid(True, ls = 'dotted', lw = 0.75)
-    ax.yaxis.grid(True, ls = 'dotted', lw = 0.75)
+    ax.xaxis.grid(True, ls = 'dotted', lw = 0.05)
+    ax.yaxis.grid(True, ls = 'dotted', lw = 0.05)
 
     data = data.sort_values(by = [metric])
     if 'counts' not in data:

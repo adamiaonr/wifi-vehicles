@@ -9,6 +9,9 @@ import glob
 import math
 import gmplot
 import time
+import timeit
+import geopandas as gp
+import shapely.geometry
 
 # for parallel processing of sessions
 import multiprocessing as mp 
@@ -40,19 +43,20 @@ import mapping.utils
 
 # wifi net operators
 operators = {
-    'eduroam'   : {'match-str' : 'eduroam'},
-    'zon'       : {'match-str' : 'FON_ZON_FREE_INTERNET|ZON-|Optimus'},
-    'meo'       : {'match-str' : 'MEO-|Thomson|MEO-WiFi|PT-WIFI'},
-    'vodafone'  : {'match-str' : 'Vodafone-|VodafoneFibra-|VodafoneMobileWiFi-'}
+    1 : {'name' : 'eduroam', 'match-str' : 'eduroam', 'public' : ''},
+    2 : {'name' : 'zon', 'match-str' : 'FON_ZON_FREE_INTERNET|ZON-|Optimus|NOS', 'public' : 'FON_ZON_FREE_INTERNET'},
+    3 : {'name' : 'meo', 'match-str' : 'MEO-|Thomson|MEO-WiFi|PT-WIFI|SAPO|2WIRE-', 'public' : 'MEO-WiFi|PT-WIFI'},
+    4 : {'name' : 'vodafone', 'match-str' : 'Vodafone-|VodafoneFibra-|VodafoneMobileWiFi-|Huawei', 'public' : 'VodafoneMobileWiFi-'},
+    5 : {'name' : 'porto digital', 'match-str' : 'WiFi Porto Digital', 'public' : 'WiFi Porto Digital'}
 }
 
+# FIXME: something wrong here...
 auth_types = {
-    0 : {'name' : 'unknown', 'types' : [0], 'operators' : ['unknown']},
-    1 : {'name' : 'open', 'types' : [1], 'operators' : ['unknown']},
-    2 : {'name' : 'commer.', 'types' : [0, 1], 'operators' : ['meo', 'vodafone', 'zon']},
+    0 : {'name' : 'unknown', 'types' : [0], 'operators' : []},
+    1 : {'name' : 'open', 'types' : [1], 'operators' : [0, 1]},
+    2 : {'name' : 'commer.', 'types' : [1], 'operators' : [2, 3, 4, 5]},
     3 : {'name' : 'WPA-x', 'types' : [2, 3, 4], 'operators' : []},
-    4 : {'name' : '802.11x', 'types' : [5], 'operators' : []},
-    5 : {'name' : '802.11x', 'types' : [0, 1], 'operators' : ['eduroam']}}
+    4 : {'name' : '802.11x', 'types' : [5], 'operators' : []}}
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -63,15 +67,27 @@ LATS = LAT - 0.03
 LONE = LON + 0.06
 LONW = LON - 0.06
 
+def get_road_intersection(data, road_data, columns = []):
+
+    # create a geopandas dataframe out of data, which has 'lat' and 'lon' columns
+    geodf = gp.GeoDataFrame(data)
+    # add a 'geometry' column, built out of Point objects, in turn created from [lon, lat] columns
+    geodf['geometry'] = [ shapely.geometry.Point(tuple(x)) for x in geodf[['lon' ,'lat']].values ]
+
+    if geodf.empty:
+        return
+
+    # intersection between road cells and data 
+    start_time = timeit.default_timer()
+    intersection = gp.sjoin(road_data, geodf, how = 'inner', op = 'intersects')[['index', 'geometry', 'cell_x', 'cell_y'] + columns]
+    print("%s::extract_road_data() : [INFO] intersection in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
+
+    intersection['c'] = intersection['cell_x'].astype(str) + str('.') + intersection['cell_y'].astype(str)
+    return intersection.drop_duplicates(subset = ['c'])[['cell_x', 'cell_y', 'c']]
+
 def rebrand_auth(data):
     for at in sorted(auth_types.keys()):
-        # FIXME: this is to fix a mutual exclusivity issue w/ auth types [0,1] and operator 'eduroam'
-        _at = at
-        if at == 5:
-            _at = 4
-
-        data.loc[(data['auth'].isin(auth_types[at]['types'])) & ((not auth_types[at]['operators']) | (data['operator'].isin(auth_types[at]['operators']))), 're_auth'] = _at
-
+        data.loc[(data['auth'].isin(auth_types[at]['types'])) & ((not auth_types[at]['operators']) | (data['operator'].isin(auth_types[at]['operators']))), 're_auth'] = at
     return data
 
 def add_cells(data, cell_size):
@@ -95,7 +111,17 @@ def get_operator(essid):
         if any(ss in essid for ss in operators[op]['match-str'].split('|')):
             return op
 
-    return 'unknown'
+    return 0
+
+def get_public(essid, operator):
+
+    if operator == 0:
+        return 0
+
+    if any(ss in essid for ss in operators[operator]['public'].split('|')):
+        return 1
+
+    return 0    
 
 def get_db(input_dir):
 
