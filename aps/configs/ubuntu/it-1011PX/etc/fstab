@@ -9,4 +9,4 @@
 UUID=eb3968f2-9081-441e-89af-94f16038e3f6 /               ext4    errors=remount-ro 0       1
 # swap was on /dev/sda5 during installation
 UUID=f5e2c936-ede0-4026-822b-61fca4f03916 none            swap    sw              0       0
-/home/adamiaonr/workbench/range-tests/vehicular-traces	/exports/users/	none	bind	0	0
+/home/it/workbench/range-tests/vehicular-traces	/exports/users/	none	bind	0	0
