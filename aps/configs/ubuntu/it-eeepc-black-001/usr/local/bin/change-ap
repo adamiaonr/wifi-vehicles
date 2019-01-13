@@ -1,13 +1,25 @@
 #!/bin/bash
 
-if [ $# -lt 3 ]
+if [ $# -lt 2 ]
 then
-	echo "usage : $0 <wpa-encryption> <channel> <bandwidth>"
+	echo "usage : $0 <encryption> <channel>"
+	echo "options : "
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
+	echo "    <channel>: { 2.4 GHz : { 20 MHz : [ 1, 6, 11 ] }, 5 GHz : { 20 MHz : [ 36, 40 ], 40 MHz : [ 38, 46 ], 80 MHz : [42] }}"
 	exit 1
 fi
 
+if [ "$1" != "open" ] && [ "$1" != "wpa" ]
+then
+    echo "error : unrecognized wpa-encryption : $1"
+    exit 1
+fi
+
+encryption=$1
+channel=$2
+
 # symlink to correct hostapd.conf file
-ln -sfv /home/adamiaonr/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/etc/hostapd/hostapd.conf.$1.$2.$3 /etc/hostapd/hostapd.conf
+ln -sfv $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/etc/hostapd/$encryption/$channel /etc/hostapd/hostapd.conf
 # restart hostapd (and everything else...)
 /etc/init.d/networking restart
 

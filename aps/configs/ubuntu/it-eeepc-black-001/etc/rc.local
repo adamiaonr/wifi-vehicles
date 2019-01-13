@@ -16,7 +16,7 @@ sudo iptables -t nat -A POSTROUTING -s 10.10.13.0/24 ! -d 10.10.13.0/24 -j MASQU
 
 # route traffic to the network of it-unifi-ac-lite-2 : 10.10.11.0/24
 # FIXME : shouldn't we check if it exists first?
-sudo route add -net 10.10.11.0/24 gw 10.10.13.208 dev wlxc46e1f263536
+sudo route add -net 10.10.11.0/24 gw 10.10.13.208 dev wlan-cntrl
 
 # run the webserver for node status
 pkill -f --signal 2 webserver.py

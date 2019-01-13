@@ -2,18 +2,25 @@
 auto lo
 iface lo inet loopback
 
-auto wlxc46e1f263536
-iface wlxc46e1f263536 inet static
-hostapd /etc/hostapd/hostapd.conf
-address 10.10.13.1
-netmask 255.255.255.0
-dns-nameservers 1.1.1.1 8.8.8.8
-
 auto enp6s0
 iface enp6s0 inet static
 address 10.10.12.1
 netmask 255.255.255.0
 dns-nameservers 1.1.1.1 8.8.8.8
+
+auto wlan-cntrl
+iface wlan-cntrl inet static
+hostapd /etc/hostapd/hostapd.conf
+address 10.10.13.1
+netmask 255.255.255.0
+dns-nameservers 1.1.1.1 8.8.8.8
+
+#auto wlxc46e1f263536
+#iface wlxc46e1f263536 inet static
+#hostapd /etc/hostapd/hostapd.conf
+#address 10.10.13.1
+#netmask 255.255.255.0
+#dns-nameservers 1.1.1.1 8.8.8.8
 
 #auto wlx24050f9e2cb1
 #iface wlx24050f9e2cb1 inet dhcp

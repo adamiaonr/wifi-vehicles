@@ -1,13 +1,13 @@
-interface=wlxc46e1f263536
+interface=wlan-cntrl
 driver=nl80211
 ssid=leslie-lamport
-hw_mode=g
+hw_mode=a
 ieee80211n=1
 require_ht=1
 ieee80211d=1
 ieee80211h=0
-ht_capab=[HT20]
-channel=11
+ht_capab=[HT40-]
+channel=40
 country_code=PT
 macaddr_acl=0
 ignore_broadcast_ssid=0

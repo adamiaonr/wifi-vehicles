@@ -1,0 +1,5 @@
+# USB device 0x: 0x (ath9k_htc)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="c4:6e:1f:26:35:36", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-cntrl"
+
+# USB device 0x: 0x (ath9k_htc)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="c4:6e:1f:26:35:71", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-internet"
