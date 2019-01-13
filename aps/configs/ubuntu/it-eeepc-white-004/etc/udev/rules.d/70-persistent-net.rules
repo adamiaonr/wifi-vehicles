@@ -1,0 +1,2 @@
+# USB device 0x: 0x (ath9k_htc)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="c4:6e:1f:25:d7:4a", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-cntrl"
