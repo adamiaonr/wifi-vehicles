@@ -64,9 +64,9 @@ python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.p
 # iperf3-to-mobile.py not used anymore, instead we use:
 #	- call tcpdump directly in script
 #	- a restart-iperf3-client, which starts a iperf3 client in -R mode, and re-spawns server on remote side
-# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --control-login "adamiaonr@10.10.13.1" --protocol $2 --bitrate $bitrate --ip-server 10.10.12.1 --port 5204 --reverse --monitor-iface wlan-cntrl --output-dir "$output_dir" &
+# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/iperf3-to-mobile.py --control-login "it@10.10.13.1" --protocol $2 --bitrate $bitrate --ip-server 10.10.12.1 --port 5204 --reverse --monitor-iface wlan-cntrl --output-dir "$output_dir" &
 tcpdump -i wlan-cntrl -y IEEE802_11_RADIO -s0 -w "$output_dir"/monitor.$(date +"%s").pcap &
-/usr/local/bin/restart-client "$3" "adamiaonr@10.10.13.1" 10.10.12.1 5204 $2 $bitrate &
+/usr/local/bin/restart-client "$3" "it@10.10.13.1" 10.10.12.1 5204 $2 $bitrate &
 
 # extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
