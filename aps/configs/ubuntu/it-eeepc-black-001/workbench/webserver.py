@@ -3,10 +3,52 @@ import SocketServer
 import logging
 import os
 import json
+import subprocess
+
+from datetime import datetime
 
 PORT = 8081
 
 HTML_FILE=('%s/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/index.html' % (os.environ['HOME']))
+
+def generate_updated(timestamp):
+	# header line
+	line = """<tr><th>last update</th><th>wifi network</th><th>ip addr</th></tr><tr><td>"""
+	
+	# 1) convert timestamp to readable datetime
+	line += str(datetime.utcfromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S')) + '</td><td>'
+
+	# 2) which wifi network is giving us internet?
+	output = ''
+	essid = ''
+	cmd = ['iwconfig', 'wlan-internet']
+	try:
+		output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
+	except subprocess.CalledProcessError:
+		essid = 'n/a'
+
+	if output != 'n/a':
+		output = output.splitlines()
+		essid = output[output.index([s for s in output if 'ESSID' in s][0])].split(':')[-1].replace('"', '').rstrip()
+
+	line += essid + '</td><td>'
+
+	# 3) which ip address in the wlan-internet iface?
+	output = ''
+	ip_addr = ''
+	cmd = ['ifconfig', 'wlan-internet']
+	try:
+		output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
+	except subprocess.CalledProcessError:
+		ip_addr = 'n/a'
+
+	if output != 'n/a':
+		output = output.splitlines()
+		ip_addr = output[output.index([s for s in output if 'inet addr' in s][0])].split('inet addr:')[1].split(' ')[0].rstrip()
+
+	line += ip_addr + '</td></tr>'
+
+	return line
 
 def update_index(status):
 	
@@ -28,9 +70,9 @@ def update_index(status):
 		for line in lines:
 
 			if 'last update' in line:
-				line = ("<p>last update : %s</p>\n" % (str(status['time'])))
+				line = generate_updated(str(status['time']))
 
-			if src in line:
+			elif src in line:
 
 				tr = ("<tr><td>%s</td>" % (src))
 				for cat in cats:
