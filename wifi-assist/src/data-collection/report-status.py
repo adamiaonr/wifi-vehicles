@@ -269,7 +269,7 @@ if __name__ == "__main__":
         print(json.dumps(status))
         report(args.ip, args.port, json.dumps(status))
 
-        time.sleep(5)
+        time.sleep(10)
 
     sys.exit(0)
 
