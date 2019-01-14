@@ -101,7 +101,6 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
 
         output = output.splitlines()
         lines = [s.split('-p')[-1].replace(' ', '') for s in output if (('iperf3' in s) and ('grep' not in s))]
-        print(lines)
         if all(e in lines for e in ['5203', '5204']):
             status['iperf3'] = 'ok'
         else:
@@ -130,7 +129,6 @@ def cbt_status(status, logdir, timestamp):
     trace = logdir.split('/')[-1]
     for _logdir in glob.glob(os.path.join(logdir.rstrip(trace), ('it-unifi-ac-lite-*/%s' % (trace)))):
         filename = get_latest_file(_logdir, 'cbt.*.csv')
-        print(filename)
 
         try:
             with open(filename, 'r') as f:
@@ -159,12 +157,9 @@ def monitor_status(status, logdir, timestamp):
     status['monitor'] = 'bad'
     filename = get_latest_file(logdir, 'monitor.*.pcap')
     try:
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            if len(lines) > 0:
-                line = lines[-1]
-                if (timestamp - int(float(os.path.getmtime(filename))) < 5):
-                    status['monitor'] = 'ok'
+
+        if (timestamp - int(float(os.path.getmtime(filename))) < 5):
+            status['monitor'] = 'ok'
 
     except Exception:
         sys.stderr.write("""%s::monitor_status() : [ERROR] exception found\n""" % sys.argv[0])
@@ -175,7 +170,6 @@ def signal_handler(signal, frame):
 
 def report(ip, port, status):
     cmd = ['curl', '-d', ('%s' % (status)), '-X', 'POST', ('http://%s:%s/status' % (ip, port))]
-    print(cmd)
     proc = subprocess.Popen(cmd)
 
 if __name__ == "__main__":
@@ -266,7 +260,7 @@ if __name__ == "__main__":
             iperf3_status(status, args.output_dir, timestamp, args.mode)
             batt_status(status)
 
-        print(json.dumps(status))
+        # print(json.dumps(status))
         report(args.ip, args.port, json.dumps(status))
 
         time.sleep(10)
