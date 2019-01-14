@@ -66,7 +66,7 @@ def ntp_status(status, logdir, timestamp):
         with open(filename, 'r') as f:
             lines = f.readlines()
             line = lines[-1]
-            if (timestamp - int(float(line.split(',')[0]))) < 5:
+            if (timestamp - int(float(line.split(',')[0]))) < 15:
                 if int(line.split(',')[3]) > 20:
                     status['ntp'] = 'unsync'
                 else:
@@ -81,7 +81,7 @@ def cpu_status(status, logdir, timestamp):
     try:
         with open(filename, 'r') as f:
             line = f.readlines()[-1]
-            if timestamp - int(float(line.split(',')[0])) < 5:
+            if timestamp - int(float(line.split(',')[0])) < 15:
                 status['cpu'] = 'ok'
             else:
                 status['cpu'] = 'bad'
