@@ -86,7 +86,7 @@ if __name__ == "__main__":
         if output:
             log.writerow([time.time()] + output)
 
-        time.sleep(1.0)
+        time.sleep(5.0)
 
     sys.exit(0)
 

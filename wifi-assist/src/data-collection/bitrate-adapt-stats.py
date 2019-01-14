@@ -81,6 +81,6 @@ if __name__ == "__main__":
             # database.append('/bitrate-adapt/rc-stats', data, data_columns = data.columns, format = 'table')
             data.to_csv(database, mode = 'a', header = False, columns = sorted(data.columns))
 
-        time.sleep(1.0)
+        time.sleep(5.0)
 
     sys.exit(0)
