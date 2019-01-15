@@ -50,6 +50,7 @@ def gps_status(status, logdir, timestamp):
             lines = f.readlines()
             if len(lines) < 2:
                 return
+
             line = lines[-1]
             if timestamp - int(float(line.split(',')[0])) < 5:
                 status['gps'] = 'ok'
@@ -64,8 +65,7 @@ def ntp_status(status, logdir, timestamp):
 
     try:
         with open(filename, 'r') as f:
-            lines = f.readlines()
-            line = lines[-1]
+            line = f.readlines()[-1]
             if (timestamp - int(float(line.split(',')[0]))) < 15:
                 if int(line.split(',')[3]) > 20:
                     status['ntp'] = 'unsync'
@@ -114,12 +114,15 @@ def iperf3_status(status, logdir, timestamp, mode = 'client'):
         filename = get_latest_file(logdir, 'iperf3.*.out')
 
         try:
+
+            # FIXME: the threshold size is arbitrary at 100 byte
+            if (int(os.stat(filename).st_size) < 100):
+                return
+
             with open(filename, 'r') as f:
-                lines = f.readlines()
-                if len(lines) > 0:
-                    line = lines[-1]
-                    if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
-                        status['iperf3'] = 'ok'
+                line = f.readlines()[-1]
+                if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
+                    status['iperf3'] = 'ok'
 
         except Exception:
             sys.stderr.write("""%s::iperf3_status() : [ERROR] exception found\n""" % sys.argv[0])
@@ -157,10 +160,9 @@ def monitor_status(status, logdir, timestamp):
     status['monitor'] = 'bad'
     filename = get_latest_file(logdir, 'monitor.*.pcap')
     try:
-
-        if (timestamp - int(float(os.path.getmtime(filename))) < 5):
+        # FIXME: the threshold size is arbitrary at 100 byte
+        if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 5):
             status['monitor'] = 'ok'
-
     except Exception:
         sys.stderr.write("""%s::monitor_status() : [ERROR] exception found\n""" % sys.argv[0])
 
