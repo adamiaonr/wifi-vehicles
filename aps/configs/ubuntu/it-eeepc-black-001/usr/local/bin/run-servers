@@ -20,7 +20,7 @@ python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-acc
 $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $1 "$output_dir" &
 # report status to webserver
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --mode "backbone" --output-dir "$output_dir" &
-# run webserver
-python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/workbench/webserver.py & 
+# # run webserver
+# python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/workbench/webserver.py & 
 
 exit 0

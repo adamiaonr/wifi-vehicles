@@ -5,6 +5,6 @@ ps -ef | grep restart-iperf-servers | awk '{print $2}' | sudo xargs -r kill -9
 pkill -f get-cpu.sh
 pkill -f --signal 2 report-status
 pkill -f iperf3
-pkill -f webserver
+# pkill -f webserver
 
 exit 0
