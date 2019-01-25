@@ -44,21 +44,21 @@ wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
 iw phy $wiphy set retry short 7 long 4
 
 # get the right signal next to HT40 or HT80 ('+' or '-')
-#	- HT40- : 2 x 20 MHz channels, primary channel is higher number, secondary channel is lower number 
-#             e.g. [36, 40] w/ 40 MHz channel width, iw dev <iface> will report channel as 40
-#	- HT40+ : 2 x 20 MHz channels, primary channel is lower number, secondary channel is higher number
-#             e.g. [36, 40] w/ 40 MHz channel width, iw dev <iface> will report channel as 36
+#	- HT40- : if center1 < freq
+#	- HT40+ : if center1 > freq
+
 if [ "$bw" == "40" ]
 then
-    if [ $(($channel % 8)) ]
+    if [ "$channel" == "36" ]
     then
-        bw=$bw-
-    else
         bw=$bw+
+    else
+        bw=$bw-
     fi
 fi
 
 # change channel on the monitoring iface to that of the comm. iface
+echo "$channel:HT$bw"
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 # run experimental scripts
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --output-dir "$output_dir" &

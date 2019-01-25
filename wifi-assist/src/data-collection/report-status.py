@@ -227,7 +227,7 @@ if __name__ == "__main__":
 
         output_dir = ''
         with open(os.path.join(args.output_dir, 'output-dir.txt'), 'r') as f:
-            output_dir = f.readlines()[-1]
+            output_dir = f.readlines()[-1].strip()
 
         if output_dir == '':
             time.sleep(10)
