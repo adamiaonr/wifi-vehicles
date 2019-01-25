@@ -14,12 +14,14 @@ pkill -f get-ntp-accuracy
 trace_dir=$HOME/workbench/range-tests/vehicular-traces
 output_dir="$trace_dir"/trace-$1
 mkdir -p "$output_dir"
+# update output-dir.txt w/ the current output_dir
+echo "$output_dir" > "$trace_dir"/output-dir.txt
 # run ntp accuracy stats
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract cpu stats
 $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $1 "$output_dir" &
 # report status to webserver
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --mode "backbone" --output-dir "$output_dir" &
+# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --mode "backbone" --output-dir "$output_dir" &
 # # run webserver
 # python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/workbench/webserver.py & 
 

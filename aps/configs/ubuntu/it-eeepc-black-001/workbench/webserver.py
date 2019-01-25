@@ -13,7 +13,7 @@ HTML_FILE=('%s/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/wor
 
 def generate_updated(timestamp):
 	# header line
-	line = """<tr><th>last update</th><th>wifi network</th><th>ip addr</th></tr><tr><td>"""
+	line = """<h3>SYSTEM INFO</h3><table style="width:65%"><tr><th>last update</th><th>wifi network</th><th>ip addr</th></tr><tr><td>"""
 	
 	# 1) convert timestamp to readable datetime
 	line += str(datetime.utcfromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S')) + '</td><td>'
@@ -46,7 +46,7 @@ def generate_updated(timestamp):
 		output = output.splitlines()
 		ip_addr = output[output.index([s for s in output if 'inet addr' in s][0])].split('inet addr:')[1].split(' ')[0].rstrip()
 
-	line += ip_addr + '</td></tr>'
+	line += ip_addr + '</td></tr></table>'
 
 	return line
 
@@ -69,8 +69,8 @@ def update_index(status):
 
 		for line in lines:
 
-			if 'last update' in line:
-				line = generate_updated(str(status['time']))
+			if 'SYSTEM INFO' in line:
+				continue
 
 			elif src in line:
 
@@ -91,6 +91,9 @@ def update_index(status):
 				line = tr
 
 			f.write(line)
+		# system info line at the end
+		# BEWARE : this was a last minute fix
+		f.write(generate_updated(str(status['time'])))
 
 class myHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 

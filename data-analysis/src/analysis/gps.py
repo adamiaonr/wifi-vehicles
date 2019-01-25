@@ -29,7 +29,6 @@ LATN = 41.176796
 LATS = 41.179283
 LONE = -8.593912
 LONW = -8.598336
-
 # gps coords for a 'central' pin on FEUP, Porto, Portugal
 LAT  = (41.176796 + 41.179283) / 2.0
 LON = (-8.598336 + -8.593912) / 2.0

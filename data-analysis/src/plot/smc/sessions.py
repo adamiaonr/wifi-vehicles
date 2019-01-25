@@ -535,7 +535,7 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
                 'db' : ('/operators/cell_coverage/%s/%s' % (cell_size, int(abs(threshold)))), 
                 # 'x-ticks' : [0.0, 12.5, 25.0, 37.5, 50.0],
                 # 'x-lim' : [0.0, 50.0],
-                'y-lim' : [0.0, 100.0],
+                'y-lim' : [0.0, 115.0],
         },
         'session_cnt' : {
                 'x-label' : '# of operators',
@@ -585,21 +585,34 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
 
             if stat == 'bssid_cnt':
 
-                print(data)
                 data['bssid_freq'] = ((data['bssid_cnt'] / data['bssid_cnt'].sum()) * 100.0).astype(float)
 
                 labels = ['private', 'public']
                 for op in [0, 1, 5, 2, 3, 4]:
 
+                    freq = 0.0
+                    if not data[(data['operator'] == op) & (data['operator_public'] == 0)].empty:
+                        freq = data[(data['operator'] == op) & (data['operator_public'] == 0)]['bssid_freq']
+
                     axs[s].bar(xx - barwidth,
-                        data[(data['operator'] == op) & (data['operator_public'] == 0)]['bssid_freq'],
+                        freq,
                         width = barwidth, linewidth = 0.250, alpha = .75, 
                         color = 'red', label = labels[0])
 
+                    freq = 0.0
+                    if not data[(data['operator'] == op) & (data['operator_public'] == 1)].empty:
+                        freq = data[(data['operator'] == op) & (data['operator_public'] == 1)]['bssid_freq']
+
                     axs[s].bar(xx + intraspace - barwidth,
-                        data[(data['operator'] == op) & (data['operator_public'] == 1)]['bssid_freq'],
+                        freq,
                         width = barwidth, linewidth = 0.250, alpha = .75, 
                         color = 'blue', label = labels[1])
+
+                    legend = axs[s].legend(
+                        fontsize = 10, 
+                        ncol = 1, loc = 'upper right',
+                        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
 
                     labels = ['', '']
                     # xticks & xticklabel
@@ -623,15 +636,29 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
                 labels = ['private', 'public'] 
                 for op in [0, 1, 5, 2, 3, 4]:
 
+                    freq = 0.0
+                    if not data[(data['operator'] == op) & (data['operator_public'] == 0)].empty:
+                        freq = data[(data['operator'] == op) & (data['operator_public'] == 0)]['cell_freq']
+
                     axs[s].bar(xx - barwidth,
-                        data[(data['operator'] == op) & (data['operator_public'] == 0)]['cell_freq'],
+                        freq,
                         width = barwidth, linewidth = 0.250, alpha = .75, 
                         color = 'red', label = labels[0])
 
+                    freq = 0.0
+                    if not data[(data['operator'] == op) & (data['operator_public'] == 1)].empty:
+                        freq = data[(data['operator'] == op) & (data['operator_public'] == 1)]['cell_freq']
+
                     axs[s].bar(xx + intraspace - barwidth,
-                        data[(data['operator'] == op) & (data['operator_public'] == 1)]['cell_freq'],
+                        freq,
                         width = barwidth, linewidth = 0.250, alpha = .75, 
                         color = 'blue', label = labels[1])
+
+                    legend = axs[s].legend(
+                        fontsize = 10, 
+                        ncol = 2, loc = 'upper right',
+                        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
 
                     labels = ['', '']
                     # xticks & xticklabel
@@ -666,6 +693,9 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
 
             if 'y-scale' in plot_configs[stat]:
                 axs[s].set_yscale(plot_configs[stat]['y-scale'])
+
+            # for legobj in legend.legendHandles:
+            #     legobj.set_linewidth(0.5)
 
         if stat == 'session_cnt':
             data.rename(index = str, columns = {'session_cnt' : 'counts'}, inplace = True)

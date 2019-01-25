@@ -79,11 +79,10 @@ def get_road_intersection(data, road_data, columns = []):
 
     # intersection between road cells and data 
     start_time = timeit.default_timer()
-    intersection = gp.sjoin(road_data, geodf, how = 'inner', op = 'intersects')[['index', 'geometry', 'cell_x', 'cell_y'] + columns]
+    intersection = gp.sjoin(road_data, geodf, how = 'inner', op = 'intersects')[['index', 'geometry', 'cell_x', 'cell_y', 'cell_id'] + columns]
     print("%s::extract_road_data() : [INFO] intersection in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
 
-    intersection['c'] = intersection['cell_x'].astype(str) + str('.') + intersection['cell_y'].astype(str)
-    return intersection.drop_duplicates(subset = ['c'])[['cell_x', 'cell_y', 'c']]
+    return intersection.drop_duplicates(subset = ['cell_id'])[['cell_x', 'cell_y', 'cell_id']]
 
 def rebrand_auth(data):
     for at in sorted(auth_types.keys()):
@@ -95,8 +94,10 @@ def add_cells(data, cell_size):
     # extract nr. of cells in the designated area
     xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
     # add cell ids to data, based on [new_lat, new_lon]
-    data['cell-x'] = data['new_lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * xx))
-    data['cell-y'] = data['new_lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * yy))
+    data['cell_x'] = data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * xx)).astype(int)
+    data['cell_y'] = data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * yy)).astype(int)
+    # it will be useful to get a single integer id
+    data['cell_id'] = (data['cell_y'].apply(lambda y : (y * yy)) + data['cell_x']).astype(int)
 
 def add_band(data):
 

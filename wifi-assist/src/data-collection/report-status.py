@@ -192,6 +192,8 @@ if __name__ == "__main__":
         "--mode", 
          help = """either 'backbone' or 'client'""")
 
+    # FIXME : if the report status daemon is to be kept running at all times,
+    # the output dir must be read from a static location now.
     parser.add_argument(
         "--output-dir", 
          help = """dir where .csv files are saved""")
@@ -225,6 +227,14 @@ if __name__ == "__main__":
     stop_loop = False
     while (stop_loop == False):
 
+        output_dir = ''
+        with open(os.path.join(args.output_dir, 'output-dir.txt'), 'r') as f:
+            output_dir = f.readlines()[-1]
+
+        if output_dir == '':
+            time.sleep(10)
+            continue
+
         timestamp = int(time.time())
         status = defaultdict(str)
 
@@ -241,10 +251,10 @@ if __name__ == "__main__":
             #   - export of cpu usage stats
             #   - iperf3 servers running
             #   - batt %
-            cbt_status(status, args.output_dir, timestamp)
-            cpu_status(status, args.output_dir, timestamp)
-            ntp_status(status, args.output_dir, timestamp)
-            iperf3_status(status, args.output_dir, timestamp, args.mode)
+            cbt_status(status, output_dir, timestamp)
+            cpu_status(status, output_dir, timestamp)
+            ntp_status(status, output_dir, timestamp)
+            iperf3_status(status, output_dir, timestamp, args.mode)
             batt_status(status)
 
         else:
@@ -255,11 +265,11 @@ if __name__ == "__main__":
             #   - export of cpu usage stats
             #   - export of iperf3 stats
             #   - batt %
-            gps_status(status, args.output_dir, timestamp)
-            cpu_status(status, args.output_dir, timestamp)
-            ntp_status(status, args.output_dir, timestamp)
-            monitor_status(status, args.output_dir, timestamp)
-            iperf3_status(status, args.output_dir, timestamp, args.mode)
+            gps_status(status, output_dir, timestamp)
+            cpu_status(status, output_dir, timestamp)
+            ntp_status(status, output_dir, timestamp)
+            monitor_status(status, output_dir, timestamp)
+            iperf3_status(status, output_dir, timestamp, args.mode)
             batt_status(status)
 
         # print(json.dumps(status))

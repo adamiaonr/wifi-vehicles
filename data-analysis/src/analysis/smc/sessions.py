@@ -54,7 +54,7 @@ def extract_signal_quality(input_dir, cell_size = 20, threshold = -80, in_road =
             'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(rss) AS rss_mean, stddev(rss) AS rss_stddev
             FROM(
                 SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, session_id, avg(rss) AS rss
-                FROM original
+                FROM sessions
                 WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id
                 ) AS T
@@ -72,7 +72,7 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
         'bssid_cnt' : {
             'name' : ('/operators/bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
             'query' : ("""SELECT operator, operator_public, count(distinct bssid) as bssid_cnt
-            FROM original
+            FROM sessions
             WHERE in_road = %d
             GROUP BY operator, operator_public""" % (in_road)),
             'columns' : ['operator', 'operator_public', 'bssid_cnt']},
@@ -80,7 +80,7 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
         'cell_coverage' : {
             'name' : ('/operators/cell_coverage/%s/%s' % (cell_size, int(abs(threshold)))), 
             'query' : ("""SELECT operator, operator_public, count(distinct cell_x, cell_y) as cell_cnt
-            FROM original
+            FROM sessions
             WHERE in_road = %d
             GROUP BY operator, operator_public""" % (in_road)),
             'columns' : ['operator', 'operator_public', 'cell_cnt']},
@@ -88,7 +88,7 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
         'cell_coverage_all' : {
             'name' : ('/operators/cell_coverage_all/%s/%s' % (cell_size, int(abs(threshold)))), 
             'query' : ("""SELECT operator_public, count(distinct cell_x, cell_y) as cell_cnt
-            FROM original
+            FROM sessions
             WHERE operator_known = 1 AND in_road = %d 
             GROUP BY operator_public""" % (in_road)),
             'columns' : ['operator', 'operator_public', 'cell_cnt']},
@@ -98,7 +98,7 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'query' : ("""SELECT operator_cnt, count(distinct session_id) as session_cnt
             FROM(
                 SELECT cell_x, cell_y, session_id, count(distinct operator) AS operator_cnt
-                FROM original
+                FROM sessions
                 WHERE operator_known = 1 AND in_road = %d
                 GROUP BY cell_x, cell_y, session_id
                 ) AS T
@@ -108,7 +108,7 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
         'cell_bssid_cnt' : {
             'name' : ('/operators/cell_bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
             'query' : ("""SELECT cell_x, cell_y, operator, operator_public, count(distinct bssid) as bssid_cnt
-                FROM original
+                FROM sessions
                 WHERE in_road = %d
                 GROUP BY cell_x, cell_y, operator, operator_public""" % (in_road)),
             'columns' : ['cell_x, cell_y, operator, operator_public', 'bssid_cnt']},
@@ -124,7 +124,7 @@ def extract_esses(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(essid_cnt) AS essid_cnt, avg(bssid_cnt) AS bssid_cnt
             FROM(
                 SELECT cell_x, cell_y, session_id, avg(lat) AS lat, avg(lon) AS lon, count(distinct essid) AS essid_cnt, count(distinct bssid) AS bssid_cnt
-                FROM original
+                FROM sessions
                 WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id
                 ) AS T
@@ -136,7 +136,7 @@ def extract_esses(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'query' : ("""SELECT bssid_cnt, count(essid) as essid_cnt
             FROM(
                 SELECT essid, count(distinct bssid) AS bssid_cnt
-                FROM original 
+                FROM sessions 
                 WHERE in_road = %d
                 GROUP BY essid
                 ) AS T
@@ -152,7 +152,7 @@ def extract_session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
         'session_cnt' : {
             'name' : ('/sessions/session_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
             'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, count(distinct cell_x, cell_y, session_id) AS session_cnt
-            FROM original
+            FROM sessions
             WHERE in_road = %d
             GROUP BY cell_x, cell_y""" % (in_road)),
             'columns' : []}
@@ -168,7 +168,7 @@ def extract_channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, frequency, ap_cnt, count(distinct session_id) AS session_cnt
             FROM(
                 SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, session_id, frequency, count(distinct bssid, frequency) AS ap_cnt
-                FROM original
+                FROM sessions
                 WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id, frequency
                 ) AS T
@@ -186,7 +186,7 @@ def extract_auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, re_auth AS auth, ap_cnt, count(distinct session_id) AS session_cnt
             FROM(
                 SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, session_id, re_auth, count(distinct bssid, re_auth) AS ap_cnt
-                FROM original
+                FROM sessions
                 WHERE in_road = %d
                 GROUP BY cell_x, cell_y, session_id, re_auth
                 ) AS T

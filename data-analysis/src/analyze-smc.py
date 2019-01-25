@@ -85,12 +85,12 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    # analysis.smc.data.to_sql(args.input_dir)
+    analysis.smc.data.to_sql(args.input_dir)
 
     # plot_contact(database, args.output_dir)
     # plot_bands(database, args.output_dir)
 
-    analysis.smc.sessions.extract_contact(args.input_dir)    
+    # analysis.smc.sessions.extract_contact(args.input_dir)
     # analysis.smc.sessions.extract_signal_quality(args.input_dir)
     # analysis.smc.sessions.extract_esses(args.input_dir)
     # analysis.smc.sessions.extract_session_nr(args.input_dir)
