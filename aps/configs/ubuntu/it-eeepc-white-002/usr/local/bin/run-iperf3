@@ -19,6 +19,8 @@ pkill -f get-ntp-accuracy
 # output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$2/$(iw wlx24050fe57b6a info | awk '/channel/ {print $2}')
 output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$2
 mkdir -p "$output_dir"
+# update output-dir.txt w/ the current output_dir
+echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
 # handle bitrate arg
 bitrate="X"
@@ -75,7 +77,7 @@ python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-acc
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
 # extract cpu stats
 $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $2 "$output_dir" &
-# report status to webserver
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --output-dir "$output_dir" --mode "client" &
+# # report status to webserver
+# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --output-dir "$output_dir" --mode "client" &
 
 exit 0
