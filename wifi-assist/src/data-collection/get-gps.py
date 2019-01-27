@@ -9,18 +9,31 @@ import subprocess
 import errno
 import threading
 import signal
+import threading
+import time
 
-# for acessing the gps device
 from gps import *
-from gps3 import gps3
-from socket import error as socket_error
 
 # attributes read from gps device
 attrs = ['time', 'lon', 'lat', 'alt', 'speed', 'epx', 'epy', 'epv', 'eps']
 
-def signal_handler(signal, frame):
-    global stop_loop
-    stop_loop = True
+class GpsPoller(threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.session = gps(mode=WATCH_ENABLE)
+        self.current_value = None
+
+    def get_current_value(self):
+        return self.current_value
+
+    def run(self):
+        try:
+            while True:
+                self.current_value = self.session.next()
+
+        except StopIteration:
+            pass
 
 # this required a bit of tweaking to work:
 #   - altered /etc/default/gpsd to not start gpsd on boot
@@ -33,17 +46,16 @@ def restart_gpsd(dev_file = '/dev/ttyUSB0'):
 
 def convert_to_unix(time_string):
     # 2017-11-01T16:46:52.000Z
-    return int(time.mktime(datetime.datetime.strptime(time_string.split(".")[0], "%Y-%m-%dT%H:%M:%S").timetuple()))
+    if isinstance(time_string, int):
+        print("warning : unexpected time type")
+        return time_string
+    else:
+        return int(time.mktime(datetime.datetime.strptime(time_string.split(".")[0], "%Y-%m-%dT%H:%M:%S").timetuple()))
 
 if __name__ == "__main__":
 
     # use an ArgumentParser for a nice CLI
     parser = argparse.ArgumentParser()
-
-    # options (self-explanatory)
-    parser.add_argument(
-        "--dev-file", 
-         help = """gps device file. default is '/dev/ttyUSB0'""")
 
     parser.add_argument(
         "--output-dir", 
@@ -56,16 +68,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if not args.dev_file:
-        args.dev_file = '/dev/ttyUSB0'
-
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] please supply an output dir\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
-
-    # register CTRL+C catcher
-    signal.signal(signal.SIGINT, signal_handler)
 
     # gps log file (0 buffering)
     file_timestamp = str(time.time()).split('.')[0]
@@ -78,43 +84,22 @@ if __name__ == "__main__":
     if args.restart_gpsd:
         restart_gpsd(args.dev_file)
 
-    # start reading gps data
-    gps_socket = gps3.GPSDSocket()
-    data_stream = gps3.DataStream()
+    gpsp = GpsPoller()
+    gpsp.start()
 
-    # connect to gps device and start listening
-    gps_socket.connect()
-    gps_socket.watch()
+    while 1:
+        time.sleep(1)
+        gps_out = gpsp.get_current_value()
 
-    stop_loop = False
-    last_timestamp = 0
-    for new_data in gps_socket:
+        timestamp = str(time.time())
+        keys = [str(x) for x in gps_out.keys()]
+        if not all(e in keys for e in attrs):
+            print("error : not enough keys. continuing.")
+            continue
 
-        if new_data:
-
-            # extract data from gps reading 
-            data_stream.unpack(new_data)
-
-            # check if data is meaningful
-            if data_stream.TPV['lon'] == 'n/a':
-                continue
-
-            # convert time to unix timestamp format
-            if data_stream.TPV['time'] == last_timestamp:
-                continue
-
-            data_stream.TPV['time'] = convert_to_unix(data_stream.TPV['time'])
-            last_timestamp = data_stream.TPV['time']
-
-            # write new row to .csv log
-            line = [str(time.time())] + [data_stream.TPV[attr] for attr in attrs]
-            gps_log.writerow(line)
-            print(line)
-
-        time.sleep(1.0)
-
-        # keep collecting data till a CTRL+C is caught...
-        if stop_loop:
-            break
-
-    sys.exit(0)
+        # convert time to unix timestamp format
+        gps_out['time'] = convert_to_unix(gps_out['time'])
+        # write new row to .csv log
+        line = [timestamp] + [gps_out[attr] for attr in attrs]
+        gps_log.writerow(line)
+        print(line)
