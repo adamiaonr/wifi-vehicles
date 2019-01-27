@@ -79,10 +79,9 @@ def get_road_intersection(data, road_data, columns = []):
 
     # intersection between road cells and data 
     start_time = timeit.default_timer()
-    intersection = gp.sjoin(road_data, geodf, how = 'inner', op = 'intersects')[['index', 'geometry', 'cell_x', 'cell_y', 'cell_id'] + columns]
+    intersection = gp.sjoin(road_data, geodf, how = 'inner', op = 'intersects')[['index', 'geometry', 'cell_id'] + columns]
     print("%s::extract_road_data() : [INFO] intersection in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
-
-    return intersection.drop_duplicates(subset = ['cell_id'])[['cell_x', 'cell_y', 'cell_id']]
+    return intersection.drop_duplicates(subset = ['cell_id'])[['cell_id']]
 
 def rebrand_auth(data):
     for at in sorted(auth_types.keys()):
@@ -96,11 +95,12 @@ def add_cells(data, cell_size):
     # add cell ids to data, based on [new_lat, new_lon]
     data['cell_x'] = data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * xx)).astype(int)
     data['cell_y'] = data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * yy)).astype(int)
+    # drop rows with out-of-bounds cell coords
+    data.drop(data[(data['cell_y'] < 0) | (data['cell_x'] < 0) | (data['cell_y'] > (yy - 1)) | (data['cell_x'] > (xx - 1))].index, inplace = True)
     # it will be useful to get a single integer id
-    data['cell_id'] = (data['cell_y'].apply(lambda y : (y * yy)) + data['cell_x']).astype(int)
+    data['cell_id'] = (data['cell_y'].apply(lambda y : (y * xx)) + data['cell_x']).astype(int)
 
 def add_band(data):
-
     # add 'band' column for '2.4' and '5.0'
     data['band'] = -1
     data.loc[(data['frequency'].astype(int) >= 2412) & (data['frequency'].astype(int) <= 2484), 'band'] = 0

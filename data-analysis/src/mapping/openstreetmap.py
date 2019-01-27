@@ -49,7 +49,7 @@ def get_road_hash(bbox, tags):
 def create_roads_cells_table(roads):
 
     # extract all coords per road id, into 'lat' and 'lon' columns
-    # FIXME : this looks horrible, but it works
+    # FIXME : this looks horrible, it takes too long, but it works
     roads_cells = pd.DataFrame()
     # extract all coords, into 'lat' and 'lon' columns
     groups = roads.groupby(['road_id'])
@@ -69,12 +69,24 @@ def create_roads_cells_table(roads):
         roads_cells = pd.concat([roads_cells, road[['lat', 'lon', 'road_id']]], ignore_index = True)
 
     # add cells to roads_cells
+    # NOTE : < 0 cell_x, cell_y coords are not allowed
     analysis.smc.utils.add_cells(roads_cells, cell_size = 20.0)
-    # finally, save in database
+
+    # finally, store tables in database
     conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    # store cells table
     start = timeit.default_timer()
-    roads_cells[['road_id', 'cell_id']].to_sql(con = conn, name = 'roads_cells', if_exists = 'replace')
-    print("%s::create_roads_cells_table() : [INFO] stored in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
+    cells = roads_cells[['cell_id', 'cell_x', 'cell_y']]
+    cells.rename(index = str, columns = {'cell_id' : 'id'}, inplace = True)
+    cells.drop_duplicates(subset = ['id', 'cell_y', 'cell_x'], inplace = True)
+    cells.to_sql(con = conn, name = 'cells', if_exists = 'append', index = False)
+    print("%s::create_roads_cells_table() : [INFO] stored cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
+
+    # store roads_cells junction table
+    start = timeit.default_timer()
+    roads_cells[['road_id', 'cell_id']].drop_duplicates().to_sql(con = conn, name = 'roads_cells', if_exists = 'append', index = False)
+    print("%s::create_roads_cells_table() : [INFO] stored roads_cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
 def create_roads_table(output_dir, road_hash):
 
@@ -102,7 +114,7 @@ def create_roads_table(output_dir, road_hash):
     # FIXME : encapsulate the code below in to_sql() function
     conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
     start = timeit.default_timer()
-    lengths.to_sql(con = conn, name = 'roads', if_exists = 'replace', index_label = 'id')
+    # lengths.to_sql(con = conn, name = 'roads', if_exists = 'append', index_label = 'id')
     print("%s::create_roads_table() : [INFO] stored in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
     # create roads_cells join table

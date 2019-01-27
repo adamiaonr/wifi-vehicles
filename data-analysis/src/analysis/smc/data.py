@@ -120,10 +120,10 @@ def to_sql(input_dir,
         # add cell ids
         # FIXME : this is wrong, since cell ids depend on cell size
         analysis.smc.utils.add_cells(chunk, cell_size)
-        chunk = chunk[['timestamp', 'session_id', 'essid', 'bssid', 'rss', 'auth', 'frequency', 'band', 'cell_x', 'cell_y', 'cell_id', 'lat', 'lon', 'gps_error']].reset_index(drop = True)
+        chunk = chunk[['timestamp', 'session_id', 'essid', 'bssid', 'rss', 'auth', 'frequency', 'band', 'cell_id', 'lat', 'lon', 'gps_error']].reset_index(drop = True)
 
         # set column ['in_road'] = 1 if measurement made from a road
-        intersection = analysis.smc.utils.get_road_intersection(chunk[['cell_x', 'cell_y', 'cell_id', 'lat', 'lon']], road_data)
+        intersection = analysis.smc.utils.get_road_intersection(chunk[['cell_id', 'lat', 'lon']], road_data)
         chunk['in_road'] = 0
         chunk.loc[chunk['cell_id'].isin(intersection['cell_id']), 'in_road'] = 1
 
@@ -145,12 +145,12 @@ def to_sql(input_dir,
         # data types
         for c in ['bssid', 'essid']:
             chunk[c] = chunk[c].astype(str)
-        for c in ['cell_x', 'cell_y', 'cell_id', 'timestamp', 'session_id', 'rss', 'frequency', 'band', 'in_road', 'auth', 're_auth', 'operator', 'operator_known', 'operator_public']:
+        for c in ['cell_id', 'timestamp', 'session_id', 'rss', 'frequency', 'band', 'in_road', 'auth', 're_auth', 'operator', 'operator_known', 'operator_public']:
             chunk[c] = [str(s).split(',')[0] for s in chunk[c]]
             chunk[c] = chunk[c].astype(int)
         for c in ['lat', 'lon', 'gps_error']:
             chunk[c] = chunk[c].astype(float)
 
-        chunk.to_sql(con = conn, name = 'sessions', if_exists = 'append')
+        chunk.to_sql(con = conn, name = 'sessions', if_exists = 'append', index = False)
 
         print("%s::to_sql() : [INFO] duration : %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))

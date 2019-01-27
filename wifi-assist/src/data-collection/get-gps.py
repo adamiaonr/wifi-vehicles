@@ -31,23 +31,9 @@ def restart_gpsd(dev_file = '/dev/ttyUSB0'):
     cmd = ["start-gps", dev_file]
     proc = subprocess.call(cmd)
 
-def restart_service(service = 'ntp'):
-    cmd = ["service", service, "restart"]
-    proc = subprocess.call(cmd)
-
 def convert_to_unix(time_string):
     # 2017-11-01T16:46:52.000Z
     return int(time.mktime(datetime.datetime.strptime(time_string.split(".")[0], "%Y-%m-%dT%H:%M:%S").timetuple()))
-
-def capture(iface, output_file, mode = 'ap'):
-    # tcpdump -i <iface> -y IEEE802_11_RADIO -s0 -w <file>
-    cmd = ''
-    if mode == 'ap':
-        cmd = ["tcpdump", "-i", iface, "-s0", "-w", output_file]
-    elif mode == 'monitor':
-        cmd = ["tcpdump", "-i", iface, "-y", "IEEE802_11_RADIO", "-s0", "-w", output_file]
-
-    proc = subprocess.Popen(cmd)
 
 if __name__ == "__main__":
 
@@ -64,21 +50,8 @@ if __name__ == "__main__":
          help = """dir on which to save .csv files""")
 
     parser.add_argument(
-        "--monitor-iface", 
-         help = """wifi iface in monitor mode. e.g.: '--monitor-iface wlx24050f9e2cb1'""")
-
-    parser.add_argument(
-        "--ap-iface", 
-         help = """wifi iface in 'ap' (master) mode. e.g.: '--ap-iface wlx24050f7d57c1'""")
-
-    parser.add_argument(
         "--restart-gpsd", 
          help = """restart gpsd daemon""",
-         action = 'store_true')
-
-    parser.add_argument(
-        "--restart-ntp", 
-         help = """restart ntp daemon""",
          action = 'store_true')
 
     args = parser.parse_args()
@@ -91,19 +64,13 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    # restart ntp
-    if args.restart_ntp:
-        restart_service('ntp')
-
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
 
     # gps log file (0 buffering)
     file_timestamp = str(time.time()).split('.')[0]
     filename = os.path.join(args.output_dir, 'gps-log.' + file_timestamp + '.csv')
-    #if os.path.exists(filename):
-    #    gps_log = csv.writer(open(filename, 'a', 0))
-    #else:
+
     gps_log = csv.writer(open(filename, 'wb+', 0))
     gps_log.writerow(['timestamp'] + attrs)
 
@@ -118,15 +85,6 @@ if __name__ == "__main__":
     # connect to gps device and start listening
     gps_socket.connect()
     gps_socket.watch()
-
-    # start packet captures
-    if args.ap_iface:
-        capture_file = os.path.join(args.output_dir, ("ap." + args.ap_iface + "." + file_timestamp + ".pcap"))
-        capture(args.ap_iface, capture_file, mode = 'ap')
-
-    if args.monitor_iface:
-        capture_file = os.path.join(args.output_dir, ("monitor." + args.monitor_iface + "." + file_timestamp + ".pcap"))
-        capture(args.monitor_iface, capture_file, mode = 'monitor')
 
     stop_loop = False
     last_timestamp = 0
@@ -158,8 +116,5 @@ if __name__ == "__main__":
         # keep collecting data till a CTRL+C is caught...
         if stop_loop:
             break
-
-    cmd = ["pkill", "-f", "tcpdump"]
-    proc = subprocess.call(cmd)
 
     sys.exit(0)

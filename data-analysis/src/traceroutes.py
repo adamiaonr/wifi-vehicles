@@ -120,7 +120,7 @@ if __name__ == "__main__":
     road_hash = mapping.openstreetmap.extract_roads(args.output_dir)
     road_cells_dir = mapping.openstreetmap.extract_road_cells(args.output_dir, road_hash)
 
-    #mapping.openstreetmap.create_roads_table(args.output_dir, road_hash)
-    extract_road_stats(args.output_dir)
+    mapping.openstreetmap.create_roads_table(args.output_dir, road_hash)
+    #extract_road_stats(args.output_dir)
 
     sys.exit(0)

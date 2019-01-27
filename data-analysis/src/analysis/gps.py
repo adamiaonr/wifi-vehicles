@@ -62,14 +62,11 @@ def get_cell_datetimes(gps_data):
     return sorted(timestamps)
 
 def get_cell_num(cell_size, lat = [LATN, LATS], lon = [LONW, LONE]):
-
     # x-axis : longitude
     LAT = sum(np.array(lat)) / 2.0
-
     X_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LAT, lon[0], LAT, lon[1]) / cell_size)))
     # y-axis : latitude
     Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(lat[0], 0.0, lat[1], 0.0) / cell_size)))
-
     return X_CELL_NUM, Y_CELL_NUM
 
 def add_lap_numbers(data, lap_timestamps):

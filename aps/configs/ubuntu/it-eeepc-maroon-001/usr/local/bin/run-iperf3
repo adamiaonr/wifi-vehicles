@@ -60,8 +60,8 @@ fi
 # change channel on the monitoring iface to that of the comm. iface
 echo "$channel:HT$bw"
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
-# run experimental scripts
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --output-dir "$output_dir" &
+# # run experimental scripts
+# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --output-dir "$output_dir" &
 
 # iperf3-to-mobile.py not used anymore, instead we use:
 #	- call tcpdump directly in script
