@@ -46,45 +46,23 @@ CELL_SIZE = 20.0
 def get_road_hash(bbox, tags):
     return hashlib.md5(','.join([str(c) for c in bbox]) + ',' + ','.join(tags)).hexdigest()
 
-def create_roads_cells_table(roads):
+def create_roads_cells_table(output_dir, road_hash):
 
-    # extract all coords per road id, into 'lat' and 'lon' columns
-    # FIXME : this looks horrible, it takes too long, but it works
-    roads_cells = pd.DataFrame()
-    # extract all coords, into 'lat' and 'lon' columns
-    groups = roads.groupby(['road_id'])
-    for name, group in groups:
-        group['coords'] = group['geometry'].apply(lambda x : list(x.coords))
-        road = []
-        for i, r in group.iterrows():
-            _road = pd.DataFrame()
-            _road['coords'] = r['coords']
-            _road['road_id'] = name
-
-            road.append(_road)
-
-        road = pd.concat(road, ignore_index = True)
-        road['lat'] = road['coords'].apply(lambda x : x[1])
-        road['lon'] = road['coords'].apply(lambda x : x[0])
-        roads_cells = pd.concat([roads_cells, road[['lat', 'lon', 'road_id']]], ignore_index = True)
-
-    # add cells to roads_cells
-    # NOTE : < 0 cell_x, cell_y coords are not allowed
-    analysis.smc.utils.add_cells(roads_cells, cell_size = 20.0)
-
-    # finally, store tables in database
     conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+    # load roads
+    roads = pd.read_sql('SELECT * FROM roads', con = conn)
+    # load cells (intersection w/ roads)
+    cells = gp.GeoDataFrame.from_file(os.path.join(output_dir, ("cells/%s" % (road_hash))))
+    print(len(cells))
+    cells = cells.dropna(subset = ['name']).reset_index(drop = True)
+    cells['name'] = cells['name'].apply(lambda x : x.encode('utf-8'))
+    cells['name_hash'] = cells['name'].apply(lambda x : hashlib.md5(x).hexdigest())
 
-    # store cells table
-    start = timeit.default_timer()
-    cells = roads_cells[['cell_id', 'cell_x', 'cell_y']]
-    cells.rename(index = str, columns = {'cell_id' : 'id'}, inplace = True)
-    cells.drop_duplicates(subset = ['id', 'cell_y', 'cell_x'], inplace = True)
-    cells.to_sql(con = conn, name = 'cells', if_exists = 'append', index = False)
-    print("%s::create_roads_cells_table() : [INFO] stored cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
-
+    # merge cells w/ roads 
+    roads_cells = pd.merge(cells[['cell_id', 'name_hash']], roads[['id', 'name_hash']], on = ['name_hash'], how = 'left')
     # store roads_cells junction table
     start = timeit.default_timer()
+    roads_cells['road_id'] = roads_cells['id']
     roads_cells[['road_id', 'cell_id']].drop_duplicates().to_sql(con = conn, name = 'roads_cells', if_exists = 'append', index = False)
     print("%s::create_roads_cells_table() : [INFO] stored roads_cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
@@ -114,15 +92,15 @@ def create_roads_table(output_dir, road_hash):
     # FIXME : encapsulate the code below in to_sql() function
     conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
     start = timeit.default_timer()
-    # lengths.to_sql(con = conn, name = 'roads', if_exists = 'append', index_label = 'id')
+    lengths.to_sql(con = conn, name = 'roads', if_exists = 'append', index_label = 'id')
     print("%s::create_roads_table() : [INFO] stored in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
-    # create roads_cells join table
-    lengths['road_id'] = lengths.index.values
-    start = timeit.default_timer()
-    roads = pd.merge(roads, lengths[['name_hash', 'road_id']], on = ['name_hash'], how = 'left')
-    print("%s::create_roads_table() : [INFO] merge took %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
-    create_roads_cells_table(roads)
+    # # create roads_cells join table
+    # lengths['road_id'] = lengths.index.values
+    # start = timeit.default_timer()
+    # roads = pd.merge(roads, lengths[['name_hash', 'road_id']], on = ['name_hash'], how = 'left')
+    # print("%s::create_roads_table() : [INFO] merge took %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
+    # create_roads_cells_table(roads)
 
 def extract_roads(output_dir, 
     bbox = [LONW, LATS, LONE, LATN], 
@@ -154,40 +132,47 @@ def extract_roads(output_dir,
     roads[roads.type == 'LineString'].to_file(road_dir, driver = 'ESRI Shapefile')
     return road_hash
 
-def extract_road_cells(
+def extract_cells(
     output_dir, 
     road_hash,
-    center = [LAT, LON], 
-    bbox = [LONW, LATS, LONE, LATN], 
-    cell_size = CELL_SIZE):
+    cell_size = CELL_SIZE,
+    force = False):
 
     road_cells_dir = os.path.join(output_dir, 'cells')
     if not os.path.isdir(road_cells_dir):
         os.makedirs(road_cells_dir)
 
     road_cells_dir = os.path.join(road_cells_dir, road_hash)
-    if os.path.isdir(road_cells_dir):
+    if os.path.isdir(road_cells_dir) and (not force):
         sys.stderr.write("""[INFO] %s exists. skipping cell intersection.\n""" % (road_cells_dir))
         return road_cells_dir
 
-    # x and y span (in meters) of the map, derived from geo coordinate limits
-    # NOTE : y is the vertical axis (latitude), x is the horizontal axis (longitude)
-    Y_SPAN = mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
-    # FIXME : an x span depends on the latitude, and we're assuming a fixed latitude
-    X_SPAN = mapping.utils.gps_to_dist(bbox[0], center[0], bbox[2], center[0])
+    # # x and y span (in meters) of the map, derived from geo coordinate limits
+    # # NOTE : y is the vertical axis (latitude), x is the horizontal axis (longitude)
+    # Y_SPAN = mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
+    # # FIXME : an x span depends on the latitude, and we're assuming a fixed latitude
+    # X_SPAN = mapping.utils.gps_to_dist(bbox[0], center[0], bbox[2], center[0])
 
-    # grid of polygons w/ cell_size side dimension
-    # adapted from https://gis.stackexchange.com/questions/269243/create-a-polygon-grid-using-with-geopandas
-    # nr. of intervals in x and y axis 
-    x = int(np.ceil(X_SPAN / cell_size))
-    y = int(np.ceil(Y_SPAN / cell_size))
+    # # extract nr. of cells in the designated area
+    # xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
 
-    w = (LONE - LONW) / float(x)
-    h = (LATN - LATS) / float(y)
+    # # grid of polygons w/ cell_size side dimension
+    # # adapted from https://gis.stackexchange.com/questions/269243/create-a-polygon-grid-using-with-geopandas
+    # # nr. of intervals in x and y axis 
+    # x = int(np.ceil(X_SPAN / cell_size))
+    # y = int(np.ceil(Y_SPAN / cell_size))
+
+    # extract nr. of cells in the designated area
+    xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
+    w = (LONE - LONW) / float(xx)
+    h = (LATN - LATS) / float(yy)
+
+    cells = pd.DataFrame(columns = ['id', 'cell_x', 'cell_y'])
 
     polygons = []
-    for i in range(x):
-        for j in range(y):
+    cells = []
+    for i in range(xx):
+        for j in range(yy):
             polygons.append(
                 shapely.geometry.Polygon(
                     [
@@ -197,15 +182,23 @@ def extract_road_cells(
                     (LONW + (i * w), LATS + ((j + 1) * h))
                     ]))
 
-    grid = gp.GeoDataFrame({'geometry':polygons})
-    # the CRS is 4326 (or WGS84), the one used by GPS
+            cells.append({'id' : int((j * xx) + i), 'cell_x' : i, 'cell_y' : j})
+
+    cells = pd.DataFrame(cells)
+    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+    start = timeit.default_timer()
+    cells.to_sql(con = conn, name = 'cells', if_exists = 'append', index = False)
+    print("%s::extract_cells() : [INFO] stored cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
+
+    grid = gp.GeoDataFrame({'geometry' : polygons, 'cell_id' : cells['id'].tolist()})
+    # the CRS of grid is 4326 (or WGS84), the one used by GPS    
     grid.crs = {'init' : 'epsg:4326'}
     # get road information
     roads = gp.GeoDataFrame.from_file(os.path.join(output_dir, road_hash))
     # calculate intersection w/ roads (this is INSANELY fast...)
     start = timeit.default_timer()
-    intersections = gp.sjoin(grid, roads, how = "inner", op = 'intersects').reset_index()[['index', 'geometry', 'name']].drop_duplicates(subset = 'index')
-    print("%s::extract_road_cells() : [INFO] geopandas sjoin in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
+    intersections = gp.sjoin(grid, roads, how = "inner", op = 'intersects').reset_index()[['index', 'geometry', 'name', 'cell_id']].drop_duplicates(subset = 'index')
+    print("%s::extract_cells() : [INFO] geopandas sjoin in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
     # save intersection
     intersections.to_file(road_cells_dir, driver = 'ESRI Shapefile')
 

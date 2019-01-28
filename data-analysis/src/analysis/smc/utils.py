@@ -69,11 +69,10 @@ LONW = LON - 0.06
 
 def get_road_intersection(data, road_data, columns = []):
 
-    # create a geopandas dataframe out of data, which has 'lat' and 'lon' columns
+    # create a geopandas dataframe out of data (w/ 'lat' and 'lon' columns)
     geodf = gp.GeoDataFrame(data)
-    # add a 'geometry' column, built out of Point objects, in turn created from [lon, lat] columns
+    # add 'geometry' column, built with Point objects from 'lat' and 'LON'
     geodf['geometry'] = [ shapely.geometry.Point(tuple(x)) for x in geodf[['lon' ,'lat']].values ]
-
     if geodf.empty:
         return
 

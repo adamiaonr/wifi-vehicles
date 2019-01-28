@@ -78,15 +78,16 @@ def to_sql(input_dir,
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # load road cell coordinates
-    start_time = timeit.default_timer()
-    road_data = gp.GeoDataFrame.from_file(os.path.join(input_dir, ("traceroutes/cells/%s" % (road_hash))))
-    print("%s::to_sql() : [INFO] read road-cells file in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
-    # # encode street names in UTF-8
-    # road_data['name'].apply(lambda x : x.encode('utf-8'))
-
     # connect to SMC mysql database
     conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    # # load road cell coordinates
+    # start_time = timeit.default_timer()
+    # road_data = gp.GeoDataFrame.from_file(os.path.join(input_dir, ("traceroutes/cells/%s" % (road_hash))))
+    # print("%s::to_sql() : [INFO] read road-cells file in %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
+    road_data = pd.read_sql('SELECT * FROM roads_cells', con = conn)
+    # # encode street names in UTF-8
+    # road_data['name'].apply(lambda x : x.encode('utf-8'))
 
     # start adding data to the database
     filename = os.path.join(input_dir, "all_wf.grid.csv")
@@ -123,9 +124,9 @@ def to_sql(input_dir,
         chunk = chunk[['timestamp', 'session_id', 'essid', 'bssid', 'rss', 'auth', 'frequency', 'band', 'cell_id', 'lat', 'lon', 'gps_error']].reset_index(drop = True)
 
         # set column ['in_road'] = 1 if measurement made from a road
-        intersection = analysis.smc.utils.get_road_intersection(chunk[['cell_id', 'lat', 'lon']], road_data)
+        # intersection = analysis.smc.utils.get_road_intersection(chunk[['cell_id', 'lat', 'lon']], road_data)
         chunk['in_road'] = 0
-        chunk.loc[chunk['cell_id'].isin(intersection['cell_id']), 'in_road'] = 1
+        chunk.loc[chunk['cell_id'].isin(road_data['cell_id']), 'in_road'] = 1
 
         # link essid w/ operator
         chunk['operator'] = [ analysis.smc.utils.get_operator(s) for s in chunk['essid'].astype(str).tolist() ]
