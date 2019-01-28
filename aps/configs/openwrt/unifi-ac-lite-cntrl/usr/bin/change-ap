@@ -1,0 +1,30 @@
+#!/bin/sh
+
+if [ $# -lt 2 ]
+then
+	echo "usage : $0 <encryption> <channel>"
+	echo "options : "
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
+	echo "    <channel>: { 2.4 GHz : { 20 MHz : [ 1, 6, 11 ] }, 5 GHz : { 20 MHz : [ 36, 40 ], 40 MHz : [ 38, 46 ], 80 MHz : [42] }}"
+	exit 1
+fi
+
+if [ "$1" != "open" ] && [ "$1" != "wpa" ]
+then
+    echo "error : unrecognized wpa-encryption : $1"
+    exit 1
+fi
+
+encryption=$1
+channel=$2
+
+# symlink to correct network & dhcp config files
+ln -sfv /root/workbench/configs/etc/config/network/network.ap /etc/config/network
+ln -sfv /root/workbench/configs/etc/config/dhcp/dhcp.ap /etc/config/dhcp
+
+# symlink to correct wireless config file
+ln -sfv /root/workbench/configs/etc/config/wireless/ap/$encryption/$channel /etc/config/wireless
+# reboot so that the new configs take effect
+reboot
+
+exit 0

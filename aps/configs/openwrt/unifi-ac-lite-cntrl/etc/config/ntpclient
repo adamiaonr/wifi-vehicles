@@ -1,0 +1,27 @@
+config ntpserver
+	option hostname '10.10.13.1'
+	option port     '123'
+
+#config ntpserver
+#	option hostname '0.openwrt.pool.ntp.org'
+#	option port     '123'
+
+#config ntpserver
+#	option hostname '1.openwrt.pool.ntp.org'
+#	option port     '123'
+
+#config ntpserver
+#	option hostname '2.openwrt.pool.ntp.org'
+#	option port     '123'
+
+#config ntpserver
+#	option hostname '3.openwrt.pool.ntp.org'
+#	option port     '123'
+
+config ntpdrift
+	option freq     '0'
+
+config ntpclient
+	option interval	120
+	#option count	10
+	#option interface wan
