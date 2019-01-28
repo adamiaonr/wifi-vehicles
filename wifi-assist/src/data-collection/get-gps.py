@@ -93,9 +93,14 @@ if __name__ == "__main__":
 
         timestamp = str(time.time())
         keys = [str(x) for x in gps_out.keys()]
-        if not all(e in keys for e in attrs):
+
+        if not all(e in keys for e in ['time', 'lat', 'lon']):
             print("error : not enough keys. continuing.")
             continue
+
+        for e in ['alt', 'speed', 'epx', 'epy', 'epv', 'eps']:
+            if e not in keys:
+                gps_out[e] = -1.0
 
         # convert time to unix timestamp format
         gps_out['time'] = convert_to_unix(gps_out['time'])
