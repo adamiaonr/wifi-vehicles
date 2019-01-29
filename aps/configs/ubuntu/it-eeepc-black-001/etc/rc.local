@@ -10,21 +10,7 @@
 # bits.
 #
 # By default this script does nothing.
-#iptables -t nat -A POSTROUTING -s 10.10.10.0/24 ! -d 10.10.10.0/24 -j MASQUERADE
 sudo iptables -t nat -A POSTROUTING -s 10.10.12.0/24 ! -d 10.10.12.0/24 -j MASQUERADE
-sudo iptables -t nat -A POSTROUTING -s 10.10.13.0/24 ! -d 10.10.13.0/24 -j MASQUERADE
-
-# route traffic to the network of it-unifi-ac-lite-2 : 10.10.11.0/24
-# FIXME : shouldn't we check if it exists first?
-sudo route add -net 10.10.11.0/24 gw 10.10.13.208 dev wlan-cntrl
-
-# run the webserver for node status
-pkill -f --signal 2 webserver.py
-python $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/webserver.py &> /dev/null < /dev/null &
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.1 --port 8081 --mode "backbone" --output-dir $HOME/workbench/range-tests/vehicular-traces &> /dev/null < /dev/null &
-
-# this is here to make the usb gps dongle work...
-#sudo systemctl stop gpsd; sudo systemctl disable gpsd;
-#sudo systemctl stop gpsd.socket; sudo systemctl disable gpsd.socket;
-#sudo pkill -f gpsd; sudo gpsd -n -D 3 /dev/ttyACM0 -F -b /var/run/gpsd.sock;
+#sudo iptables -t nat -A POSTROUTING -s 10.10.13.0/24 ! -d 10.10.13.0/24 -j MASQUERADE
+sudo route delete default gw 10.10.13.1 wlan-cntrl
 exit 0

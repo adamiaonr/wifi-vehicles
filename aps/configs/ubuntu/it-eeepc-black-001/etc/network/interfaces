@@ -19,15 +19,3 @@ auto wlan-cntrl
 iface wlan-cntrl inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
 dns-nameservers 1.1.1.1 8.8.8.8
-
-#auto wlxc46e1f263536
-#iface wlxc46e1f263536 inet static
-#hostapd /etc/hostapd/hostapd.conf
-#address 10.10.13.1
-#netmask 255.255.255.0
-#dns-nameservers 1.1.1.1 8.8.8.8
-
-#auto wlx24050f9e2cb1
-#iface wlx24050f9e2cb1 inet dhcp
-#wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-#dns-nameservers 1.1.1.1 8.8.8.8

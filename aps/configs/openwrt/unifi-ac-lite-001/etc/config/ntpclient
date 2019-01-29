@@ -1,5 +1,5 @@
 config ntpserver
-	option hostname '10.10.13.1'
+	option hostname '10.10.13.130'
 	option port     '123'
 
 #config ntpserver
