@@ -35,8 +35,12 @@ import parsing.utils
 import analysis.metrics
 import analysis.trace
 import analysis.gps
-import analysis.ap_selection.rssi
+
+import analysis.ap_selection.rss
 import analysis.ap_selection.gps
+import analysis.ap_selection.utils
+
+import plot.ap_selection.common
 
 import shapely.geometry
 
@@ -273,6 +277,7 @@ def plot_best(input_dir, trace_nr, output_dir, metrics = ['throughput']):
     fig = plt.figure(figsize = (12.5, h * 2.0))
 
     # best metric per interval
+    # time_limits = [datetime.datetime.fromtimestamp(1548779160.0), datetime.datetime.fromtimestamp(1548780180.0)]
     time_limits = [None, None]
     axs = []
     for i, metric in enumerate(metrics):
@@ -287,6 +292,7 @@ def plot_best(input_dir, trace_nr, output_dir, metrics = ['throughput']):
 
     # adjust time xx scale to be the same for all graphs
     # divide xx axis in 5 ticks
+    # time_limits = [datetime.datetime.fromtimestamp(1548779160.0), datetime.datetime.fromtimestamp(1548780180.0)]    
     for ax in axs:
         #x-label
         ax.set_xlabel('time')
@@ -315,8 +321,112 @@ def plot_distances(input_dir, trace_nr, output_dir):
     fig.tight_layout()
     plt.savefig(os.path.join(output_dir, ("distances.pdf")), bbox_inches = 'tight', format = 'pdf')
 
+def plot_trace_description_indiv(input_dir, trace_nr, output_dir, metric, time_limits = [None, None]):
+
+    plt.style.use('classic')
+    fig = plt.figure(figsize = (5.0, 2.0))
+    ax = fig.add_subplot(1, 1, 1)
+
+    if metric in ['throughput', 'wlan data rate']:
+        plot.trace.rates(ax, input_dir, trace_nr, metric, time_limits = time_limits)
+    elif metric == 'channel_util':
+        plot.trace.channel_util(ax, input_dir, trace_nr, time_limits = time_limits)
+    elif metric == 'distances':
+        plot.trace.distances(ax, input_dir, trace_nr, time_limits = time_limits)
+    elif metric == 'rss':
+        plot.trace.rss(ax, input_dir, trace_nr, time_limits = time_limits)
+
+    # adjust time xx scale to be the same for all graphs
+    # divide xx axis in 5 ticks
+    # time_limits = [datetime.datetime.fromtimestamp(1548779160.0), datetime.datetime.fromtimestamp(1548779700.0)]    
+    # time_limits = [datetime.datetime.fromtimestamp(1548779262.0), datetime.datetime.fromtimestamp(1548780180.0)]    
+    # x-label
+    ax.set_xlabel('time (sec)')
+    # x-lim
+    ax.set_xlim(time_limits[0], time_limits[1])
+    if metric == 'rss':
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 0.75))
+    else:
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
+
+    # x-ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+    ax.set_xticks(xticks)
+    # ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+    xticklabels = [''] * len(xticks)
+    for i in list(np.arange(0, len(xticklabels), 5)):
+        xticklabels[i] = (((xticks[i].astype('uint64') / 1e6).astype('uint32')) - ((xticks[0].astype('uint64') / 1e6).astype('uint32')))
+    ax.set_xticklabels(xticklabels, ha = 'center')
+
+    # fig.tight_layout()
+    plt.savefig(os.path.join(output_dir, ("trace-description/%s.pdf" % (('-'.join([str(v) for v in metric.split(' ')])).replace('_', '-')))), bbox_inches = 'tight', format = 'pdf')
+
+def plot_trace_description(input_dir, trace_nr, output_dir, mode = 'all', time_limits = [None, None]):
+
+    if mode == 'indiv':
+
+        for metric in ['throughput', 'wlan data rate', 'channel_util', 'distances', 'rss']:
+            plot_trace_description_indiv(input_dir, trace_nr, output_dir, metric)
+
+    else:
+
+        plt.style.use('classic')
+        fig = plt.figure(figsize = ((2.0 * 6.25), 3 * (2.0 * 1.5)))
+
+        # best metric per interval
+        axs = []
+
+        ax = fig.add_subplot(3, 2, 1)
+        plot.trace.rates(ax, input_dir, trace_nr, metric = 'throughput')
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
+        axs.append(ax)
+
+        ax = fig.add_subplot(3, 2, 2)
+        plot.trace.rates(ax, input_dir, trace_nr, metric = 'wlan data rate')
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
+        axs.append(ax)
+
+        ax = fig.add_subplot(3, 2, 3)
+        plot.trace.channel_util(ax, input_dir, trace_nr)
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
+        axs.append(ax)
+
+        ax = fig.add_subplot(3, 2, 4)
+        plot.trace.distances(ax, input_dir, trace_nr)
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
+        axs.append(ax)
+
+        ax = fig.add_subplot(3, 2, 5)
+        plot.trace.rss(ax, input_dir, trace_nr)
+        ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 0.75))
+        axs.append(ax)
+
+        ax = fig.add_subplot(3, 2, 6)
+        plot.trace.rss_distance(ax, input_dir, trace_nr)
+
+        # adjust time xx scale to be the same for all graphs
+        # divide xx axis in 5 ticks
+        time_limits = [datetime.datetime.fromtimestamp(time_limits[0]), datetime.datetime.fromtimestamp(time_limits[1])]
+        for ax in axs:
+
+            #x-label
+            ax.set_xlabel('time (sec)')
+            # x-lim
+            ax.set_xlim(time_limits[0], time_limits[1])            
+            # x-ticks
+            xticks = plot.utils.get_time_xticks(time_limits)
+            ax.set_xticks(xticks)
+            # ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+            xticklabels = [''] * len(xticks)
+            for i in list(np.arange(0, len(xticklabels), 5)):
+                xticklabels[i] = (((xticks[i].astype('uint64') / 1e6).astype('uint32')) - ((xticks[0].astype('uint64') / 1e6).astype('uint32')))
+            ax.set_xticklabels(xticklabels, ha = 'center')
+
+        fig.tight_layout()
+        plt.savefig(os.path.join(output_dir, ("trace-description.pdf")), bbox_inches = 'tight', format = 'pdf')
+
 def handle_list_dbs(input_dir, trace_nr):
-    dbs = analysis.trace.get_dbs(input_dir, trace_nr)
+    dbs = analysis.trace.get_db(input_dir, trace_nr)
     sys.stderr.write("""%s: [INFO] keys in .hdfs database:\n""" % (sys.argv[0]))
     for db in dbs:
         print('\t%s' % (db))
@@ -450,192 +560,403 @@ if __name__ == "__main__":
     trace = trace_list[trace_list['trace-nr'] == int(args.trace_nr)]
     trace_dir = os.path.join(args.input_dir, ("trace-%03d" % (int(args.trace_nr))))
     trace_db_file = os.path.join(trace_dir, "processed/database.hdf5")
-
     trace_output_dir = os.path.join(args.output_dir, ("trace-%03d" % (int(args.trace_nr))))
+
     if not os.path.isdir(trace_output_dir):
         os.makedirs(trace_output_dir)
 
-    if bitrate:
-        plot.trace.bitrate(args.input_dir, args.trace_nr, trace_output_dir)
-        sys.exit(0)
+    # if bitrate:
+    #     plot.trace.bitrate(args.input_dir, args.trace_nr, trace_output_dir)
+    #     sys.exit(0)
 
-    if not compare_only:
+    # analysis.trace.extract_bitrates(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
+    # analysis.trace.extract_distances(args.input_dir, args.trace_nr)
+    # analysis.trace.extract_channel_util(args.input_dir, args.trace_nr)
 
-        # if trace rx data doesn't exist, extract it now
-        if not os.path.isfile(trace_db_file):
-            # extract rx data w/ default options
-            analysis.trace.extract_rx_features(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
+    laps = analysis.gps.get_lap_timestamps(args.input_dir, args.trace_nr, threshold = 125.0)
+    time_limits = [laps.iloc[0]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']]
 
-        # calculate the 'cadillac' periods, according to different metrics
-        # for metric in ['throughput', 'wlan rssi', 'dist', 'wlan data rate']:
-        #     analysis.trace.calc_best(args.input_dir, args.trace_nr, metric = metric, force_calc = False)
+    plot_trace_description(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits)
+    # plot.trace.maps(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits, redraw = True)
 
-        # plot_best(args.input_dir, args.trace_nr, trace_output_dir, metrics = ['throughput', 'wlan rssi', 'wlan data rate', 'dist'])
-        # plot_distances(args.input_dir, args.trace_nr, trace_output_dir)
-        # plot.trace.cells(args.input_dir, args.trace_nr, trace_output_dir, cell_size = 20.0)
+    # # calculate the 'cadillac' periods, according to different metrics
+    # for metric in ['throughput', 'rss', 'wlan data rate', 'distances']:
+    #     analysis.trace.extract_best(args.input_dir, args.trace_nr, metric = metric, smoothen = True, force_calc = False)
 
-        # arguments for each method to evaluate
-        # ground_truth_metric = 'wlan data rate'
-        ground_truth_metric = 'throughput'
+    # plot_best(args.input_dir, args.trace_nr, trace_output_dir, metrics = ['throughput', 'rss', 'wlan data rate', 'distances'])
 
-        # plot configs
-        configs = defaultdict(defaultdict)
+    laps = analysis.gps.get_lap_timestamps(args.input_dir, args.trace_nr, threshold = 125.0)
+    time_limits = [laps.iloc[0]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']]
 
-        # date : basic
-        configs['best-rssi'] = {
-            'method' : 'periodic',
-            'args' : {'scan-period' : 5.0, 'scan-time' : 1.0},
-            'title' : ('best RSS (scan period : %s sec, scan duration : %s sec)' % (5.0, 0.0)),
-            'sub-title' : ('best RSS (%s gain)' % (ground_truth_metric)),
-            'y-label' : 'RSS (dBm)',
-            'y-sec-label' : 'throughput (Mbps)',
-            # 'y-sec-label' : 'wlan data rate (Mbps)',
-            'coef' : 1.0 / 1000000.0,
-            'show' : 'gain-only'
-        }
+    # # strongest rss (dual-band)
+    # analysis.ap_selection.rss.strongest_rss(
+    #     args.input_dir, args.trace_nr, 
+    #     args = {'scan-period' : 5.0, 'scan-time' : 0.5, 'bands' : 3}, 
+    #     force_calc = False)
+    # analysis.ap_selection.utils.extract_performance(
+    #     args.input_dir, args.trace_nr, 
+    #     db_selection = '/selection/rss/strongest-rss/5.0/0.5/3',
+    #     force_calc = False)
 
-        # # periodic scan + pick best rssi analysis
-        # analysis.ap_selection.rssi.periodic(args.input_dir, args.trace_nr,
-        #     method = 'periodic',
-        #     args = configs['best-rssi']['args'])
+    # # strongest rss (5 GHz)
+    # analysis.ap_selection.rss.strongest_rss(
+    #     args.input_dir, args.trace_nr, 
+    #     args = {'scan-period' : 5.0, 'scan-time' : 0.5, 'bands' : 2}, 
+    #     force_calc = False)
+    # analysis.ap_selection.utils.extract_performance(
+    #     args.input_dir, args.trace_nr, 
+    #     db_selection = '/selection/rss/strongest-rss/5.0/0.5/2',
+    #     force_calc = False)
 
-        for l in [0]:
-            for w in [5]:
+    # scripted handoffs
+    analysis.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
+        args = {
+            'metric' : 'rss',
+            'cell-size' : 5.0,
+            'stat' : 'mean',
+            'stat-args' : {'alpha' : 0.75, 'w' : 0}
+        },
+        force_calc = True)
 
-                # scan : band steering
-                stat = 'mean'
-                stat_args = {'alpha' : 0.75, 'w' : w}
-                configs['band-steering'] = {
-                    'method' : 'band-steering',
-                    'args' : {
-                        'scan-period' : 5.0, 'scan-time' : 1.0, 'cell-size' : 20.0, 
-                        'metric' : ground_truth_metric, 'stat' : ('%s' % (stat)), 'stat-args' : stat_args, 
-                        'use-current-lap' : l, 'use-direction' : 0},
-                    'title' : ('band steering (scan period : %s sec, scan dur. : %s sec, cell size : %s m, stat : %s)' % (5.0, 0.0, 20.0, stat)),
-                    'sub-title' : ('band steering (%s gain)' % (ground_truth_metric)),
-                    'y-label' : 'RSS (dBm)',
-                    'y-sec-label' : 'throughput (Mbps)',
-                    # 'y-sec-label' : 'wlan data rate (Mbps)',
-                    'coef' : 1.0 / 1000000.0,
-                    'show' : 'gain-only'
-                }
+    analysis.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
+        db_selection = '/selection/rss/gps/scripted-handoffs',
+        force_calc = True)
 
-                # gps : best <stat>.<metric> history of current cell
-                # stat = 'mean'
-                stat_args = {'alpha' : 0.75, 'w' : w}
-                cell_size = 20.0
-                configs['best-cell'] = {
-                    'args' : {
-                        'cell-size' : cell_size, 
-                        'metric' : ground_truth_metric, 'stat' : ('%s' % (stat)), 'stat-args' : stat_args,
-                        'use-current-lap' : l, 'use-direction' : 0},
-                    'title' : ('loc. history (%s) (cell size : %s m, stat : %s)' % (ground_truth_metric, cell_size, stat)),
-                    'sub-title' : ('loc. history (%s gain)' % (ground_truth_metric)),
-                    'y-label' : 'throughput (Mbps)',
-                    # 'y-label' : 'wlan data rate (Mbps)',
-                    'y-sec-label' : 'throughput (Mbps)',
-                    'coef' : 1.0 / 1000000.0,
-                    'show' : 'gain-only'
-                }
+    # # cell history
+    # analysis.ap_selection.gps.cell_history(args.input_dir, args.trace_nr,
+    #     args = {
+    #         'metric' : 'throughput',
+    #         'cell-size' : 20.0,
+    #         'stat' : 'max',
+    #         'stat-args' : {'alpha' : 0.75, 'w' : 0}
+    #     },
+    #     force_calc = False)
 
-                # scan : scan + pick best <stat>.<metric> history of current cell, 
-                # stat = 'mean'
-                stat_args = {'alpha' : 0.75, 'w' : w}
-                cell_size = 20.0
-                configs['history'] = {
-                    'method' : 'history',
-                    'args' : {
-                        'scan-period' : 5.0, 'scan-time' : 1.0, 'cell-size' : cell_size, 
-                        'metric' : ground_truth_metric, 'stat' : ('%s' % (stat)), 'stat-args' : stat_args, 
-                        'use-current-lap' : l, 'use-direction' : 0},
-                    'title' : ('scan + loc. history (%s) (scan period : %s sec, scan dur. : %s sec, cell size : %s m, stat : %s)' % (ground_truth_metric, 5.0, 0.0, cell_size, stat)),
-                    'sub-title' : ('scan + loc. history (%s gain)' % (ground_truth_metric)),
-                    'y-label' : 'RSS (dBm)',
-                    'y-sec-label' : 'throughput (Mbps)',
-                    # 'y-sec-label' : 'wlan data rate (Mbps)',
-                    'coef' : 1.0 / 1000000.0,
-                    'show' : 'gain-only'
-                }
+    # cell history (optimized)
+    analysis.ap_selection.gps.optimize_handoffs(args.input_dir, args.trace_nr,
+        args = {
+            'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+            'metric' : 'throughput',
+            'cell-size' : 20.0,
+            'stat' : 'max',
+            'stat-args' : {'alpha' : 0.75, 'w' : 0},
+        },
+        force_calc = False)
 
-                # # date : band steering
-                # analysis.ap_selection.rssi.band_steering(args.input_dir, args.trace_nr,
-                #     method = 'band-steering',
-                #     args = configs['band-steering']['args'],
-                #     force_calc = False)
-
-                # # gps : cell history
-                # analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
-                #     args = configs['best-cell']['args'],
-                #     force_calc = False)
-
-                # # date : history assisted
-                # analysis.ap_selection.rssi.history(args.input_dir, args.trace_nr,
-                #     method = 'history',
-                #     args = configs['history']['args'],
-                #     force_calc = False)
-
-                plot_ap_selection(args.input_dir, args.trace_nr, trace_output_dir, 
-                    gt_metric = ground_truth_metric,
-                    # methods = ['best-rssi', 'band-steering', 'history', 'best-cell'],
-                    methods = ['best-rssi', 'history'],
-                    configs = configs, 
-                    redraw = True)
-
-    if compare:
-
-        # plot_bands(args.input_dir, args.trace_nr, trace_output_dir, configs = {'gt-metric' : 'throughput'})
-
-        metric = 'throughput'
-        stat = {'stat' : 'ewma', 'stat-args' : '0.75-5', 'lap-usage' : '0-0'}
-        plot.trace.compare(args.input_dir, args.trace_nr, trace_output_dir,
-            configs = {
-                'gt-metric' : metric,
-                'metric-alias' : 'thghpt',
-                'stat' : stat,
-                'types' : ['rate', 'time'],
-                'y-label' : {
-                    'rate' : 'throughput (Mbps)',
-                    'data' : 'data volume (MByte)',
-                    'time' : 'time (sec)'
+    plot.ap_selection.common.compare(
+        args.input_dir, args.trace_nr, trace_output_dir,
+        configs = {
+            'filename' : 'selection-comparison-thghpt',
+            'time-limits' : [laps.iloc[2]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']],
+            'methods' : {
+                '0:best' : {
+                    'db' : '/best/throughput',
+                    'x-ticklabel' : 'opt.'
                 },
-                'algorithms' : {
-                    '0:best' : {
-                        'data' : ('/%s/%s' % ('best', metric)),
-                        'x-ticklabel' : 'best',
-                        # 'color' : 'yellow',
-                        'coef' : 1.0 / 1000000.0
-                    },
-                    '1:baseline' : {
-                        'data' : '/best-rssi/periodic/5/1',
-                        'x-ticklabel' : 'best RSS',
-                        # 'color' : 'red',
-                        'coef' : 1.0 / 1000000.0
-                    },
-                    '3:band-steering' : {
-                        'data' : ('/best-rssi/band-steering/5.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                        'x-ticklabel' : 'band steering',
-                        # 'color' : 'blue',
-                        'coef' : 1.0 / 1000000.0
-                    },
-                    '2:best-of-cell' : {
-                        'data' : ('/best-cell/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                        'x-ticklabel' : 'loc. history',
-                        # 'color' : 'green',
-                        'coef' : 1.0 / 1000000.0
-                    },
-                    '4:scan-history' : {
-                        'data' : ('/best-rssi/history/5.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                        'x-ticklabel' : 'scan + loc. hist.',
-                        # 'color' : 'magenta',
-                        'coef' : 1.0 / 1000000.0
-                    },
-                    '5:best-overall' : {
-                        'data' : ('/best-rssi/history/5.0/1.0/5000.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
-                        'x-ticklabel' : 'ap rank',
-                        # 'color' : 'cyan',
-                        'coef' : 1.0 / 1000000.0
-                    }
-                }
-            })
+                '1:strongest-rss' : {
+                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
+                    'x-ticklabel' : 'best rss'
+                },
+                '2:strongest-rss' : {
+                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/2',
+                    'x-ticklabel' : 'best rss*'
+                },
+                '3:cell-history' : {
+                    'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
+                    'x-ticklabel' : 'scripted'
+                },
+                # '4:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
+                #     'x-ticklabel' : 'cell history (ewma)'
+                # },
+                # '5:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
+                #     'x-ticklabel' : 'cell history (5)'
+                # },
+                '6:cell-history' : {
+                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+                    'x-ticklabel' : 'cell history'
+                },
+                '7:cell-history' : {
+                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
+                    'x-ticklabel' : 'cell history**'
+                },
+                # '7:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+                #     'x-ticklabel' : 'cell history (max)'
+                # },
+            }
+        })
+
+    # plot.ap_selection.common.optimal(
+    #     args.input_dir, args.trace_nr, trace_output_dir,
+    #     configs = {
+    #         'filename' : 'optimal',
+    #         # 'time-limits' : [1548779160.0, 1548780180.0],
+    #         'time-limits' : [1548779262.0, 1548780180.0],
+    #         'optimal' : {
+    #             'db' : '/best/throughput'
+    #         },
+    #         'methods' : {
+    #             '1:strongest-rss' : {
+    #                 'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
+    #                 'label' : 'best rss',
+    #                 'color' : 'orange'
+    #             },
+    #             '2:strongest-rss' : {
+    #                 'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/2',
+    #                 'label' : 'best rss*',
+    #                 'color' : 'blue'
+    #             },
+    #             '3:cell-history' : {
+    #                 'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
+    #                 'label' : 'scripted',
+    #                 'color' : 'green'
+    #             },
+    #             # '4:cell-history' : {
+    #             #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
+    #             #     'x-ticklabel' : 'cell history (ewma)'
+    #             # },
+    #             # '5:cell-history' : {
+    #             #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
+    #             #     'x-ticklabel' : 'cell history (5)'
+    #             # },
+    #             '6:cell-history' : {
+    #                 'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+    #                 'label' : 'cell history',
+    #                 'color' : 'red'
+    #             },
+    #             # '7:cell-history' : {
+    #             #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+    #             #     'x-ticklabel' : 'cell history (max)'
+    #             # },
+    #         }
+    #     }
+    # )
+
+    plot.ap_selection.common.handoff_analysis(
+        args.input_dir, args.trace_nr, trace_output_dir,
+        configs = {
+            'filename' : 'handoff-analysis',
+            'time-limits' : [laps.iloc[2]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']],
+            'methods' : {
+                '0:best' : {
+                    'db' : '/best/throughput',
+                    'label' : 'opt.',
+                    'color' : 'gray'
+                },
+                '1:strongest-rss' : {
+                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
+                    'label' : 'best rss',
+                    'color' : 'orange'
+                },
+                '2:strongest-rss' : {
+                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/2',
+                    'label' : 'best rss*',
+                    'color' : 'blue'
+                },
+                '3:cell-history' : {
+                    'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
+                    'label' : 'scripted',
+                    'color' : 'green',
+                },
+                # '4:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
+                #     'x-ticklabel' : 'cell history (ewma)'
+                # },
+                # '5:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
+                #     'x-ticklabel' : 'cell history (5)'
+                # },
+                '6:cell-history' : {
+                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+                    'label' : 'cell history',
+                    'color' : 'red'
+                },
+                '7:cell-history' : {
+                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
+                    'label' : 'cell history**',
+                    'color' : 'pink'
+                },                
+                # '7:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+                #     'x-ticklabel' : 'cell history (max)'
+                # },
+            }
+        })
 
     sys.exit(0)
+
+    #     # calculate the 'cadillac' periods, according to different metrics
+    #     # for metric in ['throughput', 'wlan rssi', 'dist', 'wlan data rate']:
+    #     #     analysis.trace.calc_best(args.input_dir, args.trace_nr, metric = metric, force_calc = False)
+
+    #     # plot_best(args.input_dir, args.trace_nr, trace_output_dir, metrics = ['throughput', 'wlan rssi', 'wlan data rate', 'dist'])
+    #     # plot_distances(args.input_dir, args.trace_nr, trace_output_dir)
+    #     # plot.trace.cells(args.input_dir, args.trace_nr, trace_output_dir, cell_size = 20.0)
+
+    #     # arguments for each method to evaluate
+    #     # ground_truth_metric = 'wlan data rate'
+    #     ground_truth_metric = 'throughput'
+
+    #     # plot configs
+    #     configs = defaultdict(defaultdict)
+
+    #     # date : basic
+    #     configs['best-rssi'] = {
+    #         'method' : 'periodic',
+    #         'args' : {'scan-period' : 5.0, 'scan-time' : 1.0},
+    #         'title' : ('best RSS (scan period : %s sec, scan duration : %s sec)' % (5.0, 0.0)),
+    #         'sub-title' : ('best RSS (%s gain)' % (ground_truth_metric)),
+    #         'y-label' : 'RSS (dBm)',
+    #         'y-sec-label' : 'throughput (Mbps)',
+    #         # 'y-sec-label' : 'wlan data rate (Mbps)',
+    #         'coef' : 1.0 / 1000000.0,
+    #         'show' : 'gain-only'
+    #     }
+
+    #     # # periodic scan + pick best rssi analysis
+    #     # analysis.ap_selection.rssi.periodic(args.input_dir, args.trace_nr,
+    #     #     method = 'periodic',
+    #     #     args = configs['best-rssi']['args'])
+
+    #     for l in [0]:
+    #         for w in [5]:
+
+    #             # scan : band steering
+    #             stat = 'mean'
+    #             stat_args = {'alpha' : 0.75, 'w' : w}
+    #             configs['band-steering'] = {
+    #                 'method' : 'band-steering',
+    #                 'args' : {
+    #                     'scan-period' : 5.0, 'scan-time' : 1.0, 'cell-size' : 20.0, 
+    #                     'metric' : ground_truth_metric, 'stat' : ('%s' % (stat)), 'stat-args' : stat_args, 
+    #                     'use-current-lap' : l, 'use-direction' : 0},
+    #                 'title' : ('band steering (scan period : %s sec, scan dur. : %s sec, cell size : %s m, stat : %s)' % (5.0, 0.0, 20.0, stat)),
+    #                 'sub-title' : ('band steering (%s gain)' % (ground_truth_metric)),
+    #                 'y-label' : 'RSS (dBm)',
+    #                 'y-sec-label' : 'throughput (Mbps)',
+    #                 # 'y-sec-label' : 'wlan data rate (Mbps)',
+    #                 'coef' : 1.0 / 1000000.0,
+    #                 'show' : 'gain-only'
+    #             }
+
+    #             # gps : best <stat>.<metric> history of current cell
+    #             # stat = 'mean'
+    #             stat_args = {'alpha' : 0.75, 'w' : w}
+    #             cell_size = 20.0
+    #             configs['best-cell'] = {
+    #                 'args' : {
+    #                     'cell-size' : cell_size, 
+    #                     'metric' : ground_truth_metric, 'stat' : ('%s' % (stat)), 'stat-args' : stat_args,
+    #                     'use-current-lap' : l, 'use-direction' : 0},
+    #                 'title' : ('loc. history (%s) (cell size : %s m, stat : %s)' % (ground_truth_metric, cell_size, stat)),
+    #                 'sub-title' : ('loc. history (%s gain)' % (ground_truth_metric)),
+    #                 'y-label' : 'throughput (Mbps)',
+    #                 # 'y-label' : 'wlan data rate (Mbps)',
+    #                 'y-sec-label' : 'throughput (Mbps)',
+    #                 'coef' : 1.0 / 1000000.0,
+    #                 'show' : 'gain-only'
+    #             }
+
+    #             # scan : scan + pick best <stat>.<metric> history of current cell, 
+    #             # stat = 'mean'
+    #             stat_args = {'alpha' : 0.75, 'w' : w}
+    #             cell_size = 20.0
+    #             configs['history'] = {
+    #                 'method' : 'history',
+    #                 'args' : {
+    #                     'scan-period' : 5.0, 'scan-time' : 1.0, 'cell-size' : cell_size, 
+    #                     'metric' : ground_truth_metric, 'stat' : ('%s' % (stat)), 'stat-args' : stat_args, 
+    #                     'use-current-lap' : l, 'use-direction' : 0},
+    #                 'title' : ('scan + loc. history (%s) (scan period : %s sec, scan dur. : %s sec, cell size : %s m, stat : %s)' % (ground_truth_metric, 5.0, 0.0, cell_size, stat)),
+    #                 'sub-title' : ('scan + loc. history (%s gain)' % (ground_truth_metric)),
+    #                 'y-label' : 'RSS (dBm)',
+    #                 'y-sec-label' : 'throughput (Mbps)',
+    #                 # 'y-sec-label' : 'wlan data rate (Mbps)',
+    #                 'coef' : 1.0 / 1000000.0,
+    #                 'show' : 'gain-only'
+    #             }
+
+    #             # # date : band steering
+    #             # analysis.ap_selection.rssi.band_steering(args.input_dir, args.trace_nr,
+    #             #     method = 'band-steering',
+    #             #     args = configs['band-steering']['args'],
+    #             #     force_calc = False)
+
+    #             # # gps : cell history
+    #             # analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
+    #             #     args = configs['best-cell']['args'],
+    #             #     force_calc = False)
+
+    #             # # date : history assisted
+    #             # analysis.ap_selection.rssi.history(args.input_dir, args.trace_nr,
+    #             #     method = 'history',
+    #             #     args = configs['history']['args'],
+    #             #     force_calc = False)
+
+    #             plot_ap_selection(args.input_dir, args.trace_nr, trace_output_dir, 
+    #                 gt_metric = ground_truth_metric,
+    #                 # methods = ['best-rssi', 'band-steering', 'history', 'best-cell'],
+    #                 methods = ['best-rssi', 'history'],
+    #                 configs = configs, 
+    #                 redraw = True)
+
+    # if compare:
+
+    #     # plot_bands(args.input_dir, args.trace_nr, trace_output_dir, configs = {'gt-metric' : 'throughput'})
+
+    #     metric = 'throughput'
+    #     stat = {'stat' : 'ewma', 'stat-args' : '0.75-5', 'lap-usage' : '0-0'}
+    #     plot.trace.compare(args.input_dir, args.trace_nr, trace_output_dir,
+    #         configs = {
+    #             'gt-metric' : metric,
+    #             'metric-alias' : 'thghpt',
+    #             'stat' : stat,
+    #             'types' : ['rate', 'time'],
+    #             'y-label' : {
+    #                 'rate' : 'throughput (Mbps)',
+    #                 'data' : 'data volume (MByte)',
+    #                 'time' : 'time (sec)'
+    #             },
+    #             'algorithms' : {
+    #                 '0:best' : {
+    #                     'data' : ('/%s/%s' % ('best', metric)),
+    #                     'x-ticklabel' : 'best',
+    #                     # 'color' : 'yellow',
+    #                     'coef' : 1.0 / 1000000.0
+    #                 },
+    #                 '1:baseline' : {
+    #                     'data' : '/best-rssi/periodic/5/1',
+    #                     'x-ticklabel' : 'best RSS',
+    #                     # 'color' : 'red',
+    #                     'coef' : 1.0 / 1000000.0
+    #                 },
+    #                 '3:band-steering' : {
+    #                     'data' : ('/best-rssi/band-steering/5.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+    #                     'x-ticklabel' : 'band steering',
+    #                     # 'color' : 'blue',
+    #                     'coef' : 1.0 / 1000000.0
+    #                 },
+    #                 '2:best-of-cell' : {
+    #                     'data' : ('/best-cell/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+    #                     'x-ticklabel' : 'loc. history',
+    #                     # 'color' : 'green',
+    #                     'coef' : 1.0 / 1000000.0
+    #                 },
+    #                 '4:scan-history' : {
+    #                     'data' : ('/best-rssi/history/5.0/1.0/20.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+    #                     'x-ticklabel' : 'scan + loc. hist.',
+    #                     # 'color' : 'magenta',
+    #                     'coef' : 1.0 / 1000000.0
+    #                 },
+    #                 '5:best-overall' : {
+    #                     'data' : ('/best-rssi/history/5.0/1.0/5000.0/%s/%s/%s/%s' % (metric, stat['stat'], stat['stat-args'], stat['lap-usage'])),
+    #                     'x-ticklabel' : 'ap rank',
+    #                     # 'color' : 'cyan',
+    #                     'coef' : 1.0 / 1000000.0
+    #                 }
+    #             }
+    #         })
+
+    # sys.exit(0)

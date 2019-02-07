@@ -24,12 +24,12 @@ from prettytable import PrettyTable
 import mapping.utils
 import analysis.metrics
 
-# north, south, west, east limits of map, in terms of geo coordinates
+# north, south, west, east gps coord limits of FEUP map
 LATN = 41.176796
 LATS = 41.179283
 LONE = -8.593912
 LONW = -8.598336
-# gps coords for a 'central' pin on FEUP, Porto, Portugal
+# central gps coords for FEUP
 LAT  = (41.176796 + 41.179283) / 2.0
 LON = (-8.598336 + -8.593912) / 2.0
 
@@ -69,6 +69,23 @@ def get_cell_num(cell_size, lat = [LATN, LATS], lon = [LONW, LONE]):
     Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(lat[0], 0.0, lat[1], 0.0) / cell_size)))
     return X_CELL_NUM, Y_CELL_NUM
 
+def add_cells(data, cell_size, bbox = [LONW, LATS, LONE, LATN]):
+
+    lat_s = bbox[1]
+    lat_n = bbox[3]
+    lon_w = bbox[0]
+    lon_e = bbox[2]
+
+    # extract nr. of cells in the designated area
+    xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [lat_n, lat_s], lon = [lon_w, lon_e])
+    # add cell ids to data, based on [new_lat, new_lon]
+    data['cell_x'] = data['lon'].apply(lambda x : int((x - lon_w) / (lon_e - lon_w) * xx)).astype(int)
+    data['cell_y'] = data['lat'].apply(lambda y : int((y - lat_s) / (lat_n - lat_s) * yy)).astype(int)
+    # drop rows with out-of-bounds cell coords
+    data.drop(data[(data['cell_y'] < 0) | (data['cell_x'] < 0) | (data['cell_y'] > (yy - 1)) | (data['cell_x'] > (xx - 1))].index, inplace = True)
+    # it will be useful to get a single integer id
+    data['cell_id'] = (data['cell_y'].apply(lambda y : (y * xx)) + data['cell_x']).astype(int)    
+
 def add_lap_numbers(data, lap_timestamps):
 
     # reset 'lap-number' and 'direction' columns
@@ -88,36 +105,50 @@ def add_lap_numbers(data, lap_timestamps):
 
         i += 1
 
-def get_lap_timestamps(data, clients, ref = {'lat' : 41.178685, 'lon' : -8.597872}):
-    # find 'peaks' of distance to a ref position, guaranteed to be outside of the experimental circuit
-    pos = [ [row['lat'], row['lon'] ] for index, row in data.iterrows() ]
-    data['lap-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], gps[0], gps[1]) for gps in pos ]
-    return analysis.metrics.find_peaks(data, x_metric = 'timestamp', y_metric = 'lap-dist')
+# def get_lap_timestamps(data, ref = {'lat' : 41.178685, 'lon' : -8.597872}):
+#     # find 'peaks' of distance to a ref position, guaranteed to be outside of the experimental circuit
+#     pos = [ [row['lat'], row['lon'] ] for index, row in data.iterrows() ]
+#     data['lap-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], gps[0], gps[1]) for gps in pos ]
+#     return analysis.metrics.find_peaks(data, x_metric = 'timestamp', y_metric = 'lap-dist')
 
-def get_data(input_dir, trace_dir, tag_laps = True):
+def get_lap_timestamps(input_dir, trace_nr, ref_ap = 'w1', threshold = 155.0):
 
-    # get mac addr, info
-    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
-    # for quick access to aps and clients
-    clients = mac_addrs[mac_addrs['type'] == 'client']
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    for filename in sorted(glob.glob(os.path.join(trace_dir, 'mobile/gps-log.*.csv'))):
+    dist = database.select('/best/distances').sort_values(by = ['timed-tmstmp'])
+    dist = dist[dist[ref_ap] > threshold]
+    dist['lap'] = (dist['timed-tmstmp'] - dist['timed-tmstmp'].shift(1) > 5.0).astype(int).cumsum()
+    return dist.sort_values(by = ['lap', 'w1']).drop_duplicates(subset = 'lap')[['timed-tmstmp', 'lap']].reset_index(drop = True)
 
+def get_data(input_dir, trace_dir, tag_laps = False, use_gps_time = True):
+
+    # we record two gps timestamps in the machine running gpsd:
+    #   a) the timestamp of the machine when a new gps line comes in
+    #   b) the timestamp reported by gps
+    # if use_gps_time is set to True, we use b), else we use a)
+    time_column = 'timestamp'
+    if use_gps_time:
+        time_column = 'time'
+
+    for filename in sorted(glob.glob(os.path.join(trace_dir, 'gps-log.*.csv'))):
+        
         gps_data = pd.read_csv(filename)
-        gps_data['timestamp'] = gps_data['timestamp'].astype(int)
+        gps_data['timestamp'] = gps_data[time_column].astype(int)
         gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
+
         # reset 'lap-number' and 'direction' columns
         gps_data['lap-number'] = -1.0
         gps_data['direction'] = -1.0
-
-        # get lap timestamps
-        lap_timestamps = get_lap_timestamps(gps_data, clients)
         # if lap numbers are to be tagged, add them to gps_data
         if tag_laps:
+            # get lap timestamps
+            lap_timestamps = get_lap_timestamps(gps_data)
             # add lap numbers and direction
             add_lap_numbers(gps_data, lap_timestamps)
 
         # sort by unix timestamp
+        # FIXME: why a second time?
         gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
 
-    return gps_data, lap_timestamps
+    return gps_data

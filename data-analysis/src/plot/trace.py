@@ -40,14 +40,420 @@ from prettytable import PrettyTable
 
 matplotlib.rcParams.update({'font.size': 16})
 
-# north, south, west, east limits of map, in terms of geo coordinates
+# north, south, west, east gps coord limits of FEUP map
 LATN = 41.176796
 LATS = 41.179283
 LONE = -8.593912
 LONW = -8.598336
-# gps coords for a 'central' pin on FEUP, Porto, Portugal
+# central gps coords for FEUP
 LAT  = (41.176796 + 41.179283) / 2.0
 LON = (-8.598336 + -8.593912) / 2.0
+
+def rates(ax, input_dir, trace_nr, metric = 'throughput', time_limits = None):
+
+    # plot configurations
+    # FIXME : this should be a parameter passed to the function
+    nodes = {
+        'm1' : {
+            'color' : 'red',
+            'label' : '38',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w1' : {
+            'color' : 'green',
+            'label' : '46',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w2' : {
+            'color' : 'blue',
+            'label' : '6',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },        
+        'w3' : {
+            'color' : 'orange',
+            'label' : '11',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+    }
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    # save data on .hdf5 database
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+    ax.set_title('%s per channel (trace %s)' % (metric, trace_nr))
+
+    # aux variables
+    if not time_limits:
+        time_limits = [None, None]
+
+    for node in nodes:
+
+        db_name = ('/%s/%s/%s' % (node, 'basic', 'bitrates'))
+        if db_name not in database.keys():
+            sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+            return
+
+        data = database.select(db_name).sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
+
+        _data = data[['timed-tmstmp', metric]].drop_duplicates(subset = ['timed-tmstmp'])
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['timed-tmstmp'] ]
+        plot.utils.update_time_limits(time_limits, dates)
+
+        analysis.metrics.smoothen(_data, column = metric, span = 10)
+
+        ax.plot_date(
+            dates,
+            _data[metric] * nodes[node]['coef'],
+            linewidth = 1.0, linestyle = '-', color = nodes[node]['color'], label = nodes[node]['label'], 
+            marker = None, markersize = 0.0, markeredgewidth = 0.0)
+
+    leg = ax.legend(
+        fontsize = 10, 
+        ncol = 4, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(2.0)
+
+    # divide xx axis in 5 ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("%s (Mbps)" % (metric))
+
+    ax.set_xlim(time_limits[0], time_limits[1])
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+def rss(ax, input_dir, trace_nr, time_limits = None):
+
+    nodes = {
+        'm1' : {
+            'color' : 'red',
+            'label' : '38',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w1' : {
+            'color' : 'green',
+            'label' : '46',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w2' : {
+            'color' : 'blue',
+            'label' : '6',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },        
+        'w3' : {
+            'color' : 'orange',
+            'label' : '11',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+    }
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    # save data on .hdf5 database
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+    ax.set_title('RSS per channel (trace %s)' % (trace_nr))
+
+    # aux variables
+    if not time_limits:
+        time_limits = [None, None]
+
+    for node in nodes:
+
+        db_name = ('/%s/%s/%s' % (node, 'basic', 'beacons'))
+        if db_name not in database.keys():
+            sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+            return
+
+        data = database.select(db_name).sort_values(by = ['epoch time']).reset_index(drop = True)
+
+        _data = data[['epoch time', 'wlan rssi']].drop_duplicates(subset = ['epoch time'])
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['epoch time'] ]
+        plot.utils.update_time_limits(time_limits, dates)
+
+        analysis.metrics.smoothen(_data, column = 'wlan rssi', span = 10)
+
+        ax.plot_date(
+            dates,
+            _data['wlan rssi'],
+            linewidth = 1.0, linestyle = '-', color = nodes[node]['color'], label = nodes[node]['label'], 
+            marker = None, markersize = 0.0, markeredgewidth = 0.0)
+
+    leg = ax.legend(
+        fontsize = 10, 
+        ncol = 4, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(2.0)
+
+    # divide xx axis in 5 ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("RSS (dBm)")
+
+    ax.set_xlim(time_limits[0], time_limits[1])
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+def rss_distance(ax, input_dir, trace_nr):
+
+    nodes = {
+        'm1' : {
+            'color' : 'red',
+            'label' : '38',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w1' : {
+            'color' : 'green',
+            'label' : '46',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w2' : {
+            'color' : 'blue',
+            'label' : '6',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },        
+        'w3' : {
+            'color' : 'orange',
+            'label' : '11',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+    }
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    # save data on .hdf5 database
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+    ax.set_title('RSS (per channel) vs. distance (trace %s)' % (trace_nr))
+
+    # get rss data from all nodes
+    data = analysis.trace.merge_gps(input_dir, trace_nr, 'rss', cell_size = 20.0)
+    data = data[['timed-tmstmp', 'lat', 'lon'] + nodes.keys()].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
+    # for node in nodes.keys():
+    #     analysis.metrics.smoothen(data, column = node, span = 50)
+
+    # add distance to ref point
+    ref = {'lat' : 41.178685, 'lon' : -8.597872}
+    pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
+    data['ref-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], p[0], p[1]) for p in pos ]
+    data = data.sort_values(by = ['ref-dist']).reset_index(drop = True)
+    # offset = data['ref-dist'].min()
+    offset = 0.0
+
+    for node in nodes:
+
+        _data = data[['ref-dist', node]]
+        _data = _data[_data[node] < -30]
+        _data = _data.sort_values(by = ['ref-dist']).reset_index(drop = True)
+
+        analysis.metrics.smoothen(_data, column = node, span = 50)
+
+        ax.plot(
+            _data['ref-dist'] - offset,
+            _data[node],
+            linewidth = 1.0, linestyle = '-', color = nodes[node]['color'], label = nodes[node]['label'], 
+            marker = None, markersize = 0.0, markeredgewidth = 0.0)
+
+    leg = ax.legend(
+        fontsize = 10, 
+        ncol = 4, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(2.0)
+
+    ax.set_xlabel("distance (m)")
+    ax.set_ylabel("RSS (dBm)")
+    ax.set_xlim(data['ref-dist'].min() - offset, data['ref-dist'].max() - offset)
+
+def channel_util(ax, input_dir, trace_nr, time_limits = None):
+
+    aps = {
+        'ap1' : {
+            'color' : 'blue',
+            'label' : '6',
+            'linewidth' : 1.0,
+            'marker' : None,
+            'markersize' : 0.0
+        },
+        'ap2' : {
+            'color' : 'red',
+            'label' : '38',
+            'linewidth' : 1.0,
+            'marker' : None,
+            'markersize' : 0.0
+        },
+        'ap3' : {
+            'color' : 'orange',
+            'label' : '11',
+            'linewidth' : 1.0,
+            'marker' : None,
+            'markersize' : 0.0
+        },
+        'ap4' : {
+            'color' : 'green',
+            'label' : '46',
+            'linewidth' : 1.0,
+            'marker' : None,
+            'markersize' : 0.0
+        },
+    }
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    # save data on .hdf5 database
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+    ax.set_title('channel util. per channel (trace %s)' % (trace_nr))
+
+    # aux variables
+    if not time_limits:
+        time_limits = [None, None]
+
+    for ap in aps:
+
+        db_name = ('/%s/%s/%s' % (ap, 'basic', 'channel-util'))
+        if db_name not in database.keys():
+            sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+            return
+
+        data = database.select(db_name).sort_values(by = ['timestamp']).reset_index(drop = True)
+
+        _data = data[['timestamp', 'cutil']].drop_duplicates(subset = ['timestamp'])
+        _data = _data[_data['cutil'] < 100.0]
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['timestamp'] ]
+        plot.utils.update_time_limits(time_limits, dates)
+
+        analysis.metrics.smoothen(_data, column = 'cutil', span = 5)
+
+        ax.plot_date(
+            dates,
+            _data['cutil'],
+            linewidth = aps[ap]['linewidth'], linestyle = '-', color = aps[ap]['color'], label = aps[ap]['label'], 
+            marker = aps[ap]['marker'], markersize = aps[ap]['markersize'], markeredgewidth = 0.0)
+
+    leg = ax.legend(
+        fontsize = 10, 
+        ncol = 4, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(2.0)
+
+    # divide xx axis in 5 ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("channel util. (%)")
+
+    ax.set_xlim(time_limits[0], time_limits[1])
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
+
+    ax.set_ylim([0.0, 115])
+    ax.set_yticks([0, 20, 40, 60, 80, 100])
+
+def distances(ax, input_dir, trace_nr, time_limits = None):
+
+    pos = {
+        'p1' : {
+            'color' : 'green',
+            'label' : '11 & 46',
+            'linewidth' : 1.0,
+            'marker' : None,
+            'markersize' : 0.0
+        },
+        'p2' : {
+            'color' : 'red',
+            'label' : '6 & 38',
+            'linewidth' : 1.0,
+            'marker' : None,
+            'markersize' : 0.0
+        },        
+    }
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    # save data on .hdf5 database
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    db_name = ('/%s/%s' % ('gps', 'distances'))
+    if db_name not in database.keys():
+        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+        return
+
+    dist_data = database.select(db_name).sort_values(by = ['timestamp']).reset_index(drop = True)
+
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
+    ax.set_title('dist. (in m) to ap positions (trace %s)' % (trace_nr))
+
+    # aux variables
+    if not time_limits:
+        time_limits = [None, None]
+
+    for p in pos:
+
+        _dist_data = dist_data[['timestamp', p]].drop_duplicates(subset = ['timestamp'])
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _dist_data['timestamp'] ]
+        plot.utils.update_time_limits(time_limits, dates)
+
+        ax.plot_date(
+            dates,
+            _dist_data[p],
+            linewidth = pos[p]['linewidth'], linestyle = '-', color = pos[p]['color'], label = pos[p]['label'], 
+            marker = pos[p]['marker'], markersize = pos[p]['markersize'], markeredgewidth = 0.0)
+
+    leg = ax.legend(
+        fontsize = 10, 
+        ncol = 4, loc = 'upper right',
+        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
+
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(2.0)
+
+    # divide xx axis in 5 ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+
+    ax.set_xlabel("time")
+    ax.set_ylabel("distance to AP pos. (m)")
+
+    ax.set_xlim(time_limits[0], time_limits[1])
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
 
 def bitrate(input_dir, trace_nr, trace_output_dir, time_limits = None):
 
@@ -144,191 +550,10 @@ def bitrate(input_dir, trace_nr, trace_output_dir, time_limits = None):
 
     figs[1].tight_layout()
     figs[1].savefig(os.path.join(trace_output_dir, ("bitrate-best-rates-cdfs.pdf")), bbox_inches = 'tight', format = 'pdf')
-
-def distances(ax, input_dir, trace_nr, time_limits = None):
-
-    ax.xaxis.grid(True)
-    ax.yaxis.grid(True)
-
-    ax.set_title('dist. (in m) to fixed pos. (trace %s)' % (trace_nr))
-
-    # get mac addr, info
-    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
-    # for quick access to aps and clients
-    clients = mac_addrs[mac_addrs['type'] == 'client']
-
-    # get dist. data
-    dist_data = analysis.trace.get_distances(input_dir, trace_nr)
-
-    print(dist_data)
-
-    # aux variables
-    if not time_limits:
-        time_limits = [None, None]
-
-    visited = []
-    for i, client in clients.iterrows():
-
-        if client['mac'] not in dist_data:
-            continue
-
-        # avoid going through same pos twice
-        if client['label'] in visited:
-            continue
-        else:
-            visited.append(client['label'])
-
-        _dist_data = dist_data[ ['interval-tmstmp', client['mac']] ].drop_duplicates(subset = ['interval-tmstmp'])
-        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _dist_data['interval-tmstmp'] ]
-        plot.utils.update_time_limits(time_limits, dates)
-
-        ax.plot_date(
-            dates,
-            _dist_data[client['mac']],
-            linewidth = 0.0, linestyle = '-', color = client['color'], label = client['label'], 
-            marker = client['marker'], markersize = client['marker-size'], markeredgewidth = 0.0)
-
-    ax.legend(
-        fontsize = 10, 
-        ncol = 4, loc = 'upper right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
-
-    # # draw vertical lines for each lap & turn
-    # gps_data, lap_timestamps = analysis.gps.get_data(input_dir, os.path.join(input_dir, ("trace-%03d" % (int(trace_nr)))), tag_laps = False)
-    # for ts in lap_timestamps['start']:
-    #     ax.axvline(x = datetime.datetime.fromtimestamp(ts), color = 'k', linestyle = '-', linewidth = .75)
-    # for ts in lap_timestamps['turn']:
-    #     ax.axvline(x = datetime.datetime.fromtimestamp(ts), color = 'k', linestyle = '--', linewidth = .75)
-
-    # divide xx axis in 5 ticks
-    xticks = plot.utils.get_time_xticks(time_limits)
-
-    ax.set_xlabel("time")
-    ax.set_ylabel("distance (m)")
-
-    ax.set_xlim(time_limits[0], time_limits[1])
-    ax.set_xticks(xticks)
-    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
-
-def best(ax, input_dir, trace_nr, 
-    metric = 'throughput',
-    configs = {
-        'throughput' : {
-            'y-label' : 'throughput (Mbps)',
-            'coef' : 1.0 / 1000000.0
-        },
-        'wlan data rate' : {
-            'y-label' : 'wlan data rate (Mbps)',
-            'coef' : 1.0 / 1000000.0
-        },
-        'wlan rssi' : {
-            'y-label' : 'RSS (dbm)',
-            'coef' : 1.0
-        },
-        'dist' : {
-            'y-label' : 'dist (m)',
-            'coef' : 1.0
-        }
-    },
-    time_limits = None):
-
-    # get mac addr, info
-    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
-    # for quick access to aps and clients
-    clients = mac_addrs[mac_addrs['type'] == 'client']
-
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    # save data on .hdf5 database
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))    
-
-    best_db = ('/%s/%s' % ('best', metric))
-    if best_db not in database.keys():
-        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (best_db))
-        return
-
-    ax.xaxis.grid(True)
-    ax.yaxis.grid(True)
-
-    if metric == 'dist':
-        ax.set_title("""closest 'AP' per 0.5 sec segment (trace %s)""" % (trace_nr))
-    else:
-        ax.set_title("""'AP' w/ best %s per 0.5 sec segment (trace %s)""" % (metric, trace_nr))
-
-    data = database.select(best_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
-
-    # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
-    data = data.drop_duplicates(subset = ['interval-tmstmp'])
-
-    # (1) plot background segments w/ color of best mac for the segment
-    # find blocks of consecutive mac addrs
-    data['block'] = ((data.best.shift(1) != data.best) | ((data['interval-tmstmp'].shift(1) - data['interval-tmstmp']) < -0.5)).astype(int).cumsum()
-    data['interval-tmstmp-str'] = [ str(tmstmp) for tmstmp in data['interval-tmstmp'] ]
-    segments = data.groupby(['best','block'])['interval-tmstmp'].apply(np.array).reset_index(drop = False).sort_values(by = ['block'])
-
-    for i, client in clients.iterrows():
-        for i, segment in segments[segments['best'] == client['mac']].iterrows():
-            dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in [ segment['interval-tmstmp'][0], segment['interval-tmstmp'][-1] + 0.5 ] ]
-            ax.axvspan(dates[0], dates[-1], linewidth = 0.0, facecolor = client['color'], alpha = 0.20)
-            # ax.axvline(dates[-1], color = client['color'], linestyle = '--', linewidth = .75)
-
-    # (2) plot all metric values
-    if not time_limits:
-        time_limits = [None, None]
-
-    macs = []
-    for i, client in clients.iterrows():
-
-        _data = data[data['best'] == client['mac']]
-        if _data.empty:
-            continue
-        macs.append(client['mac'])
-
-        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
-        plot.utils.update_time_limits(time_limits, dates)
-
-        ax.plot(
-            dates,
-            _data[client['mac']] * configs[metric]['coef'],
-            linewidth = 0.0, 
-            linestyle = '-', 
-            color = client['color'], 
-            label = client['label'], 
-            markersize = client['marker-size'], 
-            marker = client['marker'], 
-            markeredgewidth = 0.0)
-
-    # # plot a black line w/ throughput for all mac addrs
-    # _data = data.iloc[::5, :]
-    # dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['interval-tmstmp'] ]
-    # ax.plot(
-    #     dates,
-    #     (_data[macs].max(axis = 1).values) * configs[metric]['coef'],
-    #     alpha = .5,
-    #     linewidth = 0.75, 
-    #     linestyle = '-', 
-    #     color = 'black', 
-    #     marker = None)
-
-    # ax.legend(
-    #     fontsize = 10, 
-    #     ncol = 4, loc = 'upper right',
-    #     handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
-
-    ax.set_ylabel(configs[metric]['y-label'])
-
-    # x-label
-    ax.set_xlabel('time')
-    # x-lims
-    ax.set_xlim(time_limits[0], time_limits[1])
-    # divide xx axis in 5 ticks
-    xticks = plot.utils.get_time_xticks(time_limits)
-    ax.set_xticks(xticks)
-    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
-
-    plt.gcf().autofmt_xdate()
     
-def create_grid(x_cell_num, y_cell_num, lat = [LATN, LATS], lon = [LONW, LONE]):
+def create_grid(lat = [LATN, LATS], lon = [LONW, LONE], cell_size = 20.0):
 
+    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = cell_size, lat = lat, lon = lon)
     # limits for (x,y) coordinates in grid
     max_x = int(x_cell_num)
     max_y = int(y_cell_num)
@@ -351,19 +576,21 @@ def create_grid(x_cell_num, y_cell_num, lat = [LATN, LATS], lon = [LONW, LONE]):
                     (lon[0] + (i * w), lat[1] + ((j + 1) * h))
                     ]))
 
-            cell_ids.append({'cell-x' : i, 'cell-y' : j})
+            cell_ids.append({'cell_x' : i, 'cell_y' : j})
 
-    cell_ids = pd.DataFrame(cell_ids, columns = ['cell-x', 'cell-y'])
-    grid = gp.GeoDataFrame({'geometry' : polygons, 'cell-x' : cell_ids['cell-x'], 'cell-y' : cell_ids['cell-y']})
+    cell_ids = pd.DataFrame(cell_ids, columns = ['cell_x', 'cell_y'])
+    grid = gp.GeoDataFrame({'geometry' : polygons, 'cell_x' : cell_ids['cell_x'], 'cell_y' : cell_ids['cell_y']})
+    return grid, w, h
 
-    return grid
+def maps(input_dir, trace_nr, trace_output_dir, 
+    bbox = [LONW, LATS, LONE, LATN],
+    cell_size = 20.0, redraw = False, time_limits = []):
 
-def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = False):
-
+    # save map graphs on <trace-output-dir>/maps/<cell-size>/
     maps_dir = os.path.join(trace_output_dir, ("maps"))
     if not os.path.isdir(maps_dir):
         os.makedirs(maps_dir)
-        
+
     maps_dir = os.path.join(maps_dir, ("%s" % (cell_size)))
     if not os.path.isdir(maps_dir):
         os.makedirs(maps_dir)
@@ -371,55 +598,77 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
         sys.stderr.write("""[INFO] %s exists. skipping plotting.\n""" % (maps_dir))
         return
 
-    # get mac addr, info
-    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
-    # for quick access to aps and clients
-    clients = mac_addrs[mac_addrs['type'] == 'client']
-
     database = analysis.trace.get_db(input_dir, trace_nr)
+    # get gps coords of trace
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    gps_data = analysis.gps.get_data(input_dir, trace_dir)[['timestamp', 'lat', 'lon']]
 
-    # get gps pos of trace
-    dist_db = ('/%s' % ('dist-data'))
-    if dist_db not in database.keys():
-        sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (dist_db))
-        return
+    if time_limits:
+        gps_data = gps_data[(gps_data['timestamp'] >= time_limits[0]) & (gps_data['timestamp'] <= time_limits[1])].reset_index(drop = True)
 
-    gps_data = database.select(dist_db).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)[['interval-tmstmp', 'lat', 'lon', 'lap-number', 'direction']]
+    # gps_data.rename(index = str, columns = {'timestamp' : 'timed-tmstmp'}, inplace = True)
+    timestamp_limits = [gps_data.iloc[0]['timestamp'], gps_data.iloc[-1]['timestamp']]
 
-    # merge gps data w/ throughput data
-    macs = []
-    for i, client in clients.iterrows():
+    nodes = {
+        'm1' : {
+            'color' : 'red',
+            'label' : '38',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w1' : {
+            'color' : 'green',
+            'label' : '46',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+        'w2' : {
+            'color' : 'blue',
+            'label' : '6',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },        
+        'w3' : {
+            'color' : 'orange',
+            'label' : '11',
+            'marker' : 'o',
+            'coef' : 1.0 / 1000000.0,
+            'markersize' : 2.0
+        },
+    }
 
-        interval_db = ('/%s/%s' % ('interval-data', client['mac']))
-        if interval_db not in database.keys():
+    # merge gps coords data w/ tcpdump sample timestamps
+    # NOTE : this will open gaps in gps_data, which will be closed later via interpolation of lat, lon coords
+    for node in nodes:
+        db_name = ('/%s/%s/%s' % (node, 'basic', 'bitrates'))
+        if db_name not in database.keys():
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (db_name))
             continue
 
-        # load data for a client mac
-        data = database.select(interval_db)
-        if data.empty:
-            continue
+        rate_data = database.select(db_name).sort_values(by = ['timed-tmstmp']).reset_index(drop = True)[['timed-tmstmp']]
+        rate_data['timestamp'] = rate_data['timed-tmstmp'].astype(int)
+        gps_data = pd.merge(gps_data, rate_data,  on = ['timestamp'], how = 'left')
 
-        data[client['mac']] = data['throughput']
-        macs.append(client['mac'])
+    # fill the gaps left by merge using interpolation
+    gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
+    gps_data = gps_data[(gps_data['timestamp'] >= timestamp_limits[0]) & (gps_data['timestamp'] <= timestamp_limits[1])]
+    # analysis.trace.fix_gaps(gps_data, subset = ['lat', 'lon'], column = 'timed-tmstmp')
+    # gps_data = gps_data.dropna(subset = ['lat', 'lon'])
 
-        # FIXME : 'interval-data' already has gps info. why are we merging it again?
-        gps_data = pd.merge(gps_data, data[ ['interval-tmstmp', client['mac']] ], on = ['interval-tmstmp'], how = 'outer')
-
-    # drop rows w/ undefined throughput values for all mac addrs
-    gps_data = gps_data.dropna(subset = macs, how = 'all').drop_duplicates(subset = ['interval-tmstmp']).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
-    # fix timestamp gaps
-    gps_data['timestamp'] = gps_data['interval-tmstmp'].astype(int)
-
+    # 1) print a 'fancy' heatmap using the folium library
+    center_lat = (bbox[1] + bbox[3]) / 2.0
+    center_lon = (bbox[0] + bbox[2]) / 2.0
     plot.gps.heatmap(gps_data.groupby(['lat', 'lon']).size().reset_index(name = 'counts'), maps_dir, 
-        map_cntr = [LAT, LON], map_types = ['heatmap', 'clustered-marker'])
+        map_cntr = [center_lat, center_lon], map_types = ['heatmap', 'clustered-marker'])
 
+    # 2) print a custom heatmap, divided by cells, which will be used in our algos 
     # add cell ids
-    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
-    gps_data['cell-x'] = gps_data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * x_cell_num))
-    gps_data['cell-y'] = gps_data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * y_cell_num))
-
-    # print cdf plot of samples per cell
-    sample_count = gps_data.groupby(['cell-x', 'cell-y']).size().reset_index(name = 'count')
+    analysis.gps.add_cells(gps_data, cell_size, bbox = bbox)    
+    # 2.1) print cdf plot of samples per cell
+    sample_count = gps_data.groupby(['cell_id', 'cell_x', 'cell_y']).size().reset_index(drop = False, name = 'count')
     cdf = sample_count.groupby(['count']).size().reset_index(name = 'counts')
     cdf['counts'] = np.array(cdf['counts'].cumsum(), dtype = float)
     cdf['counts'] = cdf['counts'] / cdf['counts'].values[-1]
@@ -442,17 +691,16 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
     plt.tight_layout()
     plt.savefig(os.path.join(maps_dir, "cell-cdfs.pdf"), bbox_inches = 'tight', format = 'pdf')
 
-    # print coverage map of cells
-    bbox = [LONW, LATS, LONE, LATN]
-    roads = None
-    if os.path.isdir(os.path.join(trace_output_dir, ("roads"))):
-        roads = gp.GeoDataFrame.from_file(os.path.join(trace_output_dir, "roads"))
-    else:
-        roads = mapping.openstreetmap.get_roads(trace_output_dir, 
+    # 2.2) print map of cells
+    # extract roads using OpenStreetMaps APIs
+    road_hash = mapping.openstreetmap.get_road_hash(bbox = bbox, tags = ['highway='])
+    if not os.path.isdir(os.path.join(trace_output_dir, road_hash)):
+        roads = mapping.openstreetmap.extract_roads(trace_output_dir, 
             tags = ['highway='], 
             bbox = bbox)
+    roads = gp.GeoDataFrame.from_file(os.path.join(trace_output_dir, road_hash))
 
-    # filters
+    # filters : remove unwanted roads
     roads = roads.dropna(subset = ['highway'])
     roads = roads[roads['highway'].str.contains('footway|cycleway') == False]
     roads = roads[roads.type == 'LineString'][['highway', 'name', 'geometry']]
@@ -460,68 +708,90 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
     # code to select a bbox from roads
     # FIXME : this uses the .overlay(how = 'intersection') method, which is inneficient
     start = timeit.default_timer()
-    # bbox
-    bbox = [(-8.597, 41.178), (-8.597, 41.180), (-8.592, 41.180), (-8.592, 41.178)]
+    # define a smaller bbox
+    # FIXME : why not use the original bbox passed as argument? well, OpenStreetMaps doesn't
+    #         allow us to extract roads from a small bbox such as the one below
+    _bbox = [(-8.597, 41.178), (-8.597, 41.180), (-8.592, 41.180), (-8.592, 41.178)]
     roads['geometry'] = roads['geometry'].buffer(0.000025)
-    base = [ shapely.geometry.Polygon(bbox) ]
+    base = [ shapely.geometry.Polygon(_bbox) ]
     base = gp.GeoDataFrame({'geometry':base})
     roads = gp.overlay(base, roads, how = 'intersection')
-    print("%s::plot_grid() : [INFO] buffer() produced in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
+    print("%s::maps() : [INFO] buffer() produced in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
 
+    # the CRS in the original dataframe is 4326 (or WGS84), the one used by GPS
+    roads.crs = {'init' : 'epsg:4326'}
+    # find the graph's hight-width ratio
     dy = mapping.utils.gps_to_dist(41.180, 0.0, 41.178, 0.0)
     dx = mapping.utils.gps_to_dist(41.178, -8.597, 41.178, -8.592)
-
+    # create fig w/ h-w ratio
     fig = plt.figure(figsize = ((dx / dy) * 5.0, 5.0))
 
     ax = fig.add_subplot(111)
     ax.xaxis.grid(True, ls = 'dotted', lw = 0.75)
     ax.yaxis.grid(True, ls = 'dotted', lw = 0.75)
     
+    # convert roads CRS to 3763, with meter coords
     roads.plot(ax = ax, facecolor = 'black', zorder = 0)
 
-    # on top of the roads, plot the 5 x 5 m cells for which we have samples, with a gradient color scale
-    grid = create_grid(x_cell_num, y_cell_num, lat = [LATN, LATS], lon = [LONW, LONE])
+    # on top of the roads, draw the cells for which we have samples, with a gradient color scale
+    grid, w, h = create_grid(lat = [bbox[3], bbox[1]], lon = [bbox[0], bbox[2]], cell_size = cell_size)
     # upgrade grid, by merging sample counts w/ polygons
-    grid = pd.merge(grid, sample_count, on = ['cell-x', 'cell-y'], how = 'inner')
+    grid = pd.merge(grid, sample_count, on = ['cell_x', 'cell_y'], how = 'inner')
     # center point for each polygon
     grid['coords'] = grid['geometry'].apply(lambda x: x.representative_point().coords[:])
     grid['coords'] = [ coords[0] for coords in grid['coords'] ]
-
     # print the polygons, colored according to sample count
+    grid.crs = {'init' : 'epsg:4326'}
+    grid.loc[grid['count'] > grid['count'].median(), 'count'] = grid['count'].median()
     grid.plot(ax = ax, zorder = 5, column = 'count', cmap = 'YlOrRd', legend = True, alpha = .75)
 
-    # add aps to map, as red dots
-    points = []
-    for i, client in clients.iterrows():
+    ax.set_title('# of packets recorded per %d m x %d m cell' % (int(cell_size), int(cell_size)))
+    ax.set_xlabel('distance (m)')
+    ax.set_ylabel('distance (m)')
 
-        lon = client['lon']
-        lat = client['lat']
-        if client['id'] == 3:
-            lon -= 0.00001
-            lat += 0.00001
-        elif client['id'] == 1:
-            lon += 0.00001
-            lat -= 0.00001
+    xticks = np.arange(bbox[0], bbox[2] + (2* w), w)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(
+        np.arange((3 - int(grid['cell_x'].min())) * int(cell_size), (int(cell_size) * len(xticks)) -int(grid['cell_x'].min()), int(cell_size)),
+        rotation = 30, ha = 'right')
+
+    yticks = np.arange(bbox[1], bbox[3] + h, h)
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(np.arange((3 - int(grid['cell_y'].min())) * int(cell_size), (int(cell_size) * len(xticks)) -int(grid['cell_y'].min()), int(cell_size)))
+
+    # add aps positions to map, as red dots
+    aps = {
+        'ap2' : {
+            'color' : 'red',
+            'label' : 'P2',
+            'lat' : 41.178518,
+            'lon' : -8.595366
+        },
+        'ap4' : {
+            'color' : 'green',
+            'label' : 'P1',
+            'lat' : 41.178563,
+            'lon' : -8.596012
+        },
+    }
+
+
+    points = []
+    for i, ap in enumerate(aps):
+
+        lon = aps[ap]['lon']
+        lat = aps[ap]['lat']
 
         points.append(shapely.geometry.Point(lon, lat))
 
-    points = gp.GeoDataFrame({'geometry':points})
+    points = gp.GeoDataFrame({'geometry' : points})
     points.plot(ax = ax, zorder = 10, color = 'red')
 
-    for i, client in clients.iterrows():
-
-        lon = client['lon']
-        lat = client['lat'] - 0.00001
-        if client['id'] == 3:
-            lon -= 0.00001
-            lat += 0.00001
-        elif client['id'] == 1:
-            lon += 0.00001
-            lat -= 0.00001
+    for i, ap in enumerate(aps):
 
         plt.annotate(
-            s = ('%d' % (client['id'])), 
-            xy = (lon, lat),
+            s = ('%s' % (aps[ap]['label'])), 
+            xy = (aps[ap]['lon'], aps[ap]['lat'] - 0.00001),
             horizontalalignment = 'center',
             zorder = 15,
             size = 5,
@@ -530,7 +800,7 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
     # add cell ids to 
     for idx, row in grid.iterrows():
         plt.annotate(
-            s = ('(%s,%s)' % (str(row['cell-x']), str(row['cell-y']))), 
+            s = ('(%s,%s)' % (str(row['cell_x']), str(row['cell_y']))), 
             xy = row['coords'], 
             horizontalalignment = 'center',
             zorder = 20,
@@ -540,155 +810,118 @@ def cells(input_dir, trace_nr, trace_output_dir, cell_size = 20.0, redraw = Fals
     plt.tight_layout()
     plt.savefig(os.path.join(maps_dir, "cell-map.pdf"), bbox_inches = 'tight', format = 'pdf')
 
-def compare(
-    input_dir, trace_nr, trace_output_dir, 
-    configs):
+def best(ax, input_dir, trace_nr, 
+    metric = 'throughput',
+    configs = {
+        'throughput' : {
+            'y-label' : 'throughput (Mbps)',
+            'coef' : 1.0 / 1000000.0
+        },
+        'wlan data rate' : {
+            'y-label' : 'wlan data rate (Mbps)',
+            'coef' : 1.0 / 1000000.0
+        },
+        'rss' : {
+            'y-label' : 'RSS (dbm)',
+            'coef' : 1.0
+        },
+        'distances' : {
+            'y-label' : 'dist (m)',
+            'coef' : 1.0
+        }
+    }, 
+    time_limits = None):
 
-    compare_dir = os.path.join(trace_output_dir, ("compare"))
-    if not os.path.isdir(compare_dir):
-        os.makedirs(compare_dir)
+    nodes = {
+        'm1' : {
+            'color' : 'red',
+            'label' : '38',
+            'marker' : 'o',
+            'markersize' : 2.0
+        },
+        'w1' : {
+            'color' : 'green',
+            'label' : '46',
+            'marker' : 'o',
+            'markersize' : 2.0
+        },
+        'w2' : {
+            'color' : 'blue',
+            'label' : '6',
+            'marker' : 'o',
+            'markersize' : 2.0
+        },        
+        'w3' : {
+            'color' : 'orange',
+            'label' : '11',
+            'marker' : 'o',
+            'markersize' : 2.0
+        },
+    }
 
-    compare_dir = os.path.join(compare_dir, ("%s" % (configs['metric-alias'])))
-    if not os.path.isdir(compare_dir):
-        os.makedirs(compare_dir)
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    # save data on .hdf5 database
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    plt.style.use('classic')
+    db_name = ('/%s/%s' % ('best', metric))
+    if db_name not in database.keys():
+        sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db_name))
+        return
 
-    # plot independent figs for throughput and time
-    figs = defaultdict(plt.figure)
-    axs = defaultdict()
-    for key in configs['types']:
-        
-        figs[key] = plt.figure(figsize = (3.0, 3.5))
+    data = database.select(db_name).sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
+    # FIXME: why do we end up w/ duplicate 'interval-tmstmp' values?
+    data = data.drop_duplicates(subset = ['timed-tmstmp'])
 
-        axs[key] = figs[key].add_subplot(1, 1, 1)
-        axs[key].xaxis.grid(True)
-        axs[key].yaxis.grid(True)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(True)
 
-    # create axs[0] 2nd axis for data volume
-    if 'data' in configs['y-label'].keys():
-        ax2 = axs['rate'].twinx()
+    if metric == 'distances':
+        ax.set_title("""closest AP (per 0.5 sec segment, trace %s)""" % (trace_nr))
+    else:
+        ax.set_title("""AP w/ best %s (per 0.5 sec segment, trace %s)""" % (metric, trace_nr))
 
-    # keep track of xticks and labels
-    xx = 0.0
-    xticks = []
-    xtickslabels = []
-    # fixed bar graph parameters
-    barwidth = 0.5
-    # space between big groups of bars
-    interspace = 3.0 * barwidth
-    # space between bars withing groups
-    intraspace = 1.0 * barwidth
+    # (1) plot background segments w/ color of best mac for the segment
+    # find blocks of consecutive mac addrs
+    data['block'] = ((data.best.shift(1) != data.best) | ((data['timed-tmstmp'].shift(1) - data['timed-tmstmp']) < -0.5)).astype(int).cumsum()
+    segments = data.groupby(['best','block'])['timed-tmstmp'].apply(np.array).reset_index(drop = False).sort_values(by = ['block'])
+    for node in nodes:
+        for i, segment in segments[segments['best'] == node].iterrows():
+            dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in [ segment['timed-tmstmp'][0], segment['timed-tmstmp'][-1] + 0.5 ] ]
+            ax.axvspan(dates[0], dates[-1], linewidth = 0.0, facecolor = nodes[node]['color'], alpha = 0.20)
 
-    database = analysis.trace.get_db(input_dir, trace_nr)
+    # (2) plot all metric values
+    if not time_limits:
+        time_limits = [None, None]
 
-    # (1) load (ground truth) metric data
-    gt_data = analysis.trace.load_best(database, configs['gt-metric'])
-    # (2) load data & plot, for each algorithm
-    label = {
-        'data' : 'data vol.', 
-        'rate' : ('median %s' % (configs['metric-alias'])),
-        'conn' : 'conn.', 
-        'disconn' : 'disconn.'}
+    for node in nodes:
 
-    for i, algo in enumerate(sorted(configs['algorithms'].keys())):
+        _data = data[data['best'] == node]
+        if _data.empty:
+            continue
 
-        if configs['algorithms'][algo]['data'] == ('/best/%s' % (configs['gt-metric'])):
-            data = gt_data
-            data['best-val'] = data['gt-val']
+        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['timed-tmstmp'] ]
+        plot.utils.update_time_limits(time_limits, dates)
 
-        else:
-            data = analysis.trace.load_and_merge(database, configs['algorithms'][algo]['data'], gt_data)
+        ax.plot(
+            dates,
+            _data['best-val'] * configs[metric]['coef'],
+            linewidth = 0.0, 
+            linestyle = '-', 
+            color = nodes[node]['color'], 
+            label = nodes[node]['label'], 
+            markersize = nodes[node]['markersize'], 
+            marker = nodes[node]['marker'], 
+            markeredgewidth = 0.0)
 
-        data['diff'] = data['interval-tmstmp'] - data['interval-tmstmp'].shift(1)
-        coef = float(configs['algorithms'][algo]['coef'])
+    ax.set_ylabel(configs[metric]['y-label'])
 
-        # data volume
-        if 'data' in configs['y-label'].keys():
-    
-            ax2.bar(xx,
-                ((data['best-val'] * 0.5).sum() * coef) / 8.0,
-                width = barwidth, linewidth = 0.250, alpha = .75, 
-                color = 'red', label = label['data'])
+    # x-label
+    ax.set_xlabel('time')
+    # x-lims
+    ax.set_xlim(time_limits[0], time_limits[1])
+    # divide xx axis in 5 ticks
+    xticks = plot.utils.get_time_xticks(time_limits)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
 
-            # trick to add ax2's legend to ax's legend
-            axs['rate'].bar(np.nan, np.nan, label = label['data'], linewidth = 0.250, alpha = .75, color = 'red')
-            label['data'] = ''
-
-            # median throughput
-            axs['rate'].bar(xx - barwidth,
-                (data['best-val']).median() * coef,
-                width = barwidth, linewidth = 0.250, alpha = .75, 
-                color = 'blue', label = label['rate'])
-
-        else:
-
-            # median throughput
-            axs['rate'].bar(xx - (barwidth),
-                (data['best-val']).median() * coef,
-                width = (2.0 * barwidth), linewidth = 0.250, alpha = .75, 
-                color = 'blue', label = label['rate'])
-
-        label['rate'] = ''
-
-        if 'time' in axs.keys():
-            axs['time'].bar(xx - barwidth,
-                (len(data[data['best-val'] == 0.0]) * 0.5) + (data['diff'] - 0.5).sum(),
-                width = barwidth, linewidth = 0.250, alpha = .75, 
-                color = 'red', label = label['disconn'])
-
-            # median throughput
-            axs['time'].bar(xx,
-                (len(data[data['best-val'] > 0.0]) * 0.5),
-                width = barwidth, linewidth = 0.250, alpha = .75, 
-                color = 'green', label = label['conn'])
-
-            label['conn'] = ''
-            label['disconn'] = ''
-
-        # xticks & xticklabel
-        xticks.append(xx)
-        xtickslabels.append(configs['algorithms'][algo]['x-ticklabel'])
-
-        if i < (len(configs['algorithms'].keys()) - 1):
-            xx += interspace
-
-        # FIXME: force garbage collector to delete (?)
-        data = None
-
-    # legend
-    axs['rate'].legend(
-        fontsize = 10, 
-        ncol = 1, loc = 'upper right',
-        handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
-
-    if 'time' in axs.keys():
-        axs['time'].legend(
-            fontsize = 10, 
-            ncol = 1, loc = 'upper right',
-            handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
-
-    for key in axs:
-        # x-axis
-        axs[key].set_xlim(-(1.5 * barwidth), xx + (1.5 * barwidth))
-        axs[key].set_xticks(xticks)
-        axs[key].set_xticklabels(xtickslabels, rotation = 45, ha = 'right')
-        # y-axis
-        axs[key].set_ylabel(configs['y-label'][key])
-
-    # so that legend doesn't overlap w/ bars
-    axs['rate'].set_ylim(0.0, np.ceil(axs['rate'].get_ylim()[1] * 1.25))
-    if 'data' in configs['y-label'].keys():
-        # 2nd y-axis in 'rate' plot
-        k = float(len(axs['rate'].get_yticks()) - 1)
-        d = ax2.get_yticks()[1] - ax2.get_yticks()[0]
-        ax2.set_ylim(0.0, k * d)
-        ax2.set_ylabel('data volume (MByte)')
-
-    axs['time'].set_ylim(0.0, (axs['time'].get_ylim()[1] * 1.25))
-
-    for fig in figs:
-        figs[fig].tight_layout()
-        figs[fig].savefig(
-            os.path.join(compare_dir, ("%s-%s-%s-%s-%s.pdf" % (configs['metric-alias'], fig.split(':')[-1], configs['stat']['stat'], configs['stat']['stat-args'].replace('.', ''), configs['stat']['lap-usage']))), 
-            bbox_inches = 'tight', format = 'pdf')
+    plt.gcf().autofmt_xdate()

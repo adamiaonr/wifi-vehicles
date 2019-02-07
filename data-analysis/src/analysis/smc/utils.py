@@ -87,17 +87,17 @@ def rebrand_auth(data):
         data.loc[(data['auth'].isin(auth_types[at]['types'])) & ((not auth_types[at]['operators']) | (data['operator'].isin(auth_types[at]['operators']))), 're_auth'] = at
     return data
 
-def add_cells(data, cell_size):
+# def add_cells(data, cell_size):
 
-    # extract nr. of cells in the designated area
-    xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
-    # add cell ids to data, based on [new_lat, new_lon]
-    data['cell_x'] = data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * xx)).astype(int)
-    data['cell_y'] = data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * yy)).astype(int)
-    # drop rows with out-of-bounds cell coords
-    data.drop(data[(data['cell_y'] < 0) | (data['cell_x'] < 0) | (data['cell_y'] > (yy - 1)) | (data['cell_x'] > (xx - 1))].index, inplace = True)
-    # it will be useful to get a single integer id
-    data['cell_id'] = (data['cell_y'].apply(lambda y : (y * xx)) + data['cell_x']).astype(int)
+#     # extract nr. of cells in the designated area
+#     xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
+#     # add cell ids to data, based on [new_lat, new_lon]
+#     data['cell_x'] = data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * xx)).astype(int)
+#     data['cell_y'] = data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * yy)).astype(int)
+#     # drop rows with out-of-bounds cell coords
+#     data.drop(data[(data['cell_y'] < 0) | (data['cell_x'] < 0) | (data['cell_y'] > (yy - 1)) | (data['cell_x'] > (xx - 1))].index, inplace = True)
+#     # it will be useful to get a single integer id
+#     data['cell_id'] = (data['cell_y'].apply(lambda y : (y * xx)) + data['cell_x']).astype(int)
 
 def add_band(data):
     # add 'band' column for '2.4' and '5.0'

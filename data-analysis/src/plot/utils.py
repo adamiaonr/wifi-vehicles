@@ -89,8 +89,6 @@ def cdf(
         ax.set_xlim(plot_configs['x-lim'])
 
     ax.set_yticks(np.arange(0.0, 1.1, 0.25))
-
-    print(type(ax))
     if plot_configs['label'] != '':
         legend = ax.legend(
             fontsize = 10, 

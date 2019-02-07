@@ -44,15 +44,12 @@ from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster
 import branca
 
-# gps coords for a 'central' pin on porto, portugal
-PORTO_LATITUDE = 41.163158
-PORTO_LONGITUDE = -8.6127137
+LAT = 41.163158
+LON = -8.6127137
 
-def heatmap(data, output_dir, map_cntr = [PORTO_LATITUDE, PORTO_LONGITUDE], map_types = ['heatmap']):
-
-    # save data on .hdf5 database
+def heatmap(data, output_dir, map_cntr = [LAT, LON], map_types = ['heatmap']):
+    
     database = pd.HDFStore(os.path.join(output_dir, "all-wf-database.hdf5"))    
-
     ap_map = folium.Map(location = map_cntr, 
         zoom_start = 14, 
         tiles = "Stamen Toner")
@@ -72,7 +69,6 @@ def heatmap(data, output_dir, map_cntr = [PORTO_LATITUDE, PORTO_LONGITUDE], map_
         elif mt == 'clustered-marker':
 
             marker_cluster = MarkerCluster().add_to(ap_map)
-
             for index, row in data.iterrows():
                 folium.Marker(location = [ row['lat'], row['lon'] ]).add_to(marker_cluster)
 

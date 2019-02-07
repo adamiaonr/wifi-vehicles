@@ -26,37 +26,59 @@ from collections import OrderedDict
 
 from prettytable import PrettyTable
 
-def process_metric(data, metric, interval = 0.5):
+def process_metric(data, metric, time_delta = 0.5):
 
     proc_data = None
     if metric == 'throughput':
-            
         # throughput calculated based on wlan frame length
-        proc_data = data[['interval-tmstmp', 'frame len']]
-        # groupby() 'interval-tmstmp', and SUM() size of frames, in byte
-        proc_data = proc_data[['interval-tmstmp', 'frame len']].groupby(['interval-tmstmp']).sum().reset_index().sort_values(by = ['interval-tmstmp'])
-        proc_data['throughput'] = (proc_data['frame len'] * 8.0) / interval
+        proc_data = data[['timed-tmstmp', 'frame len']]
+        # groupby() 'timed-tmstmp', and sum() size of frames, in byte
+        proc_data = proc_data[['timed-tmstmp', 'frame len']].groupby(['timed-tmstmp']).sum().reset_index().sort_values(by = ['timed-tmstmp'])
+        # multiply *8 for bps
+        proc_data['throughput'] = (proc_data['frame len'] * 8.0) / time_delta
 
     elif metric == 'wlan data rate':
-
-        proc_data = data[['interval-tmstmp', 'wlan data rate']]
-        # groupby() 'interval-tmstmp', and get MEAN() wlan data rate over the interval
-        proc_data = proc_data[['interval-tmstmp', 'wlan data rate']].groupby(['interval-tmstmp']).mean().reset_index().sort_values(by = ['interval-tmstmp'])
+        proc_data = data[['timed-tmstmp', 'wlan data rate']]
+        # we calc MEAN wlan data rate per time_delta       
+        proc_data = proc_data[['timed-tmstmp', 'wlan data rate']].groupby(['timed-tmstmp']).mean().reset_index().sort_values(by = ['timed-tmstmp'])
         # multiply by 10^6 for bps
         proc_data['wlan data rate'] = proc_data['wlan data rate'] * 1000000.0
-
-    elif metric == 'wlan rssi':
-
-        proc_data = data[['interval-tmstmp', 'wlan rssi']]
-        # groupby() 'interval-tmstmp', and get mean rssi over the interval
-        proc_data = proc_data[['interval-tmstmp', 'wlan rssi']].groupby(['interval-tmstmp']).mean().reset_index().sort_values(by = ['interval-tmstmp'])
-        proc_data['wlan rssi'] = proc_data['wlan rssi'].astype(float)
 
     return proc_data
 
 def calc_frame_duration(wlan_frames):
     duration = (( 8.0 * (wlan_frames['frame len'].values)) / wlan_frames['wlan data rate'].values) + wlan_frames['wlan preamble']
     return duration
+
+def get_channel_util(data):
+
+    # filter out invalid data:
+    #   - invalid timestamps
+    #       - FIXME : very sloppy test, but it works
+    data['timestamp'] = data['timestamp'].astype(float)
+    data = data[data['timestamp'] > 1000000000.0]
+    data['timestamp'] = data['timestamp'].astype(int)
+
+    # for debugging purposes, timestamps in str format
+    # data['timestamp-str'] = [ str(ts) for ts in data['timestamp'] ]
+
+    # FIXME: from a quick (eyes-only) analysis of the data, 
+    # we observe that cat and cbt increase monotonically in the same time segments.
+    # as such, we identify segments of increasingly monotonic cat
+    data['cutil'] = 0.0
+    segments = list(data.index[(data['cat'] - data['cat'].shift(1)) < 0.0])
+    segments.append(len(data))
+    prev_seg = 0
+    for seg in segments:
+        _data = data.iloc[prev_seg:seg]
+        if len(_data) == 1:
+            continue
+        _data['diff-cat'] = _data['cat'] - _data['cat'].shift(1)
+        _data['diff-cbt'] = _data['cbt'] - _data['cbt'].shift(1)
+        data.loc[prev_seg:seg, 'cutil'] = (_data['diff-cbt'].astype(float) / _data['diff-cat'].astype(float)) * 100.0
+        data = data.dropna(subset = ['cutil'])
+
+    return data
 
 def calc_cbt(input_file):
 
@@ -109,7 +131,7 @@ def calc_wlan_seq_number_stats(data, prev_seq_numbers, mode = 'rx'):
 
     # stats reported as dict()
     stats = {
-        'interval-tmstmp' : data.iloc[0]['interval-tmstmp'],
+        'timed-tmstmp' : data.iloc[0]['timed-tmstmp'],
         'rcvd' : 0.0, 
         'snt' : 0.0, 
         # 'unique' : 0.0,
@@ -182,14 +204,14 @@ def calc_wlan_frame_stats(data, intervals = [1.0, .25], mode = 'rx'):
     # calculates stats related to wlan frame delivery, which can later be used to calc packet loss
     stats = defaultdict(pd.DataFrame)
     # sort by epoch time, seq num and frag num
-    _data = data[['epoch time', 'interval-tmstmp', 'wlan seq number', 'wlan frag number', 'wlan retry']].sort_values(by = ['epoch time', 'wlan seq number', 'wlan frag number']).reset_index(drop = True)
+    _data = data[['epoch time', 'timed-tmstmp', 'wlan seq number', 'wlan frag number', 'wlan retry']].sort_values(by = ['epoch time', 'wlan seq number', 'wlan frag number']).reset_index(drop = True)
 
     # collect # of packets stats, per interval
     for interval in intervals:
 
         # dataframe to aggregate interval stats
-        _stats = pd.DataFrame(columns = ['interval-tmstmp', 'rcvd', 'snt', 're-tx', 'lost'])
-        grouped = _data.groupby(['interval-tmstmp'])
+        _stats = pd.DataFrame(columns = ['timed-tmstmp', 'rcvd', 'snt', 're-tx', 'lost'])
+        grouped = _data.groupby(['timed-tmstmp'])
         # account w/ discontinuities in wlan seq numbers between intervals
         prev_seq_num = _data.iloc[0]['wlan seq number'].astype(float) - 1
         # useful to calc # of not rcvd packets in an interval

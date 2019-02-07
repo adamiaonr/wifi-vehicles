@@ -44,167 +44,228 @@ from prettytable import PrettyTable
 
 from sklearn import linear_model
 
-# north, south, west, east limits of map, in terms of geo coordinates
+# north, south, west, east gps coord limits of FEUP map
 LATN = 41.176796
 LATS = 41.179283
 LONE = -8.593912
 LONW = -8.598336
-# gps coords for a 'central' pin on FEUP, Porto, Portugal
+# central gps coords for FEUP
 LAT  = (41.176796 + 41.179283) / 2.0
 LON = (-8.598336 + -8.593912) / 2.0
 
-def _cell(data, metric, stat, **kwargs):
+def select_gps(data, method, args):
 
-    if (stat == 'wma') or (stat == 'ewma'):
+    if method == 'cell-history':
+        
+        nodes = ['m1', 'w1', 'w2', 'w3']
 
-        # data transferred by band and lap
-        tx_data = data[kwargs['macs'] + ['lap-number']].groupby(['lap-number']).sum().reset_index()
-        # weighing factors for each lap
-        tx_data['n'] = 0.0
-        denom = 0.0
-        # remove the current lap if it can't be used as candidate
-        candidate_laps = set([1.0, 2.0, 3.0, 4.0, 5.0])
-        r = 0
-        if not kwargs['use_lap']:
-            candidate_laps -= set([kwargs['lap']])
-            r = 1
-        # get the sequence of laps to be used for the *wma calculation:
-        #   - over a window of w laps
-        #   - we rotate the set of candidate laps <> by lap - 1 positions, and take the last w positions
-        laps = analysis.metrics.rotate(list(candidate_laps), -(int(kwargs['lap']) - r))[-kwargs['stat_args']['w']:]
-        for i, l in enumerate(laps):
+        if args['stat'] == 'ewma':
+            data[nodes] = data[nodes].ewm(alpha = float(args['stat-args']['alpha'])).mean()
+        elif args['stat'] == 'mean':
+            data[nodes] = data[nodes].expanding().mean()
+        elif args['stat'] == 'max':
+            data[nodes] = data[nodes].expanding().max()
 
-            if stat == 'wma':
-                tx_data.loc[tx_data['lap-number'] == l, 'n'] = i
-                denom += i
+        # NOTE : the shift(1) is necessary, because this algorithm selects the best based on
+        # previous history only, i.e. it must not count with the throughput values of the current cell period,
+        # which - by definition - are unknown
+        data['best'] = data[nodes].idxmax(axis = 1).shift(1)
 
-            elif stat == 'ewma':
-                tx_data.loc[tx_data['lap-number'] == l, 'n'] = (1.0 - kwargs['stat_args']['alpha'])**(float((len(laps) - 1) - i))
-                denom += (1.0 - kwargs['stat_args']['alpha'])**(float((len(laps) - 1) - i))
+    return data
 
-        for mac in kwargs['macs']:
-            tx_data[mac] = (tx_data[mac] * tx_data['n']) / float(denom)
-
-        return tx_data[kwargs['macs']].sum().idxmax(axis = 1)
-
-    elif stat == 'mean':
-        # return mac addr which provides max mean() <metric> in the cell (all laps)
-        return data[kwargs['macs']].mean().idxmax(axis = 1)
-
-    elif stat == 'max':
-        # return mac addr which provides max() <metric> in the cell (all laps)
-        return data[kwargs['macs']].max().idxmax(axis = 1)
-
-    else:
-        sys.stderr.write("""[ERROR] %s stat not implemented. abort.\n""" % (stat))
-
-def cell(input_dir, trace_nr,
-    args,
-    force_calc = False):
-
-    # get mac addr info
-    mac_addrs = pd.read_csv(os.path.join(input_dir, ("mac-info.csv")))
-    clients = mac_addrs[mac_addrs['type'] == 'client']
+def optimize_handoffs(input_dir, trace_nr, args, force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    cell_db = ('/%s/%s/%s/%s/%s/%s' % (
-        'best-cell',
-        args['cell-size'],
-        args['metric'], args['stat'], ('-'.join([str(v) for v in args['stat-args'].values()])),
-        ('%d-%d' % (int(args['use-current-lap']), int(args['use-direction'])))))
+    nodes = ['m1', 'w1', 'w2', 'w3']
 
-    if cell_db in database.keys():
+    if args['db'] not in database.keys():
+        sys.stderr.write("""[ERROR] %s not in database. abort.\n""" % (db_name))
+        return
+
+    opt_db = ('%s/optimize-handoff' % (args['db']))
+    if opt_db in database.keys():
         if force_calc:
-            database.remove(cell_db)
+            database.remove(opt_db)
         else:
-            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (cell_db))
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (opt_db))
             return
 
-    # merge trace data w/ throughput data
-    trace_data = pd.DataFrame(columns = ['interval-tmstmp', 'lat', 'lon', 'lap-number', 'direction'])
-    macs = []
-    for i, client in clients.iterrows():
+    data = database.select(args['db']).sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
+    data['ap-block'] = ((data['best'] != data['best'].shift(1))).astype(int).cumsum()
 
-        base_db = ('/%s/%s' % ('interval-data', client['mac']))
-        if base_db not in database.keys():
-            continue
+    times = data.groupby(['ap-block', 'best'])['timed-tmstmp'].apply(list).reset_index(drop = False)
+    times['timed-tmstmp'] = times['timed-tmstmp'].apply(lambda x : sorted(x))
+    times['duration'] = times['timed-tmstmp'].apply(lambda x : x[-1] - x[0])
+    times['duration'] = times['duration'] + 0.5
+    times['fix'] = 0
+    times.loc[(times['duration'] < 5) & (times.index < (len(times) - 1)), 'fix'] = 1
+    times['fix-block'] = ((times['fix'] == 1) & (times['fix'] != times['fix'].shift(1))).astype(int).cumsum()
 
-        # load data for a client mac
-        data = database.select(base_db)
-        if data.empty:
-            continue
+    times['~fix'] = ~times['fix']
+    times['fix-to-block'] = ((times['~fix'] & (times['fix'].shift(1)))).astype(int).cumsum()
+    fix_key = times[['best', 'fix-to-block']].drop_duplicates(subset = ['fix-to-block']).reset_index(drop = True)
+    fix_key['fix-to'] = fix_key['best']
+    times = pd.merge(times, fix_key[['fix-to', 'fix-to-block']], on = ['fix-to-block'], how = 'left')
+    data = pd.merge(data, times[['ap-block', 'fix', 'fix-to']], on = ['ap-block'], how = 'left')
+    data.loc[data['fix'] == 1, 'best'] = data[data['fix'] == 1]['fix-to']
 
-        data[client['mac']] = data[args['metric']]
-        macs.append(client['mac'])
+    # data = data[(data['timed-tmstmp'] > 1548781953.0) & (data['timed-tmstmp'] < 1548782668.0)]
+    # data['timed-tmstmp-str'] = data['timed-tmstmp'].astype(str)
+    # print(data[['timed-tmstmp-str', 'ap-block', 'best']].groupby('best').size())
 
-        # update best w/ mac info
-        # FIXME: is the use of 'outer' merge correct here?
-        trace_data = pd.merge(trace_data, data[ ['interval-tmstmp', client['mac'], 'lat', 'lon', 'lap-number', 'direction'] ], on = ['interval-tmstmp', 'lat', 'lon', 'lap-number', 'direction'], how = 'outer')
+    # sys.exit(0)
 
-    # drop rows w/ undefined throughput values for all mac addrs
-    trace_data = trace_data.dropna(subset = macs, how = 'all').drop_duplicates(subset = ['interval-tmstmp']).sort_values(by = ['interval-tmstmp']).reset_index(drop = True)
+    data = data.drop_duplicates(subset = ['timed-tmstmp']).reset_index(drop = True)
+    data = data.sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
+    data[args['metric']] = 0.0
+    for node in nodes:
+        data.loc[data['best'] == node, args['metric']] = data[data['best'] == node][node]
 
-    # keep data of moving period only, i.e. when the bike is moving and getting gps positions
-    trace_data = analysis.trace.extract_moving_data(trace_data)
-    # fix timestamp gaps
-    trace_data['timestamp'] = trace_data['interval-tmstmp'].astype(int)
-    # fix lat and lon gaps
-    analysis.trace.fix_gaps(trace_data, subset = ['lat', 'lon'])
+    parsing.utils.to_hdf5(data, opt_db, database)    
 
-    # add cell ids
-    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = args['cell-size'], lat = [LATN, LATS], lon = [LONW, LONE])
-    trace_data['cell-x'] = trace_data['lon'].apply(lambda x : int((x - LONW) / (LONE - LONW) * x_cell_num))
-    trace_data['cell-y'] = trace_data['lat'].apply(lambda y : int((y - LATS) / (LATN - LATS) * y_cell_num))
+def cell_history(input_dir, trace_nr,
+    args,
+    force_calc = False):
 
-    # now, fill a 'best' column, based on 'method'
-    # FIXME: only 2 methods so far : 
-    #   - /every-other/no-direction
-    trace_data['best'] = ''
-    laps = trace_data['lap-number'].unique()
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    for lap in laps:
+    if args['metric'] == 'throughput':
+        cell_history_db = ('/selection-performance/%s/gps/cell-history/%s/%s/%s' % (
+            args['metric'],
+            args['cell-size'],
+            args['stat'], 
+            ('-'.join([str(v) for v in args['stat-args'].values()]))))
+    else:
+        cell_history_db = ('/selection/%s/gps/cell-history/%s/%s/%s' % (
+            args['metric'],
+            args['cell-size'],
+            args['stat'], 
+            ('-'.join([str(v) for v in args['stat-args'].values()]))))        
 
-        # training data
-        other = None
-        if bool(int(args['use-current-lap'])):
-            other = trace_data.groupby(['cell-x', 'cell-y'])
+    if cell_history_db in database.keys():
+        if force_calc:
+            database.remove(cell_history_db)
         else:
-            other = trace_data[trace_data['lap-number'] != lap].groupby(['cell-x', 'cell-y'])
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (cell_history_db))
+            return
 
-        # test data
-        this = trace_data[trace_data['lap-number'] == lap].groupby(['cell-x', 'cell-y'])
+    # merge /best/<metric> & gps data + add cell info
+    data = analysis.trace.merge_gps(input_dir, trace_nr, args['metric'], cell_size = float(args['cell-size']))
 
-        for name, group in this:
+    # add period numbers, i.e. distinct periods of time during which client was in a distinct cell <x,y>
+    nodes = ['m1', 'w1', 'w2', 'w3']
+    data = data.sort_values(by = ['cell_id', 'timed-tmstmp']).reset_index(drop = True)
+    data['period'] = (((data['timed-tmstmp'] - data['timed-tmstmp'].shift(1)) > 5.0) | (data['cell_id'] != data['cell_id'].shift(1))).astype(int).cumsum()
+    # calc avg <metric> per cell-period
+    sel_period = data[['cell_id', 'period'] + nodes].groupby(['cell_id', 'period']).mean().reset_index(drop = False)
 
-            other_name = name
-            if other_name not in other.groups:
-                closest = analysis.gps.get_closest_cell(name, other.groups.keys())
-                other_name = (closest['cell-x'], closest['cell-y'])
+    if args['metric'] == 'rss':
+        sel_period = sel_period.fillna(-100.0)
+    else:
+        sel_period = sel_period.fillna(0.0)
 
-            other_data = trace_data.iloc[ other.groups[other_name].tolist() ]
-            ix = trace_data[(trace_data['lap-number'] == lap) & (trace_data['cell-x'] == name[0]) & (trace_data['cell-y'] == name[1])].index.tolist()
+    # calculate selection plan, per cell period
+    sel_period = sel_period.groupby(['cell_id']).apply(select_gps, method = 'cell-history', args = args)
 
-            if (args['stat'] == 'wma'):
-                trace_data.loc[ix, 'best'] = _cell(data = other_data, metric = args['metric'], stat = 'wma', stat_args = args['stat-args'], macs = macs, lap = lap, use_lap = int(args['use-current-lap']))
+    selection = pd.merge(data, sel_period[['period', 'best']], on = ['period'], how = 'left')
+    # print(len(selection))
+    # selection['timed-tmstmp-str'] = selection['timed-tmstmp'].astype(str)
+    # print(selection[selection.duplicated(subset = ['timed-tmstmp'], keep = False)].sort_values(by = ['timed-tmstmp']))
+    # sys.exit(0)
+    selection = selection.drop_duplicates(subset = ['timed-tmstmp']).reset_index(drop = True)
+    selection = selection.sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
+    selection[args['metric']] = 0.0
+    for node in nodes:
+        selection.loc[selection['best'] == node, args['metric']] = selection[selection['best'] == node][node]
 
-            elif (args['stat'] == 'ewma'):
-                trace_data.loc[ix, 'best'] = _cell(data = other_data, metric = args['metric'], stat = 'ewma', stat_args = args['stat-args'], macs = macs, lap = lap, use_lap = int(args['use-current-lap']))
+    parsing.utils.to_hdf5(selection, cell_history_db, database)
 
-            elif (args['stat'] == 'mean'):
-                # ewma w/ alpha = 0.0 is a typical mean()
-                args['stat-args']['alpha'] = 0.0
-                trace_data.loc[ix, 'best'] = _cell(data = other_data, metric = args['metric'], stat = 'ewma', stat_args = args['stat-args'], macs = macs, lap = lap, use_lap = int(args['use-current-lap']))
+def scripted_handoffs(input_dir, trace_nr,
+    args,
+    force_calc = False):
 
-            elif (args['stat'] == 'max'):
-                trace_data.loc[ix, 'best'] = _cell(data = other_data, metric = args['metric'], stat = 'max', macs = macs)
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-            else:
-                sys.stderr.write("""[ERROR] %s stat not implemented. abort.\n""" % (stat))
-                return
+    sh_db = ('/selection/%s/gps/scripted-handoffs' % (args['metric']))
+    if sh_db in database.keys():
+        if force_calc:
+            database.remove(sh_db)
+        else:
+            sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (sh_db))
+            return
 
-    trace_data = trace_data[trace_data['best'] != ''].sort_values(by = ['interval-tmstmp']).reset_index(drop = True).convert_objects(convert_numeric = True)
-    trace_data['block'] = ((trace_data['best'].shift(1) != trace_data['best'])).astype(int).cumsum()
+    # get lap timestamps
+    laps = analysis.gps.get_lap_timestamps(input_dir, trace_nr)
+    # get rss data from all nodes
+    nodes = ['m1', 'w1', 'w2', 'w3']
+    data = analysis.trace.merge_gps(input_dir, trace_nr, 'rss', cell_size = 20.0)
+    data = data[['timed-tmstmp', 'lat', 'lon'] + nodes].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
 
-    parsing.utils.to_hdf5(trace_data, cell_db, database)
+    # add lap numbers to data
+    data['lap'] = -1
+    for l, row in laps.iterrows():
+        data.loc[(data['lap'] == -1) & (data['timed-tmstmp'] <= row['timed-tmstmp']), 'lap'] = row['lap']
+    data.loc[data['lap'] == -1, 'lap'] = len(laps)
+
+    # algorithm:
+    #   - objective : find the distance at which to handoff to a new ap, based on rss
+    #   - the algorithm should be iterative, i.e. at lap i + 2, we should use history 
+    #     from laps i and i + 1 to determine the handoff cell, at lap i + 3 from laps i, i + 1 and i + 2, etc.
+
+    # calculate distances & direction of movement, relative to a reference point (located outside of the circuit)
+    # FIXME : the ref_point should be given as argument
+    ref_point = {'lat' : 41.178685, 'lon' : -8.597872}
+    pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
+    data['ref-dist'] = [ mapping.utils.gps_to_dist(ref_point['lat'], ref_point['lon'], p[0], p[1]) for p in pos ]
+
+    # calculate the direction of movement by looking at the change in ref-dist: 
+    #   - 0 : east to west (ref-dist decreases) 
+    #   - 1 : west to east (ref-dist increases) 
+    data['direction'] = (data['ref-dist'] >= data['ref-dist'].shift(1)).astype(int)
+
+    # to make things easier, treat ref distances in m precision
+    # data['ref-dist'] = data['ref-dist'].apply(analysis.metrics.custom_round, prec = 1, base = .5)
+    data['ref-dist'] = data['ref-dist'].apply(lambda x : round(x))
+
+    # iteratively calculate the handoff scripts w/ the info available after each lap
+    for l in xrange(2, len(laps) + 1):
+
+        # # FIXME : don't count w/ 'w3' after lap 5
+        # if l > 6:
+        #     nodes = ['m1', 'w1', 'w2']
+
+        # calc handoff script from laps [... , l - 2, l - 1]
+        handoff_script = data[data['lap'] < l].sort_values(by = ['ref-dist', 'direction'])
+        for node in nodes:
+            handoff_script.loc[handoff_script[node] > -30.0, node] = np.nan
+
+        handoff_script.dropna()
+
+        for node in nodes:
+            analysis.metrics.smoothen(handoff_script, column = node, span = 50)
+
+        # find best ap of each row (max rss)
+        handoff_script['best'] = handoff_script[nodes].idxmax(axis = 1)
+        # determine handoff distances
+        k = {1 : 1, 0 : -1}
+        for d in k:
+            # handoff distances depend on direction:
+            #   - if E to W (ref-dist decreases): handoff is triggered at higher distance of an best
+            #   - if W to E (ref-dist increases): handoff is triggered at lower distance of an best            
+            hs = handoff_script[handoff_script['direction'] == d]
+            hs['handoff'] = (hs['best'] != hs['best'].shift(k[d])).astype(int)
+            hs = hs[hs['handoff'] == 1].reset_index(drop = True)
+            print(hs[['direction', 'ref-dist', 'best']])
+
+            # apply handoff script to current lap
+            for i, h in hs.iterrows():
+                if d == 1:
+                    data.loc[(data['lap'] == l) & (data['ref-dist'] > h['ref-dist']), 'best'] = h['best']
+                else:
+                    data.loc[(data['lap'] == l) & (data['direction'] == d) & (data['ref-dist'] < h['ref-dist']), 'best'] = h['best']
+
+    parsing.utils.to_hdf5(data, sh_db, database)
