@@ -96,7 +96,7 @@ def rates(ax, input_dir, trace_nr, metric = 'throughput', time_limits = None):
     if not time_limits:
         time_limits = [None, None]
 
-    for node in nodes:
+    for node in sorted(nodes.keys()):
 
         db_name = ('/%s/%s/%s' % (node, 'basic', 'bitrates'))
         if db_name not in database.keys():
@@ -180,7 +180,7 @@ def rss(ax, input_dir, trace_nr, time_limits = None):
     if not time_limits:
         time_limits = [None, None]
 
-    for node in nodes:
+    for node in sorted(nodes.keys()):
 
         db_name = ('/%s/%s/%s' % (node, 'basic', 'beacons'))
         if db_name not in database.keys():
@@ -219,7 +219,7 @@ def rss(ax, input_dir, trace_nr, time_limits = None):
     ax.set_xticks(xticks)
     ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
 
-def rss_distance(ax, input_dir, trace_nr):
+def vs_distance(ax, input_dir, trace_nr, configs):
 
     nodes = {
         'm1' : {
@@ -258,10 +258,10 @@ def rss_distance(ax, input_dir, trace_nr):
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(True)
-    ax.set_title('RSS (per channel) vs. distance (trace %s)' % (trace_nr))
+    ax.set_title('%s (per channel) vs. distance (trace %s)' % (configs['metric'], trace_nr))
 
     # get rss data from all nodes
-    data = analysis.trace.merge_gps(input_dir, trace_nr, 'rss', cell_size = 20.0)
+    data = analysis.trace.merge_gps(input_dir, trace_nr, configs['metric'], cell_size = 20.0)
     data = data[['timed-tmstmp', 'lat', 'lon'] + nodes.keys()].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
     # for node in nodes.keys():
     #     analysis.metrics.smoothen(data, column = node, span = 50)
@@ -274,17 +274,17 @@ def rss_distance(ax, input_dir, trace_nr):
     # offset = data['ref-dist'].min()
     offset = 0.0
 
-    for node in nodes:
+    for node in sorted(nodes.keys()):
 
         _data = data[['ref-dist', node]]
-        _data = _data[_data[node] < -30]
+        if 'filter' in configs:
+            _data = _data[_data[node] < configs['filter']]
         _data = _data.sort_values(by = ['ref-dist']).reset_index(drop = True)
-
         analysis.metrics.smoothen(_data, column = node, span = 50)
 
         ax.plot(
             _data['ref-dist'] - offset,
-            _data[node],
+            _data[node] * configs['coef'],
             linewidth = 1.0, linestyle = '-', color = nodes[node]['color'], label = nodes[node]['label'], 
             marker = None, markersize = 0.0, markeredgewidth = 0.0)
 
@@ -297,7 +297,7 @@ def rss_distance(ax, input_dir, trace_nr):
         legobj.set_linewidth(2.0)
 
     ax.set_xlabel("distance (m)")
-    ax.set_ylabel("RSS (dBm)")
+    ax.set_ylabel(configs['y-label'])
     ax.set_xlim(data['ref-dist'].min() - offset, data['ref-dist'].max() - offset)
 
 def channel_util(ax, input_dir, trace_nr, time_limits = None):
@@ -345,7 +345,7 @@ def channel_util(ax, input_dir, trace_nr, time_limits = None):
     if not time_limits:
         time_limits = [None, None]
 
-    for ap in aps:
+    for ap in sorted(aps.keys()):
 
         db_name = ('/%s/%s/%s' % (ap, 'basic', 'channel-util'))
         if db_name not in database.keys():

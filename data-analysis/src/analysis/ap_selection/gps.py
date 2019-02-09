@@ -202,7 +202,7 @@ def scripted_handoffs(input_dir, trace_nr,
     laps = analysis.gps.get_lap_timestamps(input_dir, trace_nr)
     # get rss data from all nodes
     nodes = ['m1', 'w1', 'w2', 'w3']
-    data = analysis.trace.merge_gps(input_dir, trace_nr, 'rss', cell_size = 20.0)
+    data = analysis.trace.merge_gps(input_dir, trace_nr, args['metric'], cell_size = 20.0)
     data = data[['timed-tmstmp', 'lat', 'lon'] + nodes].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
 
     # add lap numbers to data
@@ -210,11 +210,6 @@ def scripted_handoffs(input_dir, trace_nr,
     for l, row in laps.iterrows():
         data.loc[(data['lap'] == -1) & (data['timed-tmstmp'] <= row['timed-tmstmp']), 'lap'] = row['lap']
     data.loc[data['lap'] == -1, 'lap'] = len(laps)
-
-    # algorithm:
-    #   - objective : find the distance at which to handoff to a new ap, based on rss
-    #   - the algorithm should be iterative, i.e. at lap i + 2, we should use history 
-    #     from laps i and i + 1 to determine the handoff cell, at lap i + 3 from laps i, i + 1 and i + 2, etc.
 
     # calculate distances & direction of movement, relative to a reference point (located outside of the circuit)
     # FIXME : the ref_point should be given as argument
@@ -241,7 +236,8 @@ def scripted_handoffs(input_dir, trace_nr,
         # calc handoff script from laps [... , l - 2, l - 1]
         handoff_script = data[data['lap'] < l].sort_values(by = ['ref-dist', 'direction'])
         for node in nodes:
-            handoff_script.loc[handoff_script[node] > -30.0, node] = np.nan
+            if 'filter' in args:
+                handoff_script.loc[handoff_script[node] > args['filter'], node] = np.nan
 
         handoff_script.dropna()
 

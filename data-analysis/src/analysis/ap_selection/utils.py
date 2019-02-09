@@ -54,7 +54,7 @@ def extract_performance(
     # save data on .hdf5 database
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    perf_db = ('/selection-performance/%s/%s' % (metric, db_selection.lstrip('/selection/')))
+    perf_db = ('/selection-performance/%s/%s' % (metric, db_selection.replace('/selection/', '')))
     if perf_db in database.keys():
         if force_calc:
             database.remove(perf_db)
@@ -94,4 +94,4 @@ def extract_performance(
 
     sel_perf = sel_perf.sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
     sel_perf[metric] = sel_perf[metric].fillna(0.0)
-    parsing.utils.to_hdf5(sel_perf, ('/selection-performance/%s/%s' % (metric, db_selection.lstrip('/selection/'))), database)
+    parsing.utils.to_hdf5(sel_perf, ('/selection-performance/%s/%s' % (metric, db_selection.replace('/selection/', ''))), database)

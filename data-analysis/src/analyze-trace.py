@@ -371,38 +371,43 @@ def plot_trace_description(input_dir, trace_nr, output_dir, mode = 'all', time_l
     else:
 
         plt.style.use('classic')
-        fig = plt.figure(figsize = ((2.0 * 6.25), 3 * (2.0 * 1.5)))
+        fig = plt.figure(figsize = ((2.0 * 6.25), 4 * (2.0 * 1.5)))
 
         # best metric per interval
         axs = []
 
-        ax = fig.add_subplot(3, 2, 1)
+        ax = fig.add_subplot(4, 2, 1)
         plot.trace.rates(ax, input_dir, trace_nr, metric = 'throughput')
         ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
         axs.append(ax)
 
-        ax = fig.add_subplot(3, 2, 2)
+        ax = fig.add_subplot(4, 2, 2)
         plot.trace.rates(ax, input_dir, trace_nr, metric = 'wlan data rate')
         ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
         axs.append(ax)
 
-        ax = fig.add_subplot(3, 2, 3)
+        ax = fig.add_subplot(4, 2, 3)
         plot.trace.channel_util(ax, input_dir, trace_nr)
         ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
         axs.append(ax)
 
-        ax = fig.add_subplot(3, 2, 4)
+        ax = fig.add_subplot(4, 2, 4)
         plot.trace.distances(ax, input_dir, trace_nr)
         ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
         axs.append(ax)
 
-        ax = fig.add_subplot(3, 2, 5)
+        ax = fig.add_subplot(4, 2, 5)
         plot.trace.rss(ax, input_dir, trace_nr)
         ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 0.75))
         axs.append(ax)
 
-        ax = fig.add_subplot(3, 2, 6)
-        plot.trace.rss_distance(ax, input_dir, trace_nr)
+        ax = fig.add_subplot(4, 2, 6)
+        plot.trace.vs_distance(ax, input_dir, trace_nr, 
+            configs = {'metric' : 'rss', 'y-label' : 'RSS (dBm)', 'filter' : -30, 'coef' : 1.0})
+
+        ax = fig.add_subplot(4, 2, 7)
+        plot.trace.vs_distance(ax, input_dir, trace_nr, 
+            configs = {'metric' : 'throughput', 'y-label' : 'throughput (Mbps)', 'coef' : 1.0 / 1000000.0})
 
         # adjust time xx scale to be the same for all graphs
         # divide xx axis in 5 ticks
@@ -577,6 +582,7 @@ if __name__ == "__main__":
     time_limits = [laps.iloc[0]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']]
 
     plot_trace_description(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits)
+    sys.exit(0)
     # plot.trace.maps(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits, redraw = True)
 
     # # calculate the 'cadillac' periods, according to different metrics
@@ -609,18 +615,26 @@ if __name__ == "__main__":
     #     force_calc = False)
 
     # scripted handoffs
+    # analysis.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
+    #     args = {
+    #         'metric' : 'rss',
+    #         'filter' : -30.0
+    #     },
+    #     force_calc = False)
+
+    # analysis.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
+    #     db_selection = '/selection/rss/gps/scripted-handoffs',
+    #     force_calc = False)
+
     analysis.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
         args = {
-            'metric' : 'rss',
-            'cell-size' : 5.0,
-            'stat' : 'mean',
-            'stat-args' : {'alpha' : 0.75, 'w' : 0}
+            'metric' : 'throughput'
         },
-        force_calc = True)
+        force_calc = False)
 
     analysis.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
-        db_selection = '/selection/rss/gps/scripted-handoffs',
-        force_calc = True)
+        db_selection = '/selection/throughput/gps/scripted-handoffs',
+        force_calc = False)
 
     # # cell history
     # analysis.ap_selection.gps.cell_history(args.input_dir, args.trace_nr,
@@ -665,6 +679,10 @@ if __name__ == "__main__":
                     'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
                     'x-ticklabel' : 'scripted'
                 },
+                '4:cell-history' : {
+                    'db' : '/selection-performance/throughput/throughput/gps/scripted-handoffs',
+                    'x-ticklabel' : 'scripted**'
+                },                
                 # '4:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
                 #     'x-ticklabel' : 'cell history (ewma)'
@@ -673,13 +691,13 @@ if __name__ == "__main__":
                 #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
                 #     'x-ticklabel' : 'cell history (5)'
                 # },
-                '6:cell-history' : {
+                '7:cell-history' : {
                     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
                     'x-ticklabel' : 'cell history'
                 },
-                '7:cell-history' : {
+                '8:cell-history' : {
                     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
-                    'x-ticklabel' : 'cell history**'
+                    'x-ticklabel' : 'cell history***'
                 },
                 # '7:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
@@ -760,6 +778,11 @@ if __name__ == "__main__":
                     'label' : 'scripted',
                     'color' : 'green',
                 },
+                '4:cell-history' : {
+                    'db' : '/selection-performance/throughput/throughput/gps/scripted-handoffs',
+                    'label' : 'scripted**',
+                    'color' : 'lime'
+                },                
                 # '4:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
                 #     'x-ticklabel' : 'cell history (ewma)'
@@ -768,16 +791,16 @@ if __name__ == "__main__":
                 #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
                 #     'x-ticklabel' : 'cell history (5)'
                 # },
-                '6:cell-history' : {
+                '7:cell-history' : {
                     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
                     'label' : 'cell history',
                     'color' : 'red'
                 },
-                '7:cell-history' : {
+                '8:cell-history' : {
                     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
-                    'label' : 'cell history**',
+                    'label' : 'cell history***',
                     'color' : 'pink'
-                },                
+                },
                 # '7:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
                 #     'x-ticklabel' : 'cell history (max)'
