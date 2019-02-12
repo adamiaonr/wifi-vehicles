@@ -40,6 +40,48 @@ CREATE TABLE `cells` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+DROP TABLE IF EXISTS `operator`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `operator` (
+  `id` bigint(20) NOT NULL PRIMARY KEY,
+  `name` text
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `ap`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ap` (
+  `id` bigint(20) NOT NULL PRIMARY KEY auto_increment,
+  `bssid` varchar(24) NOT NULL,
+  `frequency` bigint(20) DEFAULT NULL,
+  `band` bigint(20) DEFAULT NULL,
+  `auth_orig` bigint(20) DEFAULT NULL,
+  `auth_custom` bigint(20) DEFAULT NULL,
+  `is_public` tinyint(1) DEFAULT NULL,
+  `ess_id` bigint(20) DEFAULT NULL,
+  `operator_id` bigint(20) DEFAULT NULL,
+  UNIQUE(bssid),
+  FOREIGN KEY (ess_id) REFERENCES ess (id),
+  FOREIGN KEY (operator_id) REFERENCES operator (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `ess`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ess` (
+  `id` bigint(20) NOT NULL PRIMARY KEY auto_increment,
+  `essid` text,
+  `essid_hash` varchar(32) NOT NULL,
+  `is_public` tinyint(1) DEFAULT NULL,
+  `operator_id` bigint(20) DEFAULT NULL,
+  UNIQUE(essid_hash),
+  FOREIGN KEY (operator_id) REFERENCES operator (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `roads_cells`
 --
@@ -68,25 +110,31 @@ DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sessions` (
-  `index` bigint(20) NOT NULL PRIMARY KEY auto_increment,
+  `id` bigint(20) NOT NULL PRIMARY KEY auto_increment,
   `timestamp` bigint(20) DEFAULT NULL,
   `session_id` bigint(20) DEFAULT NULL,
-  `essid` text,
-  `bssid` text,
+  `ap_id` bigint(20) DEFAULT NULL,
+  `ess_id` bigint(20) DEFAULT NULL,
+  `operator_id` bigint(20) DEFAULT NULL,
+  -- `essid` text,
+  -- `bssid` text,
   `rss` bigint(20) DEFAULT NULL,
-  `auth` bigint(20) DEFAULT NULL,
-  `frequency` bigint(20) DEFAULT NULL,
-  `band` bigint(20) DEFAULT NULL,
-  `cell_id` bigint(20) DEFAULT NULL,
+  -- `frequency` bigint(20) DEFAULT NULL,
+  -- `band` bigint(20) DEFAULT NULL,
   `lat` double DEFAULT NULL,
   `lon` double DEFAULT NULL,
   `gps_error` double DEFAULT NULL,
-  `in_road` bigint(20) DEFAULT NULL,
-  `operator` bigint(20) DEFAULT NULL,
-  `operator_known` bigint(20) DEFAULT NULL,
-  `operator_public` bigint(20) DEFAULT NULL,
-  `re_auth` bigint(20) DEFAULT NULL,
-  FOREIGN KEY (cell_id) REFERENCES cells (id)
+  `scan_dist` double DEFAULT NULL,  
+  `scan_acc` double DEFAULT NULL,  
+  `cell_id` bigint(20) DEFAULT NULL,
+  `in_road` tinyint(1) DEFAULT NULL,
+  -- `is_public` tinyint(1) DEFAULT NULL,
+  -- `auth_orig` bigint(20) DEFAULT NULL,
+  -- `auth_custom` bigint(20) DEFAULT NULL,
+  FOREIGN KEY (cell_id) REFERENCES cells (id),
+  FOREIGN KEY (ap_id) REFERENCES ap (id),
+  FOREIGN KEY (ess_id) REFERENCES ess (id),
+  FOREIGN KEY (operator_id) REFERENCES operator (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
