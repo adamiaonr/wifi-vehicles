@@ -264,7 +264,7 @@ def compare(
     barwidth = 0.5
     # space between big groups of bars
     interspace = 3.0 * barwidth
-    # space between bars withing groups
+    # space between bars within groups
     intraspace = 1.0 * barwidth
 
     # load & plot performance data

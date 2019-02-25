@@ -57,34 +57,50 @@ LONW = LON - 0.06
 
 CELL_SIZE = 20.0
 
-def sql_query_to_hdf5(input_dir, queries, cell_size = 20, threshold = -80, in_road = 1):
+def save_query(input_dir, queries, db_eng = None):
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
     output_dir = os.path.join(input_dir, ("processed"))
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     database = pd.HDFStore(os.path.join(output_dir, "smc.hdf5"))
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
     for query in queries:
         if queries[query]['name'] not in database.keys():
             start_time = timeit.default_timer()
-            data = pd.read_sql(queries[query]['query'], con = conn)
-            print("%s::sql_query_to_hdf5() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
+            data = pd.read_sql(queries[query]['query'], con = db_eng)
+            print("%s::save_query() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
             parsing.utils.to_hdf5(data, queries[query]['name'], database)
 
 def do_sql_query(queries):
     engine = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-    with engine.connect() as conn:
+    with engine.connect() as eng:
         for query in queries:
             start_time = timeit.default_timer()
-            conn.execute(queries[query]['query'])
+            eng.execute(queries[query]['query'])
             print("%s::do_sql_query() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
 
-def create_operator_table():
+def table_exists(table_name, db_eng = None):
+    
+    if not db_eng:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
-    # connect to smc mysql database
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+    query = ("""SELECT COUNT(*) as cnt FROM %s""" % (table_name))
+    data = pd.read_sql(query, con = db_eng)
+    return (data.iloc[0]['cnt'] > 0)
+
+def create_operator_table(db_eng = None):
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    if analysis.smc.database.table_exists('operator', db_eng):
+        print("%s::create_operator_table() : [INFO] operator table exists. skipping." % (sys.argv[0]))
+        return
+
     operators = []
     operators.append({'id' : 0, 'name' : 'unknown'})
     for op in analysis.smc.utils.operators:
@@ -92,15 +108,23 @@ def create_operator_table():
 
     operators = pd.DataFrame(operators).sort_values(by = ['id']).reset_index(drop = True)
     start = timeit.default_timer()
-    operators.to_sql(con = conn, name = 'operator', if_exists = 'append', index = False)
+    
+    try:
+        operators.to_sql(con = db_eng, name = 'operator', if_exists = 'fail', index = False)
+    except Exception:
+        sys.stderr.write("""%s::create_cells_table() : [WARNING] %s table exists. skipping.\n""" % (sys.argv[0], 'operator'))
+
     print("%s::crate_operator_table() : [INFO] stored operator in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
-def insert_aps(db_conn, data):
+def insert_aps(data, db_eng = None):
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
     start_time = timeit.default_timer()
     # use sql for memory efficient (albeit more time consuming...)
     data = data.drop_duplicates(subset = ['bssid', 'essid_hash']).reset_index(drop = True)
-    data.to_sql(con = db_conn, name = 'aux', if_exists = 'replace', index = False)
+    data.to_sql(con = db_eng, name = 'aux', if_exists = 'replace', index = False)
     print("%s::insert_aps() : [INFO] sql aux : %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
 
     #   - ess :
@@ -110,7 +134,7 @@ def insert_aps(db_conn, data):
     query = """INSERT IGNORE INTO ess (essid_hash, is_public, operator_id)
             SELECT DISTINCT essid_hash, is_public, operator_id
             FROM aux"""
-    db_conn.execute(query)
+    db_eng.execute(query)
     print("%s::insert_aps() : [INFO] sql ess : %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
 
     #   - ap :
@@ -131,7 +155,7 @@ def insert_aps(db_conn, data):
             ) AS t3
             ON t2.essid_hash = t3.essid_hash
             """
-    db_conn.execute(query)
+    db_eng.execute(query)
     print("%s::insert_aps() : [INFO] sql ap : %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
 
     # get the <ap_id, ess_id> tuples based on bssids in aux
@@ -139,26 +163,36 @@ def insert_aps(db_conn, data):
     query = """SELECT DISTINCT id as ap_id, bssid, ess_id
             FROM ap
             WHERE bssid IN (SELECT bssid FROM aux)"""
-    data = pd.read_sql(query, con = db_conn)
+    data = pd.read_sql(query, con = db_eng)
 
     print("%s::insert_aps() : [INFO] sql <ap_id, ess_id> : %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
     return data
 
 def insert_sessions(
     input_dir, 
-    cell_size = 20):
+    cell_size = 20,
+    db_eng = None):
 
     output_dir = os.path.join(input_dir, ("processed"))
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     # connect to smc mysql database
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-    # load road data
-    road_data = pd.read_sql('SELECT * FROM roads_cells', con = conn)
-    # load operator data
-    operator_data = pd.read_sql('SELECT * FROM operator', con = conn)
+    # FIXME : shouldn't you create a db connection object w/ <engine>.connect()?
+    # according to https://docs.sqlalchemy.org/en/latest/core/connections.html,
+    # calling <engine>.execute() acquires a new Connection on its own.
+    # creating a lot of connections per execute() may be inefficient.
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
+    if analysis.smc.database.table_exists('sessions', db_eng):
+        print("%s::insert_sessions() : [INFO] sessions table exists. skipping." % (sys.argv[0]))
+        return
+
+    # load road data
+    road_data = pd.read_sql('SELECT * FROM roads_cells', con = eng)
+    # load operator data
+    operator_data = pd.read_sql('SELECT * FROM operator', con = eng)
     # start adding data to the database
     filename = os.path.join(input_dir, "all_wf.grid.csv")
     chunksize = 10 ** 5
@@ -227,10 +261,10 @@ def insert_sessions(
         #   - ess
         #   - ap
         #   - ap_ess
-        ap_ids = insert_aps(conn, chunk)
+        ap_ids = insert_aps(chunk, db_eng = db_eng)
         #   - sessions
         st2 = timeit.default_timer()
         chunk = chunk[['timestamp', 'session_id', 'bssid', 'operator_id', 'rss', 'lat', 'lon', 'gps_error', 'scan_dist', 'scan_acc', 'cell_id', 'in_road']].reset_index(drop = True)
         chunk = pd.merge(chunk, ap_ids, on = ['bssid'], how = 'left')
-        chunk[['timestamp', 'session_id', 'ap_id', 'ess_id', 'operator_id', 'rss', 'lat', 'lon', 'gps_error', 'scan_dist', 'scan_acc', 'cell_id', 'in_road']].to_sql(con = conn, name = 'sessions', if_exists = 'append', index = False)
+        chunk[['timestamp', 'session_id', 'ap_id', 'ess_id', 'operator_id', 'rss', 'lat', 'lon', 'gps_error', 'scan_dist', 'scan_acc', 'cell_id', 'in_road']].to_sql(con = db_eng, name = 'sessions', if_exists = 'append', index = False)
         print("%s::insert_sessions() : [INFO] sql insert in sessions : %.3f sec (total : %.3f sec)" % (sys.argv[0], timeit.default_timer() - st2, timeit.default_timer() - start_time))

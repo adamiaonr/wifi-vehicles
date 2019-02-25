@@ -116,35 +116,34 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-def extract_esses(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+def extract_esses(input_dir, cell_size = 20, threshold = -80, db_eng = None):
 
     queries = {
-        'bssid_cnt' : {
-            'name' : ('/esses/bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
-            'query' : ("""SELECT cell_x, cell_y, avg(lat) AS lat, avg(lon) AS lon, avg(essid_cnt) AS essid_cnt, avg(bssid_cnt) AS bssid_cnt
+        'xssid_cnt' : {
+            'name' : ('/esses/xssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+            'query' : ("""SELECT cell_id, avg(lat) AS lat, avg(lon) AS lon, avg(essid_cnt) AS essid_cnt, avg(bssid_cnt) AS bssid_cnt
             FROM(
-                SELECT cell_x, cell_y, session_id, avg(lat) AS lat, avg(lon) AS lon, count(distinct essid) AS essid_cnt, count(distinct bssid) AS bssid_cnt
+                SELECT cell_id, session_id, avg(lat) AS lat, avg(lon) AS lon, count(distinct ess_id) AS essid_cnt, count(distinct ap_id) AS bssid_cnt
                 FROM sessions
-                WHERE in_road = %d
-                GROUP BY cell_x, cell_y, session_id
+                GROUP BY cell_id, session_id
                 ) AS T
-            GROUP BY cell_x, cell_y""" % (in_road)),
+            GROUP BY cell_id"""),
             'columns' : []},
 
-        'essid_cnt' : {
-            'name' : ('/esses/essid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
-            'query' : ("""SELECT bssid_cnt, count(essid) as essid_cnt
-            FROM(
-                SELECT essid, count(distinct bssid) AS bssid_cnt
-                FROM sessions 
-                WHERE in_road = %d
-                GROUP BY essid
-                ) AS T
-            GROUP BY bssid_cnt""" % (in_road)),
-            'columns' : []}
+        # 'essid_cnt' : {
+        #     'name' : ('/esses/essid_cnt/%s/%s' % (cell_size, int(abs(threshold)))), 
+        #     'query' : ("""SELECT bssid_cnt, count(essid) as essid_cnt
+        #     FROM(
+        #         SELECT essid, count(distinct bssid) AS bssid_cnt
+        #         FROM sessions 
+        #         WHERE in_road = %d
+        #         GROUP BY essid
+        #         ) AS T
+        #     GROUP BY bssid_cnt""" % (in_road)),
+        #     'columns' : []}
     }
 
-    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+    analysis.smc.database.save_query(input_dir, queries, db_eng = db_eng)
 
 def extract_session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 

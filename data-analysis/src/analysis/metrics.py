@@ -338,7 +338,7 @@ def calc_pckt_loss_2(data, method = 'wlan seq number', protocol = 'tcp', interva
 
     return pckt_loss
 
-def smoothen(data, column, span = 5):
+def smoothen(data, column, span = 5, direction = 'both'):
     # use ewma to smooth data[column] inplace, as suggested in : 
     # https://sites.google.com/site/hardwaremonkey/blog/ewmafilterexmpleusingpandasandpython
     fwd = data[column].ewm(span = span).mean()

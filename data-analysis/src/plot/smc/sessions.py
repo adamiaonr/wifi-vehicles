@@ -56,14 +56,23 @@ from prettytable import PrettyTable
 
 from sklearn import linear_model
 
+# gps coords for a 'central' pin on porto, portugal
+LAT  = 41.163158
+LON = -8.6127137
+# north, south, west, east limits of map, in terms of geo coordinates
+LATN = LAT + 0.03
+LATS = LAT - 0.03
+LONE = LON + 0.06
+LONW = LON - 0.06
+
 # wifi net operators
 isps = {
-    0 : {'name' : 'unknown'},
-    1 : {'name' : 'eduroam'},
-    2 : {'name' : 'zon'},
-    3 : {'name' : 'meo'},
-    4 : {'name' : 'vodafone'},
-    5 : {'name' : 'porto digital'}
+    0 : {'name' : 'unknown', 'shortname' : 'n/a'},
+    1 : {'name' : 'eduroam', 'shortname' : 'edu'},
+    2 : {'name' : 'zon', 'shortname' : 'zon'},
+    3 : {'name' : 'meo', 'shortname' : 'meo'},
+    4 : {'name' : 'vodafone', 'shortname' : 'vod'},
+    5 : {'name' : 'porto digital', 'shortname' : 'pd'}
 }
 
 # re-organized auth. types
@@ -90,7 +99,7 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
     plot_configs = {
         'rss_mean' : {
                 'x-label' : 'RSS (dBm)',
-                'title' : '(a) mean RSS per\n<cell, session>',
+                'title' : 'mean RSS per\n<cell, session>',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -101,19 +110,19 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
                 # 'x-ticks' : [0.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0],
                 'x-lim' : [-80.0, -30.0]
         },
-        'rss_stddev' : {
-                'x-label' : 'RSS (dBm)',
-                'title' : '(b) RSS std. dev. per\n<cell, session>',
-                'coef' : 1.0,
-                'linewidth' : 0.0,
-                'markersize' : 1.25,
-                'marker' : 'o',
-                'markeredgewidth' : 0.0,
-                'label' : '', 
-                'color' : 'red'
-                # 'x-ticks' : [0.0, 12.5, 25.0, 37.5, 50.0],
-                # 'x-lim' : [0.0, 50.0]
-        }
+        # 'rss_stddev' : {
+        #         'x-label' : 'RSS (dBm)',
+        #         'title' : '(b) RSS std. dev. per\n<cell, session>',
+        #         'coef' : 1.0,
+        #         'linewidth' : 0.0,
+        #         'markersize' : 1.25,
+        #         'marker' : 'o',
+        #         'markeredgewidth' : 0.0,
+        #         'label' : '', 
+        #         'color' : 'red'
+        #         # 'x-ticks' : [0.0, 12.5, 25.0, 37.5, 50.0],
+        #         # 'x-lim' : [0.0, 50.0]
+        # }
     }
 
     db = ('/signal-quality/rss/%s/%s' % (cell_size, int(abs(threshold))))
@@ -125,10 +134,10 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
     # data = data.groupby(['cell_x', 'cell_y']).mean().reset_index(drop = False)
 
     # cdfs
-    fig = plt.figure(figsize = (2.0 * 3.0, 3.0))
+    fig = plt.figure(figsize = (len(plot_configs.keys()) * 3.0, 3.0))
     axs = []
     for s, stat in enumerate(plot_configs.keys()):
-        axs.append(fig.add_subplot(1, 2, s + 1))
+        axs.append(fig.add_subplot(1, len(plot_configs.keys()), s + 1))
         axs[s].set_title('%s' % (plot_configs[stat]['title']))
         plot.utils.cdf(axs[s], data, metric = stat, plot_configs = plot_configs[stat])
 
@@ -171,7 +180,9 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
         fig.tight_layout()
         plt.savefig(os.path.join(output_dir, "signal-quality-map.pdf"), bbox_inches = 'tight', format = 'pdf')
 
-def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = False):
+def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = False,
+    bbox = [LONW, LATS, LONE, LATN], 
+    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']):
 
     database = analysis.smc.utils.get_db(input_dir)
 
@@ -180,7 +191,7 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
     plot_configs = {
         'bssid_cnt' : {
                 'x-label' : '# of BSSIDs',
-                'title' : '(a) mean # of BSSIDs\nper <session, cell>',
+                'title' : '(a) mean # of aps\nper <session, cell>',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -188,13 +199,13 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
                 'markeredgewidth' : 0.0,
                 'label' : '', 
                 'color' : 'blue',
-                'db' : ('/esses/bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))),
+                'db' : ('/esses/xssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))),
                 # 'x-ticks' : [0.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0],
                 'x-lim' : [0.0, 50.0]
         },
         'essid_cnt' : {
                 'x-label' : '# of ESSIDs',
-                'title' : '(b) mean # of ESSIDs\nper <session, cell>',
+                'title' : '(b) mean # of esses\nper <session, cell>',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -202,27 +213,27 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
                 'markeredgewidth' : 0.0,
                 'label' : '', 
                 'color' : 'blue',
-                'db' : ('/esses/bssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))),
+                'db' : ('/esses/xssid_cnt/%s/%s' % (cell_size, int(abs(threshold)))),
                 # 'x-ticks' : [0.0, 12.5, 25.0, 37.5, 50.0],
                 'x-lim' : [0.0, 50.0]
         },
-        'essid_bssid_cnt' : {
-                'x-label' : '# of BSSIDs',
-                'title' : '(c) # of BSSIDs\nper ESSID',
-                'coef' : 1.0,
-                'linewidth' : 0.0,
-                'markersize' : 1.25,
-                'marker' : 'o',
-                'markeredgewidth' : 0.0,
-                'label' : '', 
-                'color' : 'blue',
-                'db' : ('/esses/essid_cnt/%s/%s' % (cell_size, int(abs(threshold)))),
-                # 'x-ticks' : [0.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0],
-                'x-lim' : [0.0, 10.0]
-        }        
+        # 'essid_bssid_cnt' : {
+        #         'x-label' : '# of BSSIDs',
+        #         'title' : '(c) # of BSSIDs\nper ESSID',
+        #         'coef' : 1.0,
+        #         'linewidth' : 0.0,
+        #         'markersize' : 1.25,
+        #         'marker' : 'o',
+        #         'markeredgewidth' : 0.0,
+        #         'label' : '', 
+        #         'color' : 'blue',
+        #         'db' : ('/esses/essid_cnt/%s/%s' % (cell_size, int(abs(threshold)))),
+        #         # 'x-ticks' : [0.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0],
+        #         'x-lim' : [0.0, 10.0]
+        # }
     }
 
-    to_plot = ['bssid_cnt', 'essid_cnt', 'essid_bssid_cnt']
+    to_plot = ['bssid_cnt', 'essid_cnt']
     fig = plt.figure(figsize = (len(to_plot) * 3.0, 3.0))
     axs = []
     for s, stat in enumerate(to_plot):
@@ -239,7 +250,7 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
         axs[s].yaxis.grid(True, ls = 'dotted', lw = 0.05)
 
         if stat in ['bssid_cnt', 'essid_cnt']:
-            data = data.groupby(['cell_x', 'cell_y']).sum().reset_index(drop = False)
+            data = data.groupby(['cell_id']).sum().reset_index(drop = False)
             plot.utils.cdf(axs[s], data, metric = stat, plot_configs = plot_configs[stat])
         if stat in ['essid_bssid_cnt']:
             data.rename(index = str, columns = {'bssid_cnt' : 'counts'}, inplace = True)
@@ -250,39 +261,65 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
 
     # map (bssids)
     if draw_map:
+
+        # FIXME : smaller bbox to focus on cental Porto
         bbox = [-8.650, 41.140, -8.575, 41.175]
         dy = mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
         dx = mapping.utils.gps_to_dist(bbox[1], bbox[0], bbox[1], bbox[2])
-        fig = plt.figure(figsize = ((dx / dy) * 3.75, 3.5))
-
+        fig = plt.figure(figsize = ((dx / dy) * 4.0, 4.0))
         ax = fig.add_subplot(111)
-        # all cells which overlap w/ roads in Porto
-        roadcells_all = gp.GeoDataFrame.from_file(os.path.join(input_dir, "roadcells-raw"))
-        # all cells which overlap w/ roads in Porto, captured in SMC dataset
-        roadcells_smc = gp.GeoDataFrame.from_file(os.path.join(input_dir, "roadcells-smc"))
-        road_coverage = gp.GeoDataFrame.from_file(os.path.join(input_dir, ("processed/ess-cnt/%s-%s" % (cell_size, int(abs(threshold))))))
-        road_coverage = road_coverage[road_coverage['bssid_cnt'] < 25]
+        ax.xaxis.grid(True, ls = 'dotted', lw = 0.75, color = 'white')
+        ax.yaxis.grid(True, ls = 'dotted', lw = 0.75, color = 'white')
 
-        # plot base : road cells in black, smc cells in gray
-        roadcells_all.plot(ax = ax, facecolor = 'black', zorder = 1, linewidth = 0.0)
-        roadcells_smc.plot(ax = ax, facecolor = 'grey', zorder = 5, linewidth = 0.0)
-        # road coverage 'YlOrRd' color scale
-        p = road_coverage.plot(ax = ax, column = 'bssid_cnt', cmap = 'YlOrRd', zorder = 10, legend = True, linewidth = 0.0)
+        # FIXME : hardcoded path ?
+        cells_dir = os.path.join('/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/traceroutes', 'cells')
+        road_hash = mapping.openstreetmap.get_road_hash(bbox = [LONW, LATS, LONE, LATN], tags = tags)
+        cells_dir = os.path.join(cells_dir, road_hash)
+
+        # if db_eng is None:
+        #     db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+        # cells = pd.read_sql('SELECT * FROM cells', con = db_eng)
+        # cells.rename(index = str, columns = {'id' : 'cell_id'}, inplace = True)
+        # base cell color : grey
+        road_cells = gp.GeoDataFrame.from_file(cells_dir)
+        # road_cells = pd.merge(road_cells, cells, on = ['cell_id'])
+        # road_cells.plot(ax = ax, facecolor = 'grey', zorder = 5, linewidth = 0.0)
+        ap_data = database.select(plot_configs['bssid_cnt']['db'])
+        road_cells = pd.merge(road_cells, ap_data, on = ['cell_id'], how = 'left')
+        road_cells.fillna(0.0, inplace = True)
+        road_cells.loc[road_cells['bssid_cnt'] > 25.0, 'bssid_cnt'] = 25.0
+
+        # draw cells in w/ 0 aps in black
+        road_cells[road_cells['bssid_cnt'] < 1.0].plot(ax = ax, facecolor = 'black', zorder = 1, linewidth = 0.0)
+        # draw remaining cells w/ 'YlOrRd' color scale according on ap count
+        p = road_cells[road_cells['bssid_cnt'] > 0.0].plot(ax = ax, column = 'bssid_cnt', cmap = 'YlOrRd', zorder = 10, legend = True, linewidth = 0.0)
         # background : midnightblue
         p.set_axis_bgcolor('midnightblue')
 
-        ax.set_title('mean # of BSSIDs per\n<cell, session>')
-        ax.set_xlabel('<- %.2f km ->' % (float(dx) / 1000.0))
-        ax.set_ylabel('<- %.2f km ->' % (float(dy) / 1000.0))
+        ax.set_title('mean # of aps per <cell, session>')
+        ax.set_xlabel('distance (km)')
+        ax.set_ylabel('distance (km)')
 
-        ax.set_xticks([])
-        ax.set_yticks([])
+        x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = cell_size, lat = [bbox[1], bbox[3]], lon = [bbox[0], bbox[2]])
+        w = (bbox[2] - bbox[0]) / float(x_cell_num)
+        h = (bbox[3] - bbox[1]) / float(y_cell_num)
+
+        # xticks every 1000 meters
+        xticks = np.arange(bbox[0], bbox[2], w * (1000.0 / cell_size))
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(
+            np.arange(0, len(xticks) + 1),
+            rotation = 0, ha = 'center')
+
+        yticks = np.arange(bbox[1], bbox[3], h * (1000.0 / cell_size))
+        ax.set_yticks(yticks)
+        ax.set_yticklabels(np.arange(0, len(xticks) + 1))
 
         ax.set_xlim(bbox[0], bbox[2])
         ax.set_ylim(bbox[1], bbox[3])
 
         fig.tight_layout()
-        # fig.subplots_adjust(wspace = 0.3)
         plt.savefig(os.path.join(output_dir, "esses-map.pdf"), bbox_inches = 'tight', format = 'pdf')
 
 def auth(input_dir, output_dir, cell_size = 20, threshold = -80):
@@ -293,7 +330,7 @@ def auth(input_dir, output_dir, cell_size = 20, threshold = -80):
         'ap_cnt': {
             'x-label' : 'auth. method',
             'y-label' : 'mean # of BSSIDs',
-            'title' : 'mean # of BSSIDs observed per\n<cell, session, auth. method>',
+            'title' : 'mean # of aps per\n<cell, session, auth.>',
             'coef' : 1.0,
             'linewidth' : 0.0,
             'markersize' : 1.25,
@@ -332,7 +369,7 @@ def auth(input_dir, output_dir, cell_size = 20, threshold = -80):
     # print(sessions[['auth', 'prob_auth']].groupby(['auth']).sum().reset_index(drop = False))
 
     plt.style.use('classic')
-    fig = plt.figure(figsize = (1.0 * 4.0, 3.0))
+    fig = plt.figure(figsize = (3.0, 3.0))
     axs = []
 
     # fixed bar graph parameters:
@@ -391,7 +428,7 @@ def channels(input_dir, output_dir, cell_size = 20, threshold = -80):
     plot_configs = {
         '2.4' : {
                 'x-label' : 'channels',
-                'y-label' : 'mean # of BSSIDs',
+                'y-label' : 'mean # of aps',
                 'title' : '2.4 GHz',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
@@ -406,7 +443,7 @@ def channels(input_dir, output_dir, cell_size = 20, threshold = -80):
 
         '5.0' : {
                 'x-label' : 'channels',
-                'y-label' : 'mean # of BSSIDs',
+                'y-label' : '',
                 'title' : '5 GHz',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
@@ -422,7 +459,6 @@ def channels(input_dir, output_dir, cell_size = 20, threshold = -80):
 
     # pre-processing
     #   - nr. of sessions w/ <ap_cnt, frequency> tuple, per cell
-    print(database.keys())
     db = ('/channels/ap_cnt/%s/%s' % (cell_size, int(abs(threshold))))
     if db not in database.keys():
         sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db))
@@ -449,7 +485,7 @@ def channels(input_dir, output_dir, cell_size = 20, threshold = -80):
     analysis.smc.utils.add_band(sessions)
 
     plt.style.use('classic')
-    fig = plt.figure(figsize = (2.0 * 4.0, 3.0))
+    fig = plt.figure(figsize = (2.0 * 3.0, 3.0))
     axs = []
     # fixed bar graph parameters:
     #   - bar width
@@ -464,12 +500,13 @@ def channels(input_dir, output_dir, cell_size = 20, threshold = -80):
         xtickslabels = []
 
         axs.append(fig.add_subplot(1, 2, b + 1))
-        axs[b].set_title('mean # of BSSIDs observed per\n<cell, session, channel>\n(%s)' % (plot_configs[band]['title']))
+        axs[b].set_title('mean # of aps per\ncell, session, channel\n(%s)' % (plot_configs[band]['title']))
         axs[b].xaxis.grid(True, ls = 'dotted', lw = 0.05)
         axs[b].yaxis.grid(True, ls = 'dotted', lw = 0.05)
 
         # one band per subplot
         _data = sessions[sessions['band'] == b]
+        print(_data)
         _data['expected_nr'] = _data['ap_cnt'] * _data['prob_freq']
         _data = _data[['frequency', 'expected_nr']].groupby(['frequency']).sum().reset_index(drop = False)
 
@@ -493,6 +530,11 @@ def channels(input_dir, output_dir, cell_size = 20, threshold = -80):
         axs[b].set_xlabel(plot_configs[band]['x-label'])
         # y-axis
         axs[b].set_ylabel(plot_configs[band]['y-label'])
+
+        if band == '5.0':
+            axs[b].set_xlim(-(1.0 * barwidth) + xticks[0], xticks[-3] + (1.0 * barwidth))
+            axs[b].set_yscale("log", nonposy = 'clip')
+            axs[b].set_ylim([0.0001, 1.0])
 
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, ("channels.pdf")), bbox_inches = 'tight', format = 'pdf')
@@ -524,7 +566,7 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
         'cell_coverage' : {
                 'x-label' : 'operator',
                 'y-label' : '% of cells ',                
-                'title' : '(b) % cells covered\nby operator',
+                'title' : '% cells covered\nby operator',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -560,7 +602,8 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
     # space between bars withing groups
     intraspace = 1.0 * barwidth
 
-    to_plot = ['bssid_cnt', 'cell_coverage', 'session_cnt']
+    # to_plot = ['bssid_cnt', 'cell_coverage', 'session_cnt']
+    to_plot = ['cell_coverage']
     fig = plt.figure(figsize = (len(to_plot) * 3.0, 3.0))
     axs = []
     for s, stat in enumerate(to_plot):
@@ -617,7 +660,7 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
                     labels = ['', '']
                     # xticks & xticklabel
                     xticks.append(xx)
-                    xtickslabels.append(isps[op]['name'])
+                    xtickslabels.append(isps[op]['shortname'])
                     xx += interspace
 
             if stat == 'cell_coverage':
@@ -634,7 +677,7 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
                 _data['cell_freq'] = ((_data['cell_cnt'] / road_data_size) * 100.0).astype(int)
 
                 labels = ['private', 'public'] 
-                for op in [0, 1, 5, 2, 3, 4]:
+                for op in [0, 5, 2, 3, 4]:
 
                     freq = 0.0
                     if not data[(data['operator'] == op) & (data['operator_public'] == 0)].empty:
@@ -663,7 +706,7 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
                     labels = ['', '']
                     # xticks & xticklabel
                     xticks.append(xx)
-                    xtickslabels.append(isps[op]['name'])
+                    xtickslabels.append(isps[op]['shortname'])
                     xx += interspace
 
                 # add final bar w/ all operators

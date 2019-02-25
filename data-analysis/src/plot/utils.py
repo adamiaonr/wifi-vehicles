@@ -89,10 +89,13 @@ def cdf(
         ax.set_xlim(plot_configs['x-lim'])
 
     ax.set_yticks(np.arange(0.0, 1.1, 0.25))
+    if 'loc' not in plot_configs:
+        plot_configs['loc'] = 'lower right'
+
     if plot_configs['label'] != '':
         legend = ax.legend(
             fontsize = 10, 
-            ncol = 1, loc = 'lower right',
+            ncol = 1, loc = plot_configs['loc'],
             handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
         for legobj in legend.legendHandles:

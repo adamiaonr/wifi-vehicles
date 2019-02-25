@@ -46,23 +46,44 @@ CELL_SIZE = 20.0
 def get_road_hash(bbox, tags):
     return hashlib.md5(','.join([str(c) for c in bbox]) + ',' + ','.join(tags)).hexdigest()
 
-def create_cells_table(data):
-    # create cells table
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+def create_cells_table(data, db_eng = None):
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    if analysis.smc.database.table_exists('cells', db_eng):
+        print("%s::create_cells_table() : [INFO] cells table exists. skipping." % (sys.argv[0]))
+        return
+
     start = timeit.default_timer()
-    data.to_sql(con = conn, name = 'cells', if_exists = 'append', index = False)
+
+    try:
+        data.to_sql(con = db_eng, name = 'cells', if_exists = 'fail', index = False)
+    except Exception:
+        sys.stderr.write("""%s::create_cells_table() : [WARNING] %s table exists. skipping.\n""" % (sys.argv[0], 'cells'))
+
     print("%s::create_cells_table() : [INFO] stored cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
-def create_roads_cells_table(output_dir, bbox, tags, cell_size = CELL_SIZE):
+def create_roads_cells_table(output_dir, 
+    bbox = [LONW, LATS, LONE, LATN], 
+    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential'],
+    cell_size = CELL_SIZE, 
+    db_eng = None):
 
     extract_roads(output_dir, bbox, tags)
     extract_cells(output_dir, bbox, tags, cell_size = cell_size)
 
-    road_hash = get_road_hash(bbox, tags)
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    if analysis.smc.database.table_exists('roads_cells', db_eng):
+        print("%s::create_roads_cells_table() : [INFO] roads_cells table exists. skipping." % (sys.argv[0]))
+        return
+
     # load roads
-    roads = pd.read_sql('SELECT * FROM roads', con = conn)
+    roads = pd.read_sql('SELECT * FROM roads', con = db_eng)
     # load cells (intersection w/ roads)
+    road_hash = get_road_hash(bbox, tags)
     cells = gp.GeoDataFrame.from_file(os.path.join(output_dir, ("cells/%s" % (road_hash))))
     cells = cells.dropna(subset = ['name']).reset_index(drop = True)
     cells['name'] = cells['name'].apply(lambda x : x.encode('utf-8'))
@@ -73,14 +94,29 @@ def create_roads_cells_table(output_dir, bbox, tags, cell_size = CELL_SIZE):
     # store roads_cells junction table
     start = timeit.default_timer()
     roads_cells['road_id'] = roads_cells['id']
-    roads_cells[['road_id', 'cell_id']].drop_duplicates().to_sql(con = conn, name = 'roads_cells', if_exists = 'append', index = False)
+
+    try:
+        roads_cells[['road_id', 'cell_id']].drop_duplicates().to_sql(con = db_eng, name = 'roads_cells', if_exists = 'append', index = False)
+    except Exception:
+        sys.stderr.write("""%s::create_roads_cells_table() : [WARNING] %s table exists. skipping.\n""" % (sys.argv[0], 'roads_cells'))
+
     print("%s::create_roads_cells_table() : [INFO] stored roads_cells in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
-def create_roads_table(output_dir, bbox, tags):
+def create_roads_table(output_dir, 
+    bbox = [LONW, LATS, LONE, LATN], 
+    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential'],
+    db_eng = None):
 
     road_hash = get_road_hash(bbox, tags)
     road_dir = os.path.join(output_dir, road_hash)
+    # extract road info from osm (if needed)
     extract_roads(output_dir, bbox, tags)
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+    if analysis.smc.database.table_exists('roads', db_eng):
+        print("%s::create_roads_table() : [INFO] roads table exists. skipping." % (sys.argv[0]))
+        return
 
     # get road information
     roads = gp.GeoDataFrame.from_file(road_dir)
@@ -101,11 +137,13 @@ def create_roads_table(output_dir, bbox, tags):
     # groupby() LineString segments by road name (e.g., 'Avenida da Boavista')
     lengths = _roads.groupby(['name', 'name_hash'])['length'].sum().reset_index(drop = False)
 
-    # save road length on mysql database
-    # FIXME : encapsulate the code below in to_sql() function
-    conn = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
     start = timeit.default_timer()
-    lengths.to_sql(con = conn, name = 'roads', if_exists = 'append', index_label = 'id')
+
+    try:
+        lengths.to_sql(con = db_eng, name = 'roads', if_exists = 'fail', index_label = 'id')
+    except Exception:
+        sys.stderr.write("""%s::create_roads_table() : [WARNING] %s table exists. skipping.\n""" % (sys.argv[0], 'roads'))
+
     print("%s::create_roads_table() : [INFO] roads stored in sql database (%.3f sec)" % (sys.argv[0], timeit.default_timer() - start))
 
 def extract_roads(output_dir, 

@@ -57,6 +57,8 @@ def heatmap(data, output_dir, map_cntr = [LAT, LON], map_types = ['heatmap']):
     for mt in map_types:
         if mt == 'heatmap':
 
+            print(data)
+
             hm_wide = HeatMap( 
                             list(zip(data['lat'].values, data['lon'].values, data['counts'].values)),
                             min_opacity = 0.025,
