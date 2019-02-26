@@ -44,7 +44,7 @@ import mapping.utils
 
 import geopandas as gp
 
-def extract_signal_quality(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+def signal_quality(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     # list of queries to make on mysql database
     queries = {
@@ -64,7 +64,7 @@ def extract_signal_quality(input_dir, cell_size = 20, threshold = -80, in_road =
 
     analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+def operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     # list of queries to make on mysql database
     queries = {
@@ -116,7 +116,7 @@ def extract_operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-def extract_esses(input_dir, cell_size = 20, threshold = -80, db_eng = None):
+def esses(input_dir, cell_size = 20, threshold = -80, db_eng = None):
 
     queries = {
         'xssid_cnt' : {
@@ -145,7 +145,7 @@ def extract_esses(input_dir, cell_size = 20, threshold = -80, db_eng = None):
 
     analysis.smc.database.save_query(input_dir, queries, db_eng = db_eng)
 
-def extract_session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+def session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     queries = {
         'session_cnt' : {
@@ -159,7 +159,7 @@ def extract_session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-def extract_channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+def channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     queries = {
         'ap_cnt' : {
@@ -177,7 +177,7 @@ def extract_channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-def extract_auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
+def auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     queries = {
         'ap_cnt' : {
@@ -195,7 +195,7 @@ def extract_auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
     analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
 
-def extract_bands(data, database):
+def bands(data, database):
 
     # if no data points in one of the bands, abort
     if data[data['band'] == 1].empty:
@@ -221,7 +221,7 @@ def extract_bands(data, database):
     raw['encode'] = raw['encode'].astype(str)
     parsing.utils.to_hdf5(raw, ('/bands/raw'), database)
     
-def _extract_contact(data, processed_data):
+def _contact(data, processed_data):
 
     # distances while under coverage, per block
     distances = data.groupby(['session_id', 'encode', 'band', 'time-block']).apply(analysis.smc.utils.calc_dist).reset_index(drop = True).fillna(0.0)
@@ -243,7 +243,7 @@ def _extract_contact(data, processed_data):
         processed_data[cat] = pd.concat([processed_data[cat], aps.groupby(['band', cat]).size().reset_index(drop = False, name = 'count')], ignore_index = True)
         processed_data[cat] = processed_data[cat].groupby(['band', cat]).sum().reset_index(drop = False)
 
-def extract_contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1):
+def contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1):
 
     output_dir = os.path.join(input_dir, ("processed"))
     if not os.path.isdir(output_dir):
@@ -295,7 +295,7 @@ def extract_contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1)
         analysis.smc.utils.add_cells(chunk, cell_size)
 
         # extract_bands(chunk, database)
-        _extract_contact(chunk, processed_data)
+        _contact(chunk, processed_data)
 
     # save on database
     for cat in to_extract:

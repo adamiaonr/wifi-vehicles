@@ -54,7 +54,7 @@ ref_points = {
     978 : [41.160477, -8.593205],
     67 : [41.148925, -8.599117]}
 
-def extract_data(name, input_dir, db_eng = None):
+def data(name, input_dir, db_eng = None):
 
     if db_eng is None:
         db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
@@ -99,7 +99,7 @@ def extract_data(name, input_dir, db_eng = None):
         sys.stderr.write("""[INFO] %s already in database. skipping extraction.\n""" % (db_name))
         return
 
-def extract_coverage_data(name, input_dir, db_eng = None):
+def coverage(name, input_dir, db_eng = None):
 
     if db_eng is None:
         db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
