@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -14,7 +31,6 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
@@ -29,22 +45,17 @@ from collections import namedtuple
 from prettytable import PrettyTable
 from sklearn import linear_model
 
-import mapping.utils
-import mapping.openstreetmap
-
-import plot.utils
-import plot.trace
-import plot.gps
-
-import parsing.utils
-
-import analysis.metrics
+# custom imports
+#   - mapping
+import utils.mapping
+#   - hdfs utils
+import utils.hdfs
+#   - analysis
 import analysis.trace
-import analysis.gps
-
+#   - smc analysis
 import analysis.smc.sessions
-
-import mapping.utils
+#   - plot
+import plot.utils
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158

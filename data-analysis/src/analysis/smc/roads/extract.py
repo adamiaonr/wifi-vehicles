@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -31,6 +48,8 @@ import analysis.smc.utils
 #   - analysis.smc.roads
 import analysis.smc.roads.selection
 import analysis.smc.roads.utils
+#   - hdfs utils
+import utils.hdfs
 
 # road ref points for xx calculation
 ref_points = {
@@ -52,8 +71,8 @@ def data(name, input_dir, db_eng = None):
     road_id, name, length = analysis.smc.roads.utils.get_id(name, db_eng)
 
     # extract session data along road to .hdf5 file for convenience (if not available yet)
-    database = analysis.smc.utils.get_db(input_dir)
-    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
     
     db_name = ('/roads/%s/data' % (road_id))
     if db_name not in database_keys:
@@ -84,7 +103,7 @@ def data(name, input_dir, db_eng = None):
         road_data['bssid'] = road_data['bssid'].apply(lambda x : x.encode('utf-8'))
         road_data['essid_hash'] = road_data['essid_hash'].apply(lambda x : x.encode('utf-8'))
         # save road_data in .hdfs file
-        analysis.smc.utils.to_hdf5(road_data, ('/roads/%s/data' % (road_id)), database)
+        utils.hdfs.to_hdfs(road_data, ('/roads/%s/data' % (road_id)), database)
 
     else:
         sys.stderr.write("""[INFO] %s already in database. skipping extraction.\n""" % (db_name))
@@ -99,8 +118,8 @@ def coverage(name, input_dir, db_eng = None):
     road_id, name, length = analysis.smc.roads.utils.get_id(name, db_eng)
 
     # extract data to .hdf5 file for convenience (if not available yet)
-    database = analysis.smc.utils.get_db(input_dir)
-    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
 
     db_name = ('/roads/%s/data' % (road_id))
     if db_name not in database_keys:
@@ -145,7 +164,7 @@ def coverage(name, input_dir, db_eng = None):
     sessions = sessions[(sessions['speed'] > 10.0) & (sessions['xx-diff'].apply(lambda x : abs(x)) > 250.0)].reset_index(drop = True)
     # (9) add session info to database
     if (session_db not in database_keys):
-        analysis.smc.utils.to_hdf5(sessions, session_db, database)
+        utils.hdfs.to_hdfs(sessions, session_db, database)
 
     # (10) filter out data from sessions w/ time >= 1000 seconds
     road_data = road_data[road_data['session_id'].isin(sessions['session_id'])].reset_index(drop = True)
@@ -193,18 +212,18 @@ def coverage(name, input_dir, db_eng = None):
             on = ['ap_id'], how = 'left')
 
         # save coverage in database
-        analysis.smc.utils.to_hdf5(coverage, coverage_db, database)
+        utils.hdfs.to_hdfs(coverage, coverage_db, database)
 
     # extract rss vs. distance stats
     if (rss_db not in database_keys):
         ap_data.columns = ap_data.columns.astype(str)
-        analysis.smc.utils.to_hdf5(ap_data.reset_index(drop = True), rss_db, database)
+        utils.hdfs.to_hdfs(ap_data.reset_index(drop = True), rss_db, database)
 
 def get_handoff_plan(road_id, input_dir, strategy, restriction):
 
     print(road_id)
-    database = analysis.smc.utils.get_db(input_dir)
-    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
 
     handoff_plan_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, restriction['open'], restriction['operator']))
     if (handoff_plan_db in database_keys):
@@ -246,7 +265,7 @@ def get_handoff_plan(road_id, input_dir, strategy, restriction):
     handoff_plan = analysis.smc.roads.utils.add_ap_info(handoff_plan, coverage)
 
     # save handoff plan and ap data in hdfs database
-    analysis.smc.utils.to_hdf5(handoff_plan, handoff_plan_db, database)
-    analysis.smc.utils.to_hdf5(ap_data, ('%s/data' % (handoff_plan_db)), database)
+    utils.hdfs.to_hdfs(handoff_plan, handoff_plan_db, database)
+    utils.hdfs.to_hdfs(ap_data, ('%s/data' % (handoff_plan_db)), database)
 
     return handoff_plan, ap_data

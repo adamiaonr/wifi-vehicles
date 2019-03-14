@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -37,6 +54,8 @@ import analysis.smc.roads.utils
 import plot.smc.roads
 # - plot.utils
 import plot.utils
+# - hdfs utils
+import utils.hdfs
 
 # road ref points for xx calculation
 ref_points = {
@@ -51,7 +70,7 @@ ref_points = {
 
 def timespan(road_id, input_dir, output_dir):
 
-    database = analysis.smc.utils.get_db(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
 
     # (1) load data
     # - get subset of selected aps
@@ -221,8 +240,8 @@ def signal_quality(input_dir, output_dir,
 
     for road in sorted(roads.keys()):
     
-        database = analysis.smc.utils.get_db(input_dir)
-        database_keys = analysis.smc.utils.get_db_keys(input_dir)
+        database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+        database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
         db_name = ('/roads/%s/data' % (road))
         if (db_name not in database_keys):
             sys.stderr.write("""[ERROR] %s not in database. skipping.\n""" % (db_name))
@@ -277,7 +296,7 @@ def map(input_dir, output_dir,
     },
     bbox = [-8.650, 41.140, -8.575, 41.175]):
 
-    database = analysis.smc.utils.get_db(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
 
     for road in roads:
 
@@ -296,20 +315,26 @@ def map(input_dir, output_dir,
 def rss(input_dir, output_dir, road_id, strategy, plan):
 
     # load rss data of the aps involved in the handoff plan
-    database = analysis.smc.utils.get_db(input_dir)
-    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
 
-    hp_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, plan['type'], plan['operator']))
-    if (hp_db not in database_keys):
-        sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (hp_db))
-        return
+    if strategy == 'raw':
 
-    ap_data_db = ('/roads/%s/handoff/%s/%s/%s/data' % (road_id, strategy, plan['type'], plan['operator']))
-    if (ap_data_db not in database_keys):
-        sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (ap_data_db))
-        return
+        ap_data = database.select(('/roads/%s/rss' % (road_id)))
+        cov, ap_data = analysis.smc.roads.utils.get_coverage(ap_data, threshold = -80.0)
 
-    ap_data = database.select(ap_data_db)
+    else:
+        hp_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, plan['type'], plan['operator']))
+        if (hp_db not in database_keys):
+            sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (hp_db))
+            return
+
+        ap_data_db = ('/roads/%s/handoff/%s/%s/%s/data' % (road_id, strategy, plan['type'], plan['operator']))
+        if (ap_data_db not in database_keys):
+            sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (ap_data_db))
+            return
+
+        ap_data = database.select(ap_data_db)
 
     # fill any nan w/ -80 dBm
     ap_data.fillna(-80.0, inplace = True)
@@ -707,7 +732,7 @@ def coverage_blocks(input_dir, output_dir,
         # }
     }):
 
-    database = analysis.smc.utils.get_db(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
 
     plt.style.use('classic')
 

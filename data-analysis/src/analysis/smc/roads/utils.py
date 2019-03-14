@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -11,38 +28,29 @@ import gmplot
 import time
 import hashlib
 import timeit
-
-# for parallel processing of sessions
 import multiprocessing as mp 
-# for maps
 import pdfkit
-# for MySQL & pandas
 import MySQLdb as mysql
 import sqlalchemy
 import shapely.geometry
+import geopandas as gp
 
 from datetime import date
 from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
-
-# geodesic distance
 from geopy.distance import geodesic
-
-# for ap location estimation
 from shapely.geometry import Point
 
 # custom imports
-import analysis.metrics
+#   - analysis 
 import analysis.trace
-import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
-
+#   - smc analysis
 import analysis.smc.utils
-import mapping.utils
-
-import geopandas as gp
+#   - mapping utils
+import utils.mapping.utils
+#   - hdfs utils
+import utils.hdfs
 
 def get_id(name, db_eng = None):
 
@@ -64,8 +72,8 @@ def print_info(name, input_dir, db_eng = None):
     print("name : %s, id : %d, length : %s" % (name, road_id, length))
 
     # session info
-    database = analysis.smc.utils.get_db(input_dir)
-    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
 
     session_db = ('/roads/%s/sessions' % (road_id))
     print("sessions:")
@@ -85,7 +93,7 @@ def print_info(name, input_dir, db_eng = None):
 def add_xx(data, ref_point):
     # FIXME: there must be a better way of doing this
     pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
-    data['xx'] = [ mapping.utils.gps_to_dist(ref_point[0], ref_point[1], p[0], p[1]) for p in pos ]
+    data['xx'] = [ utils.mapping.utils.gps_to_dist(ref_point[0], ref_point[1], p[0], p[1]) for p in pos ]
     data['xx'] = data['xx'].apply(lambda x : round(x))
     # find direction, duration & mean speed of sessions
     data['xx-diff'] = data['xx'] - data['xx'].shift(1)
@@ -101,7 +109,7 @@ def get_geo_stats(data):
     #   - distance traveled in-between rows
     #   - time in-between rows
     #   - speed in-between rows
-    geo['dist'] = mapping.utils.gps_to_dist(geo['lat'], geo['lon'], geo['lat'].shift(1), geo['lon'].shift(1))
+    geo['dist'] = utils.mapping.utils.gps_to_dist(geo['lat'], geo['lon'], geo['lat'].shift(1), geo['lon'].shift(1))
     geo['time'] = (geo['timestamp'] - geo['timestamp'].shift(1)).astype(float)
     #   - make sure 'dist' and 'time' are unspecified in the 1st row of every new session_id
     #     we do this to avoid calculating stats with data from different sessions 
@@ -113,8 +121,8 @@ def get_geo_stats(data):
 
 def get_overlap(road_id, input_dir):
     
-    database = analysis.smc.utils.get_db(input_dir)
-    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
     coverage_db = ('/roads/%s/coverage' % (road_id))
     if (coverage_db not in database_keys):
         sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (coverage_db))

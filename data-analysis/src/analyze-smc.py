@@ -52,6 +52,8 @@ import analysis.smc.utils
 # - plot.smc
 import plot.smc.roads
 import plot.smc.sessions
+# - hdfs utils
+import utils.hdfs
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -123,13 +125,14 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if args.list_dbs:
-        database = analysis.smc.utils.get_db(args.input_dir)
+        database = utils.hdfs.get_db(args.input_dir, 'smc.hdf5')
+        database_keys = utils.hdfs.get_db_keys(args.input_dir, 'smc.hdf5')
         sys.stderr.write("""%s: [INFO] keys in .hdfs database:\n""" % (sys.argv[0]))
-        for key in database.keys():
+        for key in database_keys:
             print('\t%s' % (key))
 
     if args.remove_dbs:
-        analysis.smc.utils.remove_dbs(args.input_dir, args.remove_dbs.split(','))
+        utils.hdfs.remove_dbs(args.input_dir, args.remove_dbs.split(','))
 
     db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
@@ -153,15 +156,15 @@ if __name__ == "__main__":
         #     analysis.smc.roads.utils.print_info(name = road, input_dir = args.input_dir, db_eng = db_eng)
 
         # plot.smc.roads.handoff(args.input_dir, args.graph_dir, strategy = 'best-rss')
-        plot.smc.roads.coverage_blocks(args.input_dir, args.graph_dir)
+        # plot.smc.roads.coverage_blocks(args.input_dir, args.graph_dir)
         # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss')
         # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss')        
         # plot.smc.roads.signal_quality(args.input_dir, args.graph_dir)
         # plot.smc.roads.map(args.input_dir, args.graph_dir)
-        # plot.smc.roads.rss(args.input_dir, args.graph_dir, 
-        #     road_id = 960,
-        #     strategy = 'greedy', 
-        #     plan = {'type' : 'any', 'operator' : 'any', 'label' : 'any'})
+        plot.smc.roads.rss(args.input_dir, args.graph_dir, 
+            road_id = 834,
+            strategy = 'raw', 
+            plan = {'type' : 'any', 'operator' : 'any', 'label' : 'any'})
 
     if args.analyze_sessions:
 

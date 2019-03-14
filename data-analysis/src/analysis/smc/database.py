@@ -11,36 +11,25 @@ import gmplot
 import time
 import hashlib
 import timeit
-
-# for parallel processing of sessions
 import multiprocessing as mp 
-# for maps
 import pdfkit
-# for MySQL & pandas
 import MySQLdb as mysql
 import sqlalchemy
 import shapely.geometry
+import geopandas as gp
 
 from datetime import date
 from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
-
-# geodesic distance
 from geopy.distance import geodesic
-
-# for ap location estimation
 from shapely.geometry import Point
 
 # custom imports
-import analysis.metrics
+#   - analysis 
 import analysis.trace
-import analysis.gps
-
+#   - smc analysis
 import analysis.smc.utils
-import mapping.utils
-
-import geopandas as gp
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
