@@ -1,3 +1,19 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -14,55 +30,35 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-
-import mapping.utils
-import mapping.openstreetmap
-
 import geopandas as gp
-
-import plot.utils
-import plot.trace
-import plot.ap_selection
-import plot.gps
-
-import parsing.utils
-
-import analysis.metrics
-import analysis.trace
-import analysis.gps
-
-import analysis.ap_selection.rss
-import analysis.ap_selection.gps
-import analysis.ap_selection.utils
-
-import plot.ap_selection.common
-
 import shapely.geometry
 
 from random import randint
-
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from prettytable import PrettyTable
-
 from sklearn import linear_model
 
-def get_h(configs):
+# custom imports
+#   - hdfs utils
+import utils.hdfs
+#   - analysis
+import analysis.trace
+#   - plotting
+import plot.trace
 
+def get_h(configs):
     h = 1
     for m in configs:
         if configs[m]['show'] == 'all':
             h += 2
         else:
             h += 1
-
     return h
 
 def get_bandmax(data, macs):
@@ -431,7 +427,7 @@ def plot_trace_description(input_dir, trace_nr, output_dir, mode = 'all', time_l
         plt.savefig(os.path.join(output_dir, ("trace-description.pdf")), bbox_inches = 'tight', format = 'pdf')
 
 def handle_list_dbs(input_dir, trace_nr):
-    dbs = analysis.trace.get_db(input_dir, trace_nr)
+    dbs = utils.hdfs.get_db(input_dir, trace_nr)
     sys.stderr.write("""%s: [INFO] keys in .hdfs database:\n""" % (sys.argv[0]))
     for db in dbs:
         print('\t%s' % (db))
@@ -451,7 +447,7 @@ def handle_list_traces(input_dir, trace_nr):
     print(table)
 
     # print info about the requested trace
-    trace_info = analysis.trace.get_info(input_dir, trace_nr)
+    trace_info = analysis.trace.utils.data.get_info(input_dir, trace_nr)
 
     if not trace_info.empty:
         table = PrettyTable(list(['mac', 'tcp', 'udp', 'tcp-gps', 'udp-gps']))
@@ -519,7 +515,7 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
-    trace_list = analysis.trace.get_list(args.input_dir)
+    trace_list = analysis.trace.utils.data.get_list(args.input_dir)
 
     if trace_list.empty:
         sys.stderr.write("""%s: [ERROR] no trace information available\n""" % sys.argv[0]) 
@@ -578,11 +574,11 @@ if __name__ == "__main__":
     # analysis.trace.extract_distances(args.input_dir, args.trace_nr)
     # analysis.trace.extract_channel_util(args.input_dir, args.trace_nr)
 
-    laps = analysis.gps.get_lap_timestamps(args.input_dir, args.trace_nr, threshold = 125.0)
-    time_limits = [laps.iloc[0]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']]
+    trace_dir = os.path.join(args.input_dir, ("trace-%03d" % (int(args.trace_nr))))
+    database = utils.hdfs.get_db(trace_dir, 'database.hdf5')
+    database_keys = utils.hdfs.get_db_keys(trace_dir)
 
-    plot_trace_description(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits)
-    sys.exit(0)
+    # plot_trace_description(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits)
     # plot.trace.maps(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits, redraw = True)
 
     # # calculate the 'cadillac' periods, according to different metrics
@@ -591,53 +587,86 @@ if __name__ == "__main__":
 
     # plot_best(args.input_dir, args.trace_nr, trace_output_dir, metrics = ['throughput', 'rss', 'wlan data rate', 'distances'])
 
-    laps = analysis.gps.get_lap_timestamps(args.input_dir, args.trace_nr, threshold = 125.0)
-    time_limits = [laps.iloc[0]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']]
-
     # # strongest rss (dual-band)
-    # analysis.ap_selection.rss.strongest_rss(
+    # analysis.trace.ap_selection.rss.strongest_rss(
     #     args.input_dir, args.trace_nr, 
     #     args = {'scan-period' : 5.0, 'scan-time' : 0.5, 'bands' : 3}, 
     #     force_calc = False)
-    # analysis.ap_selection.utils.extract_performance(
+    # analysis.trace.ap_selection.utils.extract_performance(
     #     args.input_dir, args.trace_nr, 
     #     db_selection = '/selection/rss/strongest-rss/5.0/0.5/3',
     #     force_calc = False)
 
     # # strongest rss (5 GHz)
-    # analysis.ap_selection.rss.strongest_rss(
+    # analysis.trace.ap_selection.rss.strongest_rss(
     #     args.input_dir, args.trace_nr, 
     #     args = {'scan-period' : 5.0, 'scan-time' : 0.5, 'bands' : 2}, 
     #     force_calc = False)
-    # analysis.ap_selection.utils.extract_performance(
+    # analysis.trace.ap_selection.utils.extract_performance(
     #     args.input_dir, args.trace_nr, 
     #     db_selection = '/selection/rss/strongest-rss/5.0/0.5/2',
     #     force_calc = False)
 
-    # scripted handoffs
-    # analysis.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
-    #     args = {
-    #         'metric' : 'rss',
-    #         'filter' : -30.0
-    #     },
+    # # strongest rss (dual-band)
+    # analysis.trace.ap_selection.rss.smoothed_hyteresis(
+    #     args.input_dir, args.trace_nr, 
+    #     args = {'w' : 5.0, 'hysteresis' : 5.0, 'bands' : 3}, 
     #     force_calc = False)
 
-    # analysis.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
-    #     db_selection = '/selection/rss/gps/scripted-handoffs',
+    # analysis.trace.ap_selection.utils.extract_performance(
+    #     args.input_dir, args.trace_nr, 
+    #     db_selection = '/selection/rss/smoothed-hysteresis/5.0/5.0/3',
     #     force_calc = False)
 
-    analysis.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
+    # # strongest rss (dual-band)
+    analysis.trace.ap_selection.rss.smoothed_hyteresis(
+        args.input_dir, args.trace_nr, 
+        args = {'w' : 5.0, 'hysteresis' : 5.0, 'bands' : 2}, 
+        force_calc = False)
+
+    analysis.trace.ap_selection.utils.extract_performance(
+        args.input_dir, args.trace_nr, 
+        db_selection = '/selection/rss/smoothed-hysteresis/5.0/5.0/2',
+        force_calc = False)
+
+    # scripted handoffs (rss)
+    analysis.trace.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
+        args = {
+            'metric' : 'rss',
+            'filter' : -30.0
+        },
+        force_calc = False)
+
+    analysis.trace.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
+        db_selection = '/selection/rss/gps/scripted-handoffs',
+        force_calc = False)
+
+    plot.trace.ap_selection.metrics.scripted_evolution(
+        args.input_dir, args.trace_nr, trace_output_dir,
+        args = {'metric' : 'rss', 'filter' : -30.0},
+        configs = {
+        'db' : '/selection/rss/gps/scripted-handoffs/lap-data',
+        'metric' : 'rss', 
+        'y-label' : 'rss (dBm)', 
+        'coef' : 1.0,
+        'ylim' : [-90, -30]}
+        )
+
+    # scripted handoffs (throughput)
+    analysis.trace.ap_selection.gps.scripted_handoffs(args.input_dir, args.trace_nr,
         args = {
             'metric' : 'throughput'
         },
         force_calc = False)
 
-    analysis.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
+    analysis.trace.ap_selection.utils.extract_performance(args.input_dir, args.trace_nr, 
         db_selection = '/selection/throughput/gps/scripted-handoffs',
         force_calc = False)
 
+    plot.trace.ap_selection.metrics.scripted_evolution(args.input_dir, args.trace_nr, trace_output_dir)
+
     # # cell history
-    # analysis.ap_selection.gps.cell_history(args.input_dir, args.trace_nr,
+    # analysis.trace.ap_selection.gps.cell_history(args.input_dir, args.trace_nr,
     #     args = {
     #         'metric' : 'throughput',
     #         'cell-size' : 20.0,
@@ -647,7 +676,7 @@ if __name__ == "__main__":
     #     force_calc = False)
 
     # cell history (optimized)
-    analysis.ap_selection.gps.optimize_handoffs(args.input_dir, args.trace_nr,
+    analysis.trace.ap_selection.gps.optimize_handoffs(args.input_dir, args.trace_nr,
         args = {
             'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
             'metric' : 'throughput',
@@ -657,32 +686,38 @@ if __name__ == "__main__":
         },
         force_calc = False)
 
-    plot.ap_selection.common.compare(
+    laps = analysis.trace.utils.data.extract_laps(args.input_dir, args.trace_nr)
+
+    plot.trace.ap_selection.metrics.compare(
         args.input_dir, args.trace_nr, trace_output_dir,
         configs = {
             'filename' : 'selection-comparison-thghpt',
-            'time-limits' : [laps.iloc[2]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']],
+            'time-limits' : [laps[laps['lap'] == 2].iloc[0]['start-time'], laps[laps['lap'] == laps['lap'].max()].iloc[-1]['end-time']],
             'methods' : {
                 '0:best' : {
                     'db' : '/best/throughput',
-                    'x-ticklabel' : 'opt.'
+                    'x-ticklabel' : 'optimal'
                 },
-                '1:strongest-rss' : {
-                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
-                    'x-ticklabel' : 'best rss'
-                },
+                # '1:strongest-rss' : {
+                #     'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
+                #     'x-ticklabel' : 'best rss'
+                # },
                 '2:strongest-rss' : {
-                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/2',
-                    'x-ticklabel' : 'best rss*'
+                    'db' : '/selection-performance/throughput/rss/smoothed-hysteresis/5.0/5.0/3',
+                    'x-ticklabel' : 'strngst rss'
                 },
-                '3:cell-history' : {
-                    'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
-                    'x-ticklabel' : 'scripted'
+                '3:strongest-rss' : {
+                    'db' : '/selection-performance/throughput/rss/smoothed-hysteresis/5.0/5.0/2',
+                    'x-ticklabel' : 'strngst rss (5 GHz)'
                 },
                 '4:cell-history' : {
+                    'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
+                    'x-ticklabel' : 'SH (rss)'
+                },
+                '5:cell-history' : {
                     'db' : '/selection-performance/throughput/throughput/gps/scripted-handoffs',
-                    'x-ticklabel' : 'scripted**'
-                },                
+                    'x-ticklabel' : 'SH (thghpt)'
+                },
                 # '4:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
                 #     'x-ticklabel' : 'cell history (ewma)'
@@ -691,14 +726,14 @@ if __name__ == "__main__":
                 #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
                 #     'x-ticklabel' : 'cell history (5)'
                 # },
-                '7:cell-history' : {
-                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
-                    'x-ticklabel' : 'cell history'
-                },
-                '8:cell-history' : {
-                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
-                    'x-ticklabel' : 'cell history***'
-                },
+                # '7:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+                #     'x-ticklabel' : 'cell history'
+                # },
+                # '8:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
+                #     'x-ticklabel' : 'cell history***'
+                # },
                 # '7:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
                 #     'x-ticklabel' : 'cell history (max)'
@@ -706,82 +741,41 @@ if __name__ == "__main__":
             }
         })
 
-    # plot.ap_selection.common.optimal(
-    #     args.input_dir, args.trace_nr, trace_output_dir,
-    #     configs = {
-    #         'filename' : 'optimal',
-    #         # 'time-limits' : [1548779160.0, 1548780180.0],
-    #         'time-limits' : [1548779262.0, 1548780180.0],
-    #         'optimal' : {
-    #             'db' : '/best/throughput'
-    #         },
-    #         'methods' : {
-    #             '1:strongest-rss' : {
-    #                 'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
-    #                 'label' : 'best rss',
-    #                 'color' : 'orange'
-    #             },
-    #             '2:strongest-rss' : {
-    #                 'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/2',
-    #                 'label' : 'best rss*',
-    #                 'color' : 'blue'
-    #             },
-    #             '3:cell-history' : {
-    #                 'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
-    #                 'label' : 'scripted',
-    #                 'color' : 'green'
-    #             },
-    #             # '4:cell-history' : {
-    #             #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
-    #             #     'x-ticklabel' : 'cell history (ewma)'
-    #             # },
-    #             # '5:cell-history' : {
-    #             #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
-    #             #     'x-ticklabel' : 'cell history (5)'
-    #             # },
-    #             '6:cell-history' : {
-    #                 'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
-    #                 'label' : 'cell history',
-    #                 'color' : 'red'
-    #             },
-    #             # '7:cell-history' : {
-    #             #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
-    #             #     'x-ticklabel' : 'cell history (max)'
-    #             # },
-    #         }
-    #     }
-    # )
-
-    plot.ap_selection.common.handoff_analysis(
+    plot.trace.ap_selection.metrics.handoff_analysis(
         args.input_dir, args.trace_nr, trace_output_dir,
         configs = {
             'filename' : 'handoff-analysis',
-            'time-limits' : [laps.iloc[2]['timed-tmstmp'], laps.iloc[-1]['timed-tmstmp']],
+            'time-limits' : [laps[laps['lap'] == 2].iloc[0]['start-time'], laps[laps['lap'] == laps['lap'].max()].iloc[-1]['end-time']],
             'methods' : {
                 '0:best' : {
                     'db' : '/best/throughput',
-                    'label' : 'opt.',
-                    'color' : 'gray'
+                    'label' : 'optimal',
+                    'color' : 'red'
                 },
-                '1:strongest-rss' : {
-                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
-                    'label' : 'best rss',
-                    'color' : 'orange'
-                },
+                # '1:strongest-rss' : {
+                #     'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/3',
+                #     'label' : 'best rss',
+                #     'color' : 'orange'
+                # },
                 '2:strongest-rss' : {
-                    'db' : '/selection-performance/throughput/rss/strongest-rss/5.0/0.5/2',
-                    'label' : 'best rss*',
+                    'db' : '/selection-performance/throughput/rss/smoothed-hysteresis/5.0/5.0/3',
+                    'label' : 'strngst rss',
                     'color' : 'blue'
                 },
-                '3:cell-history' : {
-                    'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
-                    'label' : 'scripted',
-                    'color' : 'green',
+                '3:strongest-rss' : {
+                    'db' : '/selection-performance/throughput/rss/smoothed-hysteresis/5.0/5.0/2',
+                    'label' : 'strngst rss (5 GHz)',
+                    'color' : 'lightblue'
                 },
                 '4:cell-history' : {
+                    'db' : '/selection-performance/throughput/rss/gps/scripted-handoffs',
+                    'label' : 'SH (rss)',
+                    'color' : 'orange',
+                },
+                '5:cell-history' : {
                     'db' : '/selection-performance/throughput/throughput/gps/scripted-handoffs',
-                    'label' : 'scripted**',
-                    'color' : 'lime'
+                    'label' : 'SH (thghpt)',
+                    'color' : 'green'
                 },                
                 # '4:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/ewma/0.75-0',
@@ -791,16 +785,16 @@ if __name__ == "__main__":
                 #     'db' : '/selection-performance/throughput/gps/cell-history/5.0/mean/0.75-0',
                 #     'x-ticklabel' : 'cell history (5)'
                 # },
-                '7:cell-history' : {
-                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
-                    'label' : 'cell history',
-                    'color' : 'red'
-                },
-                '8:cell-history' : {
-                    'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
-                    'label' : 'cell history***',
-                    'color' : 'pink'
-                },
+                # '7:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
+                #     'label' : 'cell history',
+                #     'color' : 'red'
+                # },
+                # '8:cell-history' : {
+                #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0/optimize-handoff',
+                #     'label' : 'cell history***',
+                #     'color' : 'pink'
+                # },
                 # '7:cell-history' : {
                 #     'db' : '/selection-performance/throughput/gps/cell-history/20.0/max/0.75-0',
                 #     'x-ticklabel' : 'cell history (max)'
@@ -839,7 +833,7 @@ if __name__ == "__main__":
     #     }
 
     #     # # periodic scan + pick best rssi analysis
-    #     # analysis.ap_selection.rssi.periodic(args.input_dir, args.trace_nr,
+    #     # analysis.trace.ap_selection.rssi.periodic(args.input_dir, args.trace_nr,
     #     #     method = 'periodic',
     #     #     args = configs['best-rssi']['args'])
 
@@ -902,18 +896,18 @@ if __name__ == "__main__":
     #             }
 
     #             # # date : band steering
-    #             # analysis.ap_selection.rssi.band_steering(args.input_dir, args.trace_nr,
+    #             # analysis.trace.ap_selection.rssi.band_steering(args.input_dir, args.trace_nr,
     #             #     method = 'band-steering',
     #             #     args = configs['band-steering']['args'],
     #             #     force_calc = False)
 
     #             # # gps : cell history
-    #             # analysis.ap_selection.gps.cell(args.input_dir, args.trace_nr,
+    #             # analysis.trace.ap_selection.gps.cell(args.input_dir, args.trace_nr,
     #             #     args = configs['best-cell']['args'],
     #             #     force_calc = False)
 
     #             # # date : history assisted
-    #             # analysis.ap_selection.rssi.history(args.input_dir, args.trace_nr,
+    #             # analysis.trace.ap_selection.rssi.history(args.input_dir, args.trace_nr,
     #             #     method = 'history',
     #             #     args = configs['history']['args'],
     #             #     force_calc = False)

@@ -11,48 +11,37 @@ import gmplot
 import time
 import hashlib
 import timeit
-
-# for parallel processing of sessions
 import multiprocessing as mp 
-# for maps
 import pdfkit
-# for MySQL & pandas
 import MySQLdb as mysql
 import sqlalchemy
 import shapely.geometry
+import geopandas as gp
 
 from datetime import date
 from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
-
-# geodesic distance
 from geopy.distance import geodesic
-
-# for ap location estimation
 from shapely.geometry import Point
 
 # custom imports
-import analysis.metrics
-import analysis.trace
-import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
-
-import parsing.utils
-import mapping.utils
-
+#   - parsing
+import analysis.smc.utils
+#   - analysis.smc.roads
 import analysis.smc.roads.selection
 import analysis.smc.roads.utils
-
-import geopandas as gp
 
 # road ref points for xx calculation
 ref_points = {
     57 : [41.158179, -8.630399], 
     960 : [41.157160, -8.624431],
     978 : [41.160477, -8.593205],
-    67 : [41.148925, -8.599117]}
+    67 : [41.148925, -8.599117],
+    60 : [41.178685,-8.597872],
+    1466 : [41.178685,-8.597872],
+    834 : [41.150972, -8.593940],
+    1524 : [41.161120, -8.598267]}
 
 def data(name, input_dir, db_eng = None):
 
@@ -64,8 +53,10 @@ def data(name, input_dir, db_eng = None):
 
     # extract session data along road to .hdf5 file for convenience (if not available yet)
     database = analysis.smc.utils.get_db(input_dir)
+    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+    
     db_name = ('/roads/%s/data' % (road_id))
-    if db_name not in database.keys():
+    if db_name not in database_keys:
 
         # sessions w/ include cell
         query = ("""SELECT 
@@ -93,7 +84,7 @@ def data(name, input_dir, db_eng = None):
         road_data['bssid'] = road_data['bssid'].apply(lambda x : x.encode('utf-8'))
         road_data['essid_hash'] = road_data['essid_hash'].apply(lambda x : x.encode('utf-8'))
         # save road_data in .hdfs file
-        parsing.utils.to_hdf5(road_data, ('/roads/%s/data' % (road_id)), database)
+        analysis.smc.utils.to_hdf5(road_data, ('/roads/%s/data' % (road_id)), database)
 
     else:
         sys.stderr.write("""[INFO] %s already in database. skipping extraction.\n""" % (db_name))
@@ -109,15 +100,17 @@ def coverage(name, input_dir, db_eng = None):
 
     # extract data to .hdf5 file for convenience (if not available yet)
     database = analysis.smc.utils.get_db(input_dir)
+    database_keys = analysis.smc.utils.get_db_keys(input_dir)
+
     db_name = ('/roads/%s/data' % (road_id))
-    if db_name not in database.keys():
-        extract_data(name, input_dir, db_eng)
+    if db_name not in database_keys:
+        analysis.smc.roads.extract.data(name, input_dir, db_eng)
 
     # (1) check if any of the dataframes to be created here is missing. if not, we stop here.
     session_db = ('/roads/%s/sessions' % (road_id))
     coverage_db = ('/roads/%s/coverage' % (road_id))
     rss_db = ('/roads/%s/rss' % (road_id))
-    if (session_db in database.keys()) and (coverage_db in database.keys()) and (rss_db in database.keys()):
+    if (session_db in database_keys) and (coverage_db in database_keys) and (rss_db in database_keys):
         sys.stderr.write("""[INFO] %s dbs already in database. skipping data extraction.\n""" % (road_id))
         return
 
@@ -151,8 +144,8 @@ def coverage(name, input_dir, db_eng = None):
     #   - abs(xx-dif) > 250 m
     sessions = sessions[(sessions['speed'] > 10.0) & (sessions['xx-diff'].apply(lambda x : abs(x)) > 250.0)].reset_index(drop = True)
     # (9) add session info to database
-    if (session_db not in database.keys()):
-        parsing.utils.to_hdf5(sessions, session_db, database)
+    if (session_db not in database_keys):
+        analysis.smc.utils.to_hdf5(sessions, session_db, database)
 
     # (10) filter out data from sessions w/ time >= 1000 seconds
     road_data = road_data[road_data['session_id'].isin(sessions['session_id'])].reset_index(drop = True)
@@ -185,9 +178,9 @@ def coverage(name, input_dir, db_eng = None):
     # i.e., for each ap, find: 
     #   - min and max xx coverage distances:
     #     i.e., the xx interval over which 90% of the rss > -80 dBm were collected
-    if (coverage_db not in database.keys()):
+    if (coverage_db not in database_keys):
 
-        coverage, smoothed_data = analysis.smc.roads.utils.get_coverage(ap_data)
+        coverage, smoothed_data = analysis.smc.roads.utils.get_coverage(ap_data, threshold = -75.0)
 
         # merge ap info w/ coverage:
         #   - ess id
@@ -200,47 +193,48 @@ def coverage(name, input_dir, db_eng = None):
             on = ['ap_id'], how = 'left')
 
         # save coverage in database
-        parsing.utils.to_hdf5(coverage, coverage_db, database)
+        analysis.smc.utils.to_hdf5(coverage, coverage_db, database)
 
     # extract rss vs. distance stats
-    if (rss_db not in database.keys()):
+    if (rss_db not in database_keys):
         ap_data.columns = ap_data.columns.astype(str)
-        parsing.utils.to_hdf5(ap_data.reset_index(drop = True), rss_db, database)
+        analysis.smc.utils.to_hdf5(ap_data.reset_index(drop = True), rss_db, database)
 
-def get_handoff_plan(road_id, input_dir, strategy, plan, db_eng = None):
+def get_handoff_plan(road_id, input_dir, strategy, restriction):
 
-    if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-
+    print(road_id)
     database = analysis.smc.utils.get_db(input_dir)
+    database_keys = analysis.smc.utils.get_db_keys(input_dir)
 
-    handoff_plan_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, plan['type'], plan['operator']))
-    if (handoff_plan_db in database.keys()):
+    handoff_plan_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, restriction['open'], restriction['operator']))
+    if (handoff_plan_db in database_keys):
         sys.stderr.write("""[INFO] %s already in database. skipping extraction.\n""" % (handoff_plan_db))
-        return database.select(handoff_plan_db)
+        return database.select(handoff_plan_db), database.select('%s/data' % (handoff_plan_db))
+
+    # best-rss uses rss vs. xx data as input
+    rss_db = ('/roads/%s/rss' % (road_id))
+    if (rss_db not in database_keys):
+        sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (rss_db))
+        return
+
+    ap_data = database.select(rss_db)
 
     coverage_db = ('/roads/%s/coverage' % (road_id))
-    if (coverage_db not in database.keys()):
+    if (coverage_db not in database_keys):
         sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (coverage_db))
         return
 
     coverage = database.select(coverage_db)
 
-    # best-rss uses rss vs. xx data as input
-    rss_db = ('/roads/%s/rss' % (road_id))
-    if (rss_db not in database.keys()):
-        sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (ap_db))
-        return
-
-    ap_data = database.select(rss_db)
-
     # filter aps according to handoff restrictions
-    if plan['type'] == 'public':
+    if restriction['open'] == 'open':
         coverage = coverage[coverage['is_public'] > 0].reset_index(drop = True)
-    if plan['operator'] != 'any':
-        coverage = coverage[coverage['operator_id'] == plan['operator']]
+    if restriction['operator'] != 'any':
+        coverage = coverage[coverage['operator_id'] == restriction['operator']]
 
     ap_data = ap_data[['xx'] + list(set(coverage['ap_id'].tolist()) & set(ap_data.columns))].reset_index(drop = True)
+    if not list(ap_data.columns).remove('xx'):
+        return pd.DataFrame(), pd.DataFrame()
 
     if 'best-rss' in strategy:
         handoff_plan, ap_data = analysis.smc.roads.selection.best_rss(ap_data)
@@ -252,7 +246,7 @@ def get_handoff_plan(road_id, input_dir, strategy, plan, db_eng = None):
     handoff_plan = analysis.smc.roads.utils.add_ap_info(handoff_plan, coverage)
 
     # save handoff plan and ap data in hdfs database
-    parsing.utils.to_hdf5(handoff_plan, handoff_plan_db, database)
-    parsing.utils.to_hdf5(ap_data, ('%s/data' % (handoff_plan_db)), database)
+    analysis.smc.utils.to_hdf5(handoff_plan, handoff_plan_db, database)
+    analysis.smc.utils.to_hdf5(ap_data, ('%s/data' % (handoff_plan_db)), database)
 
-    return handoff_plan
+    return handoff_plan, ap_data

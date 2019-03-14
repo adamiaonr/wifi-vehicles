@@ -1,3 +1,19 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -18,31 +34,10 @@ import multiprocessing as mp
 import hashlib
 import datetime
 import json
-import mapping.utils
-import mapping.openstreetmap
 import geopandas as gp
-import plot.utils
-import plot.trace
-import plot.ap_selection
-import plot.gps
-import plot.smc.sessions
-import plot.smc.roads
-import parsing.utils
-import analysis.metrics
-import analysis.trace
-import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
-import analysis.smc.sessions
-import analysis.smc.utils
-import analysis.smc.database
-import mapping.utils
 import shapely.geometry
-# for MySQL & pandas
 import MySQLdb as mysql
 import sqlalchemy
-
-import analysis.smc.roads.main
 
 from random import randint
 from collections import defaultdict
@@ -50,6 +45,13 @@ from collections import OrderedDict
 from collections import namedtuple
 from prettytable import PrettyTable
 from sklearn import linear_model
+
+# custom imports
+# - analysis.smc
+import analysis.smc.utils
+# - plot.smc
+import plot.smc.roads
+import plot.smc.sessions
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -127,13 +129,7 @@ if __name__ == "__main__":
             print('\t%s' % (key))
 
     if args.remove_dbs:
-        database = analysis.smc.utils.get_db(args.input_dir)
-        for db in args.remove_dbs.split(','):
-            if db in database.keys():
-                database.remove(db)
-                sys.stderr.write("""%s: [INFO] removed db %s\n""" % (sys.argv[0], db))
-            else:
-                sys.stderr.write("""%s: [INFO] db %s not in database\n""" % (sys.argv[0], db))
+        analysis.smc.utils.remove_dbs(args.input_dir, args.remove_dbs.split(','))
 
     db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
 
@@ -153,24 +149,19 @@ if __name__ == "__main__":
 
         roads = args.analyze_roads.split(',')
         # for road in roads:
-        #     # analysis.smc.roads.print_info(name = road, input_dir = args.input_dir, db_eng = db_eng)
-        #     analysis.smc.roads.main.extract_coverage_data(name = road, input_dir = args.input_dir, db_eng = db_eng)
-        #     # analysis.smc.roads.handoff(
-        #     #     road_id = road_id,
-        #     #     strategy = 'best-rss',
-        #     #     plan = {'type' : 'any', 'operator' : 'any', 'label' : 'any'},
-        #     #     input_dir = args.input_dir, 
-        #     #     db_eng = db_eng)
+        # #     analysis.smc.roads.extract.coverage(name = road, input_dir = args.input_dir, db_eng = db_eng)
+        #     analysis.smc.roads.utils.print_info(name = road, input_dir = args.input_dir, db_eng = db_eng)
 
-        # plot.smc.roads.handoff(args.input_dir, args.graph_dir, selection_strategy = 'greedy')
-        # plot.smc.roads.coverage_blocks(args.input_dir, args.graph_dir, selection_strategy = 'best-rss')
-        # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'greedy')
+        # plot.smc.roads.handoff(args.input_dir, args.graph_dir, strategy = 'best-rss')
+        plot.smc.roads.coverage_blocks(args.input_dir, args.graph_dir)
+        # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss')
+        # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss')        
         # plot.smc.roads.signal_quality(args.input_dir, args.graph_dir)
         # plot.smc.roads.map(args.input_dir, args.graph_dir)
-        plot.smc.roads.rss(args.input_dir, args.graph_dir, 
-            road_id = 960,
-            strategy = 'greedy', 
-            plan = {'type' : 'any', 'operator' : 'any', 'label' : 'any'})
+        # plot.smc.roads.rss(args.input_dir, args.graph_dir, 
+        #     road_id = 960,
+        #     strategy = 'greedy', 
+        #     plan = {'type' : 'any', 'operator' : 'any', 'label' : 'any'})
 
     if args.analyze_sessions:
 
@@ -187,8 +178,8 @@ if __name__ == "__main__":
 
         # plot.smc.sessions.signal_quality(args.input_dir, args.graph_dir)
         # plot.smc.sessions.esses(args.input_dir, args.graph_dir, draw_map = True)
-        plot.smc.sessions.channels(args.input_dir, args.graph_dir)
+        # plot.smc.sessions.channels(args.input_dir, args.graph_dir)
         # plot.smc.sessions.auth(args.input_dir, args.graph_dir)
-        # plot.smc.sessions.operators(args.input_dir, args.graph_dir)
+        plot.smc.sessions.operators(args.input_dir, args.graph_dir)
 
     sys.exit(0)

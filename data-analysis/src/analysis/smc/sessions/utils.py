@@ -37,7 +37,7 @@ import analysis.gps
 import analysis.ap_selection.rssi
 import analysis.ap_selection.gps
 
-import parsing.utils
+import analysis.smc.utils
 
 import mapping.utils
 

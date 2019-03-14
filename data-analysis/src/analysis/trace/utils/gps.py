@@ -1,28 +1,54 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import os
+import re
 import argparse
 import sys
 import glob
 import math
 import gmplot
 import time
-# for parallel processing of sessions
+import timeit
+import subprocess
+import csv
 import multiprocessing as mp 
 import hashlib
+import datetime
+import json
+import geopandas as gp
+import shapely.geometry
 
 from random import randint
 from collections import defaultdict
 from collections import OrderedDict
-
-import datetime
-
+from collections import namedtuple
 from prettytable import PrettyTable
+from sklearn import linear_model
 
-import mapping.utils
-import analysis.metrics
+# custom imports
+#   - hdfs utils
+import utils.hdfs
+#   - analysis
 
 # north, south, west, east gps coord limits of FEUP map
 LATN = 41.176796

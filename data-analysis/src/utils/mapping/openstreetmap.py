@@ -21,7 +21,6 @@ import shapely.geometry
 import timeit
 
 import mapping.utils
-import analysis.smc.utils
 
 from random import randint
 from datetime import date

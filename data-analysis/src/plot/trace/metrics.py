@@ -1,3 +1,19 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -13,22 +29,11 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-
 import geopandas as gp
-
-import plot.utils
-import plot.gps
-
-import mapping.utils
-
-import analysis.metrics
-import analysis.gps
-
 import shapely.geometry
 
 from random import randint
@@ -37,6 +42,15 @@ from collections import OrderedDict
 from collections import namedtuple
 from matplotlib.gridspec import GridSpec
 from prettytable import PrettyTable
+
+# custom imports
+#   - plot
+import plot.utils
+import plot.gps
+#   - mapping utils
+import utils.mapping.utils
+#   - trace analysis
+import analysis.trace
 
 matplotlib.rcParams.update({'font.size': 16})
 
@@ -109,7 +123,7 @@ def rates(ax, input_dir, trace_nr, metric = 'throughput', time_limits = None):
         dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['timed-tmstmp'] ]
         plot.utils.update_time_limits(time_limits, dates)
 
-        analysis.metrics.smoothen(_data, column = metric, span = 10)
+        analysis.trace.utils.metrics.smoothen(_data, column = metric, span = 10)
 
         ax.plot_date(
             dates,
@@ -193,7 +207,7 @@ def rss(ax, input_dir, trace_nr, time_limits = None):
         dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['epoch time'] ]
         plot.utils.update_time_limits(time_limits, dates)
 
-        analysis.metrics.smoothen(_data, column = 'wlan rssi', span = 10)
+        analysis.trace.utils.metrics.smoothen(_data, column = 'wlan rssi', span = 10)
 
         ax.plot_date(
             dates,
@@ -261,7 +275,7 @@ def vs_distance(ax, input_dir, trace_nr, configs):
     ax.set_title('%s (per channel) vs. distance (trace %s)' % (configs['metric'], trace_nr))
 
     # get rss data from all nodes
-    data = analysis.trace.merge_gps(input_dir, trace_nr, configs['metric'], cell_size = 20.0)
+    data = analysis.trace.utils.data.merge_gps(input_dir, trace_nr, configs['metric'], cell_size = 20.0)
     data = data[['timed-tmstmp', 'lat', 'lon'] + nodes.keys()].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
     # for node in nodes.keys():
     #     analysis.metrics.smoothen(data, column = node, span = 50)
@@ -269,7 +283,7 @@ def vs_distance(ax, input_dir, trace_nr, configs):
     # add distance to ref point
     ref = {'lat' : 41.178685, 'lon' : -8.597872}
     pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
-    data['ref-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], p[0], p[1]) for p in pos ]
+    data['ref-dist'] = [ utils.mapping.utils.gps_to_dist(ref['lat'], ref['lon'], p[0], p[1]) for p in pos ]
     data = data.sort_values(by = ['ref-dist']).reset_index(drop = True)
     # offset = data['ref-dist'].min()
     offset = 0.0
@@ -280,7 +294,7 @@ def vs_distance(ax, input_dir, trace_nr, configs):
         if 'filter' in configs:
             _data = _data[_data[node] < configs['filter']]
         _data = _data.sort_values(by = ['ref-dist']).reset_index(drop = True)
-        analysis.metrics.smoothen(_data, column = node, span = 50)
+        analysis.trace.utils.metrics.smoothen(_data, column = node, span = 50)
 
         ax.plot(
             _data['ref-dist'] - offset,
@@ -359,7 +373,7 @@ def channel_util(ax, input_dir, trace_nr, time_limits = None):
         dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in _data['timestamp'] ]
         plot.utils.update_time_limits(time_limits, dates)
 
-        analysis.metrics.smoothen(_data, column = 'cutil', span = 5)
+        analysis.trace.utils.metrics.smoothen(_data, column = 'cutil', span = 5)
 
         ax.plot_date(
             dates,
@@ -553,7 +567,7 @@ def bitrate(input_dir, trace_nr, trace_output_dir, time_limits = None):
     
 def create_grid(lat = [LATN, LATS], lon = [LONW, LONE], cell_size = 20.0):
 
-    x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = cell_size, lat = lat, lon = lon)
+    x_cell_num, y_cell_num = analysis.trace.utils.gps.get_cell_num(cell_size = cell_size, lat = lat, lon = lon)
     # limits for (x,y) coordinates in grid
     max_x = int(x_cell_num)
     max_y = int(y_cell_num)
@@ -598,10 +612,10 @@ def maps(input_dir, trace_nr, trace_output_dir,
         sys.stderr.write("""[INFO] %s exists. skipping plotting.\n""" % (maps_dir))
         return
 
-    database = analysis.trace.get_db(input_dir, trace_nr)
+    database = utils.hdfs.get_db(input_dir, trace_nr)
     # get gps coords of trace
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    gps_data = analysis.gps.get_data(input_dir, trace_dir)[['timestamp', 'lat', 'lon']]
+    gps_data = analysis.trace.utils.gps.get_data(input_dir, trace_dir)[['timestamp', 'lat', 'lon']]
 
     if time_limits:
         gps_data = gps_data[(gps_data['timestamp'] >= time_limits[0]) & (gps_data['timestamp'] <= time_limits[1])].reset_index(drop = True)
@@ -666,7 +680,7 @@ def maps(input_dir, trace_nr, trace_output_dir,
 
     # 2) print a custom heatmap, divided by cells, which will be used in our algos 
     # add cell ids
-    analysis.gps.add_cells(gps_data, cell_size, bbox = bbox)    
+    analysis.trace.utils.gps.add_cells(gps_data, cell_size, bbox = bbox)    
     # 2.1) print cdf plot of samples per cell
     sample_count = gps_data.groupby(['cell_id', 'cell_x', 'cell_y']).size().reset_index(drop = False, name = 'count')
     cdf = sample_count.groupby(['count']).size().reset_index(name = 'counts')
@@ -693,9 +707,9 @@ def maps(input_dir, trace_nr, trace_output_dir,
 
     # 2.2) print map of cells
     # extract roads using OpenStreetMaps APIs
-    road_hash = mapping.openstreetmap.get_road_hash(bbox = bbox, tags = ['highway='])
+    road_hash = utils.mapping.openstreetmap.get_road_hash(bbox = bbox, tags = ['highway='])
     if not os.path.isdir(os.path.join(trace_output_dir, road_hash)):
-        roads = mapping.openstreetmap.extract_roads(trace_output_dir, 
+        roads = utils.mapping.openstreetmap.extract_roads(trace_output_dir, 
             tags = ['highway='], 
             bbox = bbox)
     roads = gp.GeoDataFrame.from_file(os.path.join(trace_output_dir, road_hash))
@@ -721,8 +735,8 @@ def maps(input_dir, trace_nr, trace_output_dir,
     # the CRS in the original dataframe is 4326 (or WGS84), the one used by GPS
     roads.crs = {'init' : 'epsg:4326'}
     # find the graph's hight-width ratio
-    dy = mapping.utils.gps_to_dist(41.180, 0.0, 41.178, 0.0)
-    dx = mapping.utils.gps_to_dist(41.178, -8.597, 41.178, -8.592)
+    dy = utils.mapping.utils.gps_to_dist(41.180, 0.0, 41.178, 0.0)
+    dx = utils.mapping.utils.gps_to_dist(41.178, -8.597, 41.178, -8.592)
     # create fig w/ h-w ratio
     fig = plt.figure(figsize = ((dx / dy) * 5.0, 5.0))
 

@@ -39,7 +39,7 @@ import analysis.gps
 import analysis.ap_selection.rssi
 import analysis.ap_selection.gps
 
-import parsing.utils
+import analysis.smc.utils
 import mapping.utils
 
 import geopandas as gp
@@ -213,13 +213,13 @@ def bands(data, database):
     # bands = bands[['session_id', 'encode', 'cell-x', 'cell-y', 'band', 'snr', 'count']].reset_index(drop = True)
 
     # print(bands)
-    # parsing.utils.to_hdf5(bands, ('/bands/snr'), database)
+    # analysis.smc.utils.to_hdf5(bands, ('/bands/snr'), database)
 
     # FIXME: cells w/ 5.0 GHz data are so rare, that we can simply save the full rows
     raw = data[data['cell'].isin(cells)].reset_index(drop = True)[['seconds', 'session_id', 'encode', 'snr', 'auth', 'frequency', 'new_lat', 'new_lon', 'new_err', 'ds', 'acc_scan', 'band', 'cell-x', 'cell-y']]
     raw['session_id'] = raw['session_id'].astype(str).apply(lambda x : x.split(',')[0]).astype(int)
     raw['encode'] = raw['encode'].astype(str)
-    parsing.utils.to_hdf5(raw, ('/bands/raw'), database)
+    analysis.smc.utils.to_hdf5(raw, ('/bands/raw'), database)
     
 def _contact(data, processed_data):
 
@@ -301,4 +301,4 @@ def contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1):
     for cat in to_extract:
         db = ('/contact/%s/%s/%s' % (cat, cell_size, int(abs(threshold))))
         if db not in database.keys():
-            parsing.utils.to_hdf5(processed_data[cat], db, database)
+            analysis.smc.utils.to_hdf5(processed_data[cat], db, database)

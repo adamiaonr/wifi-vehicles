@@ -19,52 +19,35 @@ import multiprocessing as mp
 import hashlib
 import datetime
 import json
-
-import mapping.utils
-import mapping.openstreetmap
-
 import geopandas as gp
-
-import plot.utils
-import plot.trace
-import plot.ap_selection
-import plot.gps
-
-import parsing.utils
-
-import analysis.metrics
-import analysis.trace
-import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
-
-import analysis.smc.sessions
-import analysis.smc.utils
-import analysis.smc.data
-
-import analysis.smc.roads.main
-import analysis.smc.roads.utils
-
-import mapping.utils
-
 import shapely.geometry
 
 from random import randint
-
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from prettytable import PrettyTable
 
-from sklearn import linear_model
+# custom imports
+# - analysis.smc
+import analysis.smc.utils
+import analysis.smc.roads.extract
+import analysis.smc.roads.utils
+# - plot.smc
+import plot.smc.roads
+# - plot.utils
+import plot.utils
 
 # road ref points for xx calculation
 ref_points = {
     57 : [41.158179, -8.630399], 
     960 : [41.157160, -8.624431],
     978 : [41.160477, -8.593205],
-    67 : [41.148925, -8.599117]}
+    67 : [41.148925, -8.599117],
+    60 : [41.178685,-8.597872],
+    1466 : [41.178685,-8.597872],
+    834 : [41.150972, -8.593940],
+    1524 : [41.161120, -8.598267]}
 
 def timespan(road_id, input_dir, output_dir):
 
@@ -198,7 +181,22 @@ def signal_quality(input_dir, output_dir,
             'color' : 'orange',
             'label' : 'road B',
             'length' : 3080.0
-        }        
+        }
+        # 834 : {
+        #     'color' : 'orange',
+        #     'label' : 'road B',
+        #     'length' : 653.71
+        # },
+        # 60 : {
+        #     'color' : 'green',
+        #     'label' : 'road D',
+        #     'length' : 910.92
+        # },
+        # 1524 : {
+        #     'color' : 'blue',
+        #     'label' : 'road C',
+        #     'length' : 1390.0
+        # }
     }):
 
     plot_configs = {
@@ -224,9 +222,9 @@ def signal_quality(input_dir, output_dir,
     for road in sorted(roads.keys()):
     
         database = analysis.smc.utils.get_db(input_dir)
+        database_keys = analysis.smc.utils.get_db_keys(input_dir)
         db_name = ('/roads/%s/data' % (road))
-
-        if (db_name not in database.keys()):
+        if (db_name not in database_keys):
             sys.stderr.write("""[ERROR] %s not in database. skipping.\n""" % (db_name))
             continue
 
@@ -260,7 +258,22 @@ def map(input_dir, output_dir,
             'color' : 'orange',
             'label' : 'road B',
             'length' : 3080.0
-        }        
+        }
+        # 834 : {
+        #     'color' : 'orange',
+        #     'label' : 'road B',
+        #     'length' : 653.71
+        # },
+        # 60 : {
+        #     'color' : 'green',
+        #     'label' : 'road D',
+        #     'length' : 910.92
+        # },
+        # 1524 : {
+        #     'color' : 'blue',
+        #     'label' : 'road C',
+        #     'length' : 1390.0
+        # }
     },
     bbox = [-8.650, 41.140, -8.575, 41.175]):
 
@@ -284,14 +297,15 @@ def rss(input_dir, output_dir, road_id, strategy, plan):
 
     # load rss data of the aps involved in the handoff plan
     database = analysis.smc.utils.get_db(input_dir)
+    database_keys = analysis.smc.utils.get_db_keys(input_dir)
 
     hp_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, plan['type'], plan['operator']))
-    if (hp_db not in database.keys()):
+    if (hp_db not in database_keys):
         sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (hp_db))
         return
 
     ap_data_db = ('/roads/%s/handoff/%s/%s/%s/data' % (road_id, strategy, plan['type'], plan['operator']))
-    if (ap_data_db not in database.keys()):
+    if (ap_data_db not in database_keys):
         sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (ap_data_db))
         return
 
@@ -344,14 +358,29 @@ def handoff(input_dir, output_dir,
             'color' : 'orange',
             'label' : 'road B',
             'length' : 3080.0
-        }        
+        }
+        # 834 : {
+        #     'color' : 'orange',
+        #     'label' : 'road B',
+        #     'length' : 653.71
+        # },
+        # 60 : {
+        #     'color' : 'green',
+        #     'label' : 'road D',
+        #     'length' : 910.92
+        # },
+        # 1524 : {
+        #     'color' : 'blue',
+        #     'label' : 'road C',
+        #     'length' : 1390.0
+        # }
     },
     strategy = 'greedy',
-    handoff_plans = [
-        {'type' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : ['red', 'lightsalmon']},
-        {'type' : 'public', 'operator' : 'any', 'label' : 'any pub.', 'color' : ['blue', 'lightblue']},
-        {'type' : 'public', 'operator' : 2, 'label' : 'pub. zon', 'color' : ['orange', 'peachpuff']},
-        {'type' : 'public', 'operator' : 3, 'label' : 'pub. meo', 'color' : ['green', 'lightgreen']},
+    restrictions = [
+        {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : ['red', 'lightsalmon']},
+        {'open' : 'open', 'operator' : 'any', 'label' : 'open any', 'color' : ['blue', 'lightblue']},
+        {'open' : 'open', 'operator' : 2, 'label' : 'open zon', 'color' : ['orange', 'peachpuff']},
+        {'open' : 'open', 'operator' : 3, 'label' : 'open meo', 'color' : ['green', 'lightgreen']},
         # {'type' : 'public', 'operator' : 4, 'label' : 'vodaf.'},
         # {'type' : 'public', 'operator' : 5, 'label' : 'plan 5', 'color' : 'pink'}
         ]
@@ -360,7 +389,7 @@ def handoff(input_dir, output_dir,
     plt.style.use('classic')
     plot_configs = {
         'x-label' : '',
-        'title' : ('# of handoffs (%s)' % (strategy)),
+        'title' : ('# of handoffs (%s)' % ('strongest-rss')),
         'coef' : 1.0,
         'linewidth' : 0.0,
         'markersize' : 1.25,
@@ -395,19 +424,22 @@ def handoff(input_dir, output_dir,
 
     label = ['ap handoffs', 'ess handoffs']
     for i, road in enumerate(sorted(roads.keys())):
-        for j, hp in enumerate(handoff_plans):
+        for j, restr in enumerate(restrictions):
 
-            data = analysis.smc.roads.handoff(road_id = road, input_dir = input_dir, strategy = strategy, plan = hp)
-            print(road)
-            print(strategy)
-            print(hp)
-            print(data)
+            start_time = timeit.default_timer()
+            data, ap_data = analysis.smc.roads.extract.get_handoff_plan(road_id = road, input_dir = input_dir, strategy = strategy, restriction = restr)
+            print("%s::handoff() : [INFO] get handoff plan : %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
 
             # nr. of ap handoffs
+            bss_handoffs = 0.0
+            if not data.empty:
+                data['bss-block'] = (data['ap_id'] != data['ap_id'].shift(1)).astype(int).cumsum()
+                bss_handoffs = len(data.drop_duplicates(subset = ['bss-block']))
+
             ax.bar(xx - barwidth,
-                len(data),
+                bss_handoffs,
                 width = barwidth, linewidth = 0.250, alpha = 1.00, 
-                color = hp['color'][1], label = label[0])
+                color = restr['color'][1], label = label[0])
 
             # nr. of ess handoffs
             ess_handoffs = 0.0
@@ -418,7 +450,7 @@ def handoff(input_dir, output_dir,
             ax.bar(xx,
                 ess_handoffs,
                 width = barwidth, linewidth = 0.250, alpha = 1.00, 
-                color = hp['color'][0], label = label[1])
+                color = restr['color'][0], label = label[1])
 
             label = ['', '']
 
@@ -426,11 +458,11 @@ def handoff(input_dir, output_dir,
             # xticks.append(xx)
             # xtickslabels.append(('%s' % (roads[road]['label'])))
 
-            if j == ((len(handoff_plans) - 1) / 2):
+            if j == ((len(restrictions) - 1) / 2):
                 xticks.append(xx + barwidth)
                 xtickslabels.append('%s' % (roads[road]['label']))
 
-            if j < (len(handoff_plans) - 1):
+            if j < (len(restrictions) - 1):
                 xx += intraspace
 
         if i < (len(roads.keys()) - 1):
@@ -462,8 +494,8 @@ def handoff(input_dir, output_dir,
 
     # background legend
     h = []
-    for j, hp in enumerate(handoff_plans): 
-        h.append(plt.plot([], [], color = hp['color'][0], alpha = 1.00, label = hp['label'])[0])
+    for j, restr in enumerate(restrictions): 
+        h.append(plt.plot([], [], color = restr['color'][0], alpha = 1.00, label = restr['label'])[0])
     leg = plt.legend(handles = h,
         fontsize = 9, 
         ncol = 2, loc = 'upper right',
@@ -480,10 +512,10 @@ def handoff(input_dir, output_dir,
     ax.set_xticklabels(xtickslabels, rotation = 0, ha = 'center')
 
     # ax.set_ylim(0.0, np.ceil(ax.get_ylim()[1] * 1.25))
-    ax.set_ylim(0.0, 50) 
+    ax.set_ylim(0.0, 80) 
     # ax.set_yscale("log", nonposy = 'clip')
     # ax.set_ylim(0.5, 1000.0)
-    ax.set_yticks([0, 10, 20, 30, 40, 50])
+    ax.set_yticks([0, 20, 40, 60, 80])
 
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, ("roads/handoff/%s/handoffs.pdf" % (strategy))), bbox_inches = 'tight', format = 'pdf')
@@ -495,30 +527,43 @@ def coverage(input_dir, output_dir,
             'label' : 'road C',
             'length' : 960.0
         },
-        # 57 : {
-        #     'color' : 'red',
-        #     'label' : 'road A',
-        #     'length' : 2140.0
-        # },
-        # 978 : {
-        #     'color' : 'green',
-        #     'label' : 'road D',
-        #     'length' : 3180.0
-        # },
-        # 67 : {
+        57 : {
+            'color' : 'red',
+            'label' : 'road A',
+            'length' : 2140.0
+        },
+        978 : {
+            'color' : 'green',
+            'label' : 'road D',
+            'length' : 3180.0
+        },
+        67 : {
+            'color' : 'orange',
+            'label' : 'road B',
+            'length' : 3080.0
+        }
+        # 834 : {
         #     'color' : 'orange',
         #     'label' : 'road B',
-        #     'length' : 3080.0
+        #     'length' : 653.71
+        # },
+        # 60 : {
+        #     'color' : 'green',
+        #     'label' : 'road D',
+        #     'length' : 910.92
+        # },
+        # 1524 : {
+        #     'color' : 'blue',
+        #     'label' : 'road C',
+        #     'length' : 1390.0
         # }
     },
     strategy = 'greedy',
-    handoff_plans = [
-        {'type' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : 'red'},
-        # {'type' : 'public', 'operator' : 'any', 'label' : 'any pub.', 'color' : 'blue'},
-        # {'type' : 'public', 'operator' : 2, 'label' : 'pub. zon', 'color' : 'orange'},
-        # {'type' : 'public', 'operator' : 3, 'label' : 'pub. meo', 'color' : 'green'},
-        # {'type' : 'public', 'operator' : 4, 'label' : 'vodaf.'},
-        # {'type' : 'public', 'operator' : 5, 'label' : 'plan 5', 'color' : 'pink'}
+    restrictions = [
+        {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : 'red'},
+        {'open' : 'open', 'operator' : 'any', 'label' : 'open any', 'color' : 'blue'},
+        {'open' : 'open', 'operator' : 2, 'label' : 'open zon', 'color' : 'orange'},
+        {'open' : 'open', 'operator' : 3, 'label' : 'open meo', 'color' : 'green'}
         ]
     ):
 
@@ -529,7 +574,7 @@ def coverage(input_dir, output_dir,
     #   - % of road length covered by handoff plan
     plot_configs = {
         'x-label' : '',
-        'title' : ('coverage perc. (%s)' % (strategy)),
+        'title' : ('coverage perc. (%s)' % ('strongest-rss')),
         'coef' : 1.0,
         'linewidth' : 0.0,
         'markersize' : 1.25,
@@ -559,31 +604,34 @@ def coverage(input_dir, output_dir,
     # ax.axvspan((1.75 * barwidth), 5.0 * (5.0 * barwidth), linewidth = 0.0, facecolor = 'green', alpha = 0.25)
 
     for i, road in enumerate(sorted(roads.keys())):
-        for j, hp in enumerate(handoff_plans):
+        for j, restr in enumerate(restrictions):
 
-            p = analysis.smc.roads.main.get_handoff_plan(road_id = road, input_dir = input_dir, strategy = strategy, plan = hp)
-            coverage_length = analysis.smc.roads.utils.get_coverage_length(p)
-            coverage_perc = coverage_length / roads[road]['length']
+            hp, ap_data = analysis.smc.roads.extract.get_handoff_plan(road_id = road, input_dir = input_dir, strategy = strategy, restriction = restr)
+            if hp.empty:
+                coverage_perc = 0.0
+            else:
+                coverage_length = analysis.smc.roads.utils.get_coverage_length(hp)
+                coverage_perc = coverage_length / roads[road]['length']
+
             print(coverage_perc)
-            sys.exit(0)
 
             # distance %
             ax.bar(xx - barwidth / 2.0,
                 int(coverage_perc * 100.0),
                 width = barwidth, linewidth = 0.250, alpha = .95, 
-                color = hp['color'], label = hp['label'])
+                color = restr['color'], label = restr['label'])
 
-            handoff_plans[j]['label'] = ''
+            restrictions[j]['label'] = ''
 
             # xticks & xticklabel handling
             # xticks.append(xx)
             # xtickslabels.append(('%s' % (roads[road]['label'])))
 
-            if j == ((len(handoff_plans) - 1) / 2):
+            if j == ((len(restrictions) - 1) / 2):
                 xticks.append(xx + (barwidth / 2.0))
                 xtickslabels.append('%s' % (roads[road]['label']))
 
-            if j < (len(handoff_plans) - 1):
+            if j < (len(restrictions) - 1):
                 xx += intraspace
 
         if i < (len(roads.keys()) - 1):
@@ -641,20 +689,23 @@ def coverage_blocks(input_dir, output_dir,
             'color' : 'orange',
             'label' : 'road B',
             'length' : 3080.0
-        }        
-    },
-    strategy = 'greedy',
-    handoff_plans = [
-        {'type' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : 'red'},
-        {'type' : 'public', 'operator' : 'any', 'label' : 'any pub.', 'color' : 'blue'},
-        {'type' : 'public', 'operator' : 2, 'label' : 'pub. zon', 'color' : 'orange'},
-        {'type' : 'public', 'operator' : 3, 'label' : 'pub. meo', 'color' : 'green'},
-        # {'strategy' : 'best-rss', 'type' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : 'red'},
-        # {'strategy' : 'best-rss', 'type' : 'public', 'operator' : 'any', 'label' : 'any pub.', 'color' : 'blue'},
-        # {'strategy' : 'best-rss', 'type' : 'public', 'operator' : 2, 'label' : 'pub. zon', 'color' : 'orange'},
-        # {'strategy' : 'best-rss', 'type' : 'public', 'operator' : 3, 'label' : 'pub. meo', 'color' : 'green'},
-        ]
-    ):
+        }
+        # 834 : {
+        #     'color' : 'orange',
+        #     'label' : 'road B',
+        #     'length' : 653.71
+        # },
+        # 60 : {
+        #     'color' : 'green',
+        #     'label' : 'road D',
+        #     'length' : 910.92
+        # },
+        # 1524 : {
+        #     'color' : 'blue',
+        #     'label' : 'road C',
+        #     'length' : 1390.0
+        # }
+    }):
 
     database = analysis.smc.utils.get_db(input_dir)
 
@@ -663,7 +714,8 @@ def coverage_blocks(input_dir, output_dir,
     plot_configs = {
         'range' : {
             'x-label' : 'distance (m)',
-            'title' : ('ap coverage (%s)' % (strategy)),
+            # 'title' : ('ap coverage (%s)' % (strategy)),
+            'title' : ('ap coverage'),            
             'coef' : 1.0,
             'linewidth' : 0.0,
             'markersize' : 1.25,
@@ -677,7 +729,8 @@ def coverage_blocks(input_dir, output_dir,
         },
         'overlap' : {
             'x-label' : 'distance (m)',
-            'title' : ('ap overlap (%s)' % (strategy)),
+            # 'title' : ('ap overlap (%s)' % (strategy)),
+            'title' : ('ap overlap'),            
             'coef' : 1.0,
             'linewidth' : 0.0,
             'markersize' : 1.25,
@@ -685,7 +738,7 @@ def coverage_blocks(input_dir, output_dir,
             'markeredgewidth' : 0.0,
             'label' : '', 
             'color' : '',
-            'loc' : 'upper left'
+            'loc' : 'lower right'
             # 'x-ticks' : [0.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0],
             # 'x-lim' : [-80.0, -30.0]
         },        
@@ -699,35 +752,32 @@ def coverage_blocks(input_dir, output_dir,
         axs.append(fig.add_subplot(1, 2, i + 1))
         axs[-1].set_title('%s' % (plot_configs[t]['title']))
 
-    for j, hp in enumerate(handoff_plans):
-    
-        data = pd.DataFrame()
-        for i, road in enumerate(sorted(roads.keys())):
+    data = pd.DataFrame()
+    for i, road in enumerate(sorted(roads.keys())):
 
-            ol = analysis.smc.roads.overlap(road_id = road, input_dir = input_dir, strategy = strategy, plan = hp)
-            if ol.empty:
-                continue
-
-            ol = ol[ol['overlap'] > 0.0]
-            data = pd.concat([data, ol], ignore_index = True)
-
-        if data.empty:
+        overlap = analysis.smc.roads.utils.get_overlap(road_id = road, input_dir = input_dir)
+        print(overlap)
+        if overlap.empty:
             continue
 
-        for i, t in enumerate(['range', 'overlap']): 
-            plot_configs[t]['color'] = hp['color']
-            plot_configs[t]['label'] = hp['label']
-            plot.utils.cdf(axs[i], data, metric = t, plot_configs = plot_configs[t])
+        # overlap.loc[(overlap['overlap'] < 0.0), 'overlap'] = 0.0
 
-    # axs[0].set_xscale("log", nonposx = 'clip')
-    axs[0].set_xlim([0.0, 750.0])
-    axs[0].set_xticks([0, 250, 500, 750])
+        for j, t in enumerate(['range', 'overlap']): 
+            plot_configs[t]['color'] = roads[road]['color']
+            plot_configs[t]['label'] = roads[road]['label']
+            plot.utils.cdf(axs[j], overlap, metric = t, plot_configs = plot_configs[t])
 
-    # axs[1].set_xlim([0.0, 200.0])
-    # axs[1].set_xticks([0, 50, 100, 150, 200])
+    axs[0].set_xscale("log", nonposx = 'clip')
+    axs[0].set_xlim([1.0, 1000.0])
+    axs[0].set_xticks([1, 10, 100, 1000])
+    # axs[0].set_xlim([0.0, 300.0])
+    # axs[0].set_xticks([0, 100, 200, 300])
+
+    # axs[1].set_xlim([-300.0, 300.0])
+    # axs[1].set_xticks([-300, -150, 0, 150, 300])
     axs[1].set_xscale("log", nonposx = 'clip')
     axs[1].set_xlim([1.0, 1000.0])
     axs[1].set_xticks([1, 10, 100, 1000])
 
     fig.tight_layout()
-    fig.savefig(os.path.join(output_dir, ("roads/handoff/%s/coverage-blocks.pdf" % (strategy))), bbox_inches = 'tight', format = 'pdf')
+    fig.savefig(os.path.join(output_dir, ("roads/handoff/coverage-blocks.pdf")), bbox_inches = 'tight', format = 'pdf')

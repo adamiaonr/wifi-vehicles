@@ -36,12 +36,8 @@ from shapely.geometry import Point
 import analysis.metrics
 import analysis.trace
 import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
 
 import analysis.smc.utils
-
-import parsing.utils
 import mapping.utils
 
 import geopandas as gp
@@ -73,7 +69,7 @@ def save_query(input_dir, queries, db_eng = None):
             start_time = timeit.default_timer()
             data = pd.read_sql(queries[query]['query'], con = db_eng)
             print("%s::save_query() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
-            parsing.utils.to_hdf5(data, queries[query]['name'], database)
+            analysis.smc.utils.to_hdf5(data, queries[query]['name'], database)
 
 def do_sql_query(queries):
     engine = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')

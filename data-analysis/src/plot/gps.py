@@ -14,35 +14,23 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-
-import mapping.utils
-import mapping.openstreetmap
-
 import geopandas as gp
-import plot.utils
-import parsing.utils
-import analysis.metrics
 import shapely.geometry
+import branca
+import folium
 
 from random import randint
-
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from prettytable import PrettyTable
-
 from sklearn import linear_model
-
-import folium
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster
-import branca
 
 LAT = 41.163158
 LON = -8.6127137

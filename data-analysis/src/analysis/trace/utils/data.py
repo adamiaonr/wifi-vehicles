@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -14,34 +31,27 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-
-import mapping.utils
-import mapping.openstreetmap
-
 import geopandas as gp
-
-import parsing.utils
-
-import analysis.metrics
-import analysis.gps
-import analysis.channel
-
 import shapely.geometry
 
 from random import randint
-
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from prettytable import PrettyTable
-
 from sklearn import linear_model
+
+# custom imports
+#   - hdfs utils
+import utils.hdfs
+#   - mapping utils
+import utils.mapping.utils
+#   - analysis
+
 
 # north, south, west, east limits of map, in terms of geo coordinates
 LATN = 41.176796
@@ -56,8 +66,8 @@ LON = (-8.598336 + -8.593912) / 2.0
 CELL_SIZE = 500.0
 
 # number of cells in grid, in x and y directions
-X_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LATN, 0.0, LATS, 0.0) / CELL_SIZE)))
-Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) / CELL_SIZE)))
+X_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(LATN, 0.0, LATS, 0.0) / CELL_SIZE)))
+Y_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) / CELL_SIZE)))
 
 ref = {'lat' : 41.178685, 'lon' : -8.597872}
 
@@ -101,14 +111,6 @@ def load_and_merge(database, key, to_merge):
 
     return data
 
-def get_db(input_dir, trace_nr):
-
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    database_file = os.path.join(trace_dir, "processed/database.hdf5")
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
-
-    return database
-
 def get_list(input_dir):
 
     filename = os.path.join(input_dir, ("trace-info.csv"))
@@ -149,7 +151,7 @@ def merge_gps(input_dir, trace_nr, metric, cell_size = 20.0):
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
     #   - get /best/<metric>
-    base_db = analysis.trace.extract_best(input_dir, trace_nr, metric)
+    base_db = analysis.trace.utils.data.extract_best(input_dir, trace_nr, metric)
     nodes = ['m1', 'w1', 'w2', 'w3']
     data = database.select(base_db)[['timed-tmstmp'] + nodes].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
     #   - get gps data
@@ -158,12 +160,24 @@ def merge_gps(input_dir, trace_nr, metric, cell_size = 20.0):
     # merge /best/<metric> & gps data
     data = pd.merge(data, gps_data[['timed-tmstmp', 'lat', 'lon']], on = ['timed-tmstmp'], how = 'left')
     # fix <lat, lon> gaps via interpolation
-    analysis.trace.fix_gaps(data, subset = ['lat', 'lon'])
+    analysis.trace.utils.data.fix_gaps(data, subset = ['lat', 'lon'])
     data = data.dropna(subset = ['lat', 'lon']).reset_index(drop = True)
     # add cell info
     analysis.gps.add_cells(data, cell_size = cell_size, bbox = [LONW, LATS, LONE, LATN])
 
     return data
+
+def extract_laps(input_dir, trace_nr):
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    filename = os.path.join(trace_dir, ("laps.csv"))
+    if not os.path.isfile(filename):
+        sys.stderr.write("""%s: [ERROR] no 'laps.csv' at %s\n""" % (sys.argv[0], input_dir))
+        # return empty dataframe
+        return pd.DataFrame()
+
+    laps = pd.read_csv(filename)
+    return laps
 
 def extract_bitrates(input_dir, trace_nr, protocol = 'udp', time_delta = 0.5, force_calc = False):
 
@@ -225,7 +239,7 @@ def extract_distances(input_dir, trace_nr, time_delta = 0.5):
     ap_pos = {'p1' : {'lat' : 41.178563, 'lon' : -8.596012}, 'p2' : {'lat' : 41.178518, 'lon' : -8.595366}}
     pos = [ [ row['lat'], row['lon'] ] for index, row in gps_data[['lat', 'lon']].iterrows() ]
     for ap in ap_pos:
-        gps_data[ap] = [ mapping.utils.gps_to_dist(ap_pos[ap]['lat'], ap_pos[ap]['lon'], p[0], p[1]) for p in pos ]
+        gps_data[ap] = [ utils.mapping.utils.gps_to_dist(ap_pos[ap]['lat'], ap_pos[ap]['lon'], p[0], p[1]) for p in pos ]
 
     gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
     parsing.utils.to_hdf5(gps_data[['timestamp'] + list(ap_pos.keys())], ('/%s/%s' % ('gps', 'distances')), database)

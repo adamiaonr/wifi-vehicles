@@ -19,15 +19,21 @@ import multiprocessing as mp
 import hashlib
 import datetime
 import json
+import geopandas as gp
+import shapely.geometry
+
+from random import randint
+from collections import defaultdict
+from collections import OrderedDict
+from collections import namedtuple
+from prettytable import PrettyTable
+from sklearn import linear_model
 
 import mapping.utils
 import mapping.openstreetmap
 
-import geopandas as gp
-
 import plot.utils
 import plot.trace
-import plot.ap_selection
 import plot.gps
 
 import parsing.utils
@@ -35,26 +41,10 @@ import parsing.utils
 import analysis.metrics
 import analysis.trace
 import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
 
 import analysis.smc.sessions
-import analysis.smc.utils
-import analysis.smc.data
 
 import mapping.utils
-
-import shapely.geometry
-
-from random import randint
-
-from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-
-from prettytable import PrettyTable
-
-from sklearn import linear_model
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -676,7 +666,7 @@ def operators(input_dir, output_dir, cell_size = 20, threshold = -80):
                 _data = database.select(plot_configs[stat]['db'].replace('cell_coverage', 'cell_coverage_all'))
                 _data['cell_freq'] = ((_data['cell_cnt'] / road_data_size) * 100.0).astype(int)
 
-                labels = ['private', 'public'] 
+                labels = ['closed', 'open'] 
                 for op in [0, 5, 2, 3, 4]:
 
                     freq = 0.0

@@ -1,3 +1,19 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -14,35 +30,26 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-
-import mapping.utils
-import mapping.openstreetmap
-
 import geopandas as gp
-
-import parsing.utils
-
-import analysis.metrics
-import analysis.gps
-import analysis.channel
-import analysis.trace
-
 import shapely.geometry
 
 from random import randint
-
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from prettytable import PrettyTable
-
 from sklearn import linear_model
+
+# custom imports
+#   - hdfs utils
+import utils.hdfs
+#   - mapping utils
+import utils.mapping.utils
+#   - analysis
 
 # north, south, west, east gps coord limits of FEUP map
 LATN = 41.176796
@@ -76,18 +83,21 @@ def select_gps(data, method, args):
 def optimize_handoffs(input_dir, trace_nr, args, force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database = utils.hdfs.get_db(trace_dir, 'database.hdf5')
+    # database =     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database_keys = utils.hdfs.get_db_keys(trace_dir)
 
     nodes = ['m1', 'w1', 'w2', 'w3']
 
-    if args['db'] not in database.keys():
+    if args['db'] not in database_keys:
         sys.stderr.write("""[ERROR] %s not in database. abort.\n""" % (db_name))
         return
 
     opt_db = ('%s/optimize-handoff' % (args['db']))
-    if opt_db in database.keys():
+    if opt_db in database_keys:
         if force_calc:
-            database.remove(opt_db)
+            # database.remove(opt_db)
+            utils.hdfs.remove_dbs(trace_dir, [opt_db])
         else:
             sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (opt_db))
             return
@@ -123,14 +133,16 @@ def optimize_handoffs(input_dir, trace_nr, args, force_calc = False):
     for node in nodes:
         data.loc[data['best'] == node, args['metric']] = data[data['best'] == node][node]
 
-    parsing.utils.to_hdf5(data, opt_db, database)    
+    utils.hdfs.to_hdfs(data, opt_db, database)    
 
 def cell_history(input_dir, trace_nr,
     args,
     force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database = utils.hdfs.get_db(trace_dir, 'database.hdf5')
+    # database =     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database_keys = utils.hdfs.get_db_keys(trace_dir)
 
     if args['metric'] == 'throughput':
         cell_history_db = ('/selection-performance/%s/gps/cell-history/%s/%s/%s' % (
@@ -145,15 +157,16 @@ def cell_history(input_dir, trace_nr,
             args['stat'], 
             ('-'.join([str(v) for v in args['stat-args'].values()]))))        
 
-    if cell_history_db in database.keys():
+    if cell_history_db in database_keys:
         if force_calc:
-            database.remove(cell_history_db)
+            # database.remove(cell_history_db)
+            utils.hdfs.remove_dbs(trace_dir, [cell_history_db])
         else:
             sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (cell_history_db))
             return
 
     # merge /best/<metric> & gps data + add cell info
-    data = analysis.trace.merge_gps(input_dir, trace_nr, args['metric'], cell_size = float(args['cell-size']))
+    data = analysis.trace.utils.data.merge_gps(input_dir, trace_nr, args['metric'], cell_size = float(args['cell-size']))
 
     # add period numbers, i.e. distinct periods of time during which client was in a distinct cell <x,y>
     nodes = ['m1', 'w1', 'w2', 'w3']
@@ -181,78 +194,92 @@ def cell_history(input_dir, trace_nr,
     for node in nodes:
         selection.loc[selection['best'] == node, args['metric']] = selection[selection['best'] == node][node]
 
-    parsing.utils.to_hdf5(selection, cell_history_db, database)
+    utils.hdfs.to_hdfs(selection, cell_history_db, database)
 
 def scripted_handoffs(input_dir, trace_nr,
     args,
     force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database = utils.hdfs.get_db(trace_dir, 'database.hdf5')
+    # database =     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database_keys = utils.hdfs.get_db_keys(trace_dir)
+    print(database_keys)
 
     sh_db = ('/selection/%s/gps/scripted-handoffs' % (args['metric']))
-    if sh_db in database.keys():
+    if sh_db in database_keys:
         if force_calc:
-            database.remove(sh_db)
+            # database.remove(sh_db)
+            utils.hdfs.remove_dbs(trace_dir, [sh_db])
+            # print("aint deletin' anythin' yet")
         else:
             sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (sh_db))
             return
 
-    # get lap timestamps
-    laps = analysis.gps.get_lap_timestamps(input_dir, trace_nr)
     # get rss data from all nodes
     nodes = ['m1', 'w1', 'w2', 'w3']
-    data = analysis.trace.merge_gps(input_dir, trace_nr, args['metric'], cell_size = 20.0)
+    data = analysis.trace.utils.data.merge_gps(input_dir, trace_nr, args['metric'], cell_size = 20.0)
     data = data[['timed-tmstmp', 'lat', 'lon'] + nodes].sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
-
-    # add lap numbers to data
-    data['lap'] = -1
-    for l, row in laps.iterrows():
-        data.loc[(data['lap'] == -1) & (data['timed-tmstmp'] <= row['timed-tmstmp']), 'lap'] = row['lap']
-    data.loc[data['lap'] == -1, 'lap'] = len(laps)
 
     # calculate distances & direction of movement, relative to a reference point (located outside of the circuit)
     # FIXME : the ref_point should be given as argument
     ref_point = {'lat' : 41.178685, 'lon' : -8.597872}
     pos = [ [ row['lat'], row['lon'] ] for index, row in data[['lat', 'lon']].iterrows() ]
-    data['ref-dist'] = [ mapping.utils.gps_to_dist(ref_point['lat'], ref_point['lon'], p[0], p[1]) for p in pos ]
-
-    # calculate the direction of movement by looking at the change in ref-dist: 
-    #   - 0 : east to west (ref-dist decreases) 
-    #   - 1 : west to east (ref-dist increases) 
-    data['direction'] = (data['ref-dist'] >= data['ref-dist'].shift(1)).astype(int)
-
+    data['ref-dist'] = [ utils.mapping.utils.gps_to_dist(ref_point['lat'], ref_point['lon'], p[0], p[1]) for p in pos ]
     # to make things easier, treat ref distances in m precision
-    # data['ref-dist'] = data['ref-dist'].apply(analysis.metrics.custom_round, prec = 1, base = .5)
     data['ref-dist'] = data['ref-dist'].apply(lambda x : round(x))
 
-    # iteratively calculate the handoff scripts w/ the info available after each lap
-    for l in xrange(2, len(laps) + 1):
+    # add lap numbers to data
+    laps = analysis.trace.utils.data.extract_laps(input_dir, trace_nr)
+    data['lap'] = -1
+    data['direction'] = 1
+    for l, row in laps.iterrows():
 
-        # # FIXME : don't count w/ 'w3' after lap 5
-        # if l > 6:
-        #     nodes = ['m1', 'w1', 'w2']
+        if row['lap'] == -1:
+            continue
+
+        data.loc[(data['timed-tmstmp'] >= row['start-time']) & (data['timed-tmstmp'] < row['end-time']), 'lap'] = row['lap'].astype(int)
+        data.loc[(data['timed-tmstmp'] >= row['start-time']) & (data['timed-tmstmp'] < row['end-time']), 'direction'] = row['direction'].astype(int)
+
+    # data['timed-tmstmp-str'] = data['timed-tmstmp'].astype(str)
+    # for l in xrange(0, data['lap'].max()):
+    #     print("lap %s" % (l))
+    #     print(data[(data['lap'] == l)][['timed-tmstmp-str', 'ref-dist', 'lap', 'direction']])
+    
+    lap_data_db = ('/selection/%s/gps/scripted-handoffs/lap-data' % (args['metric']))
+    if lap_data_db not in database_keys:
+        utils.hdfs.to_hdfs(data, lap_data_db, database)
+
+    # iteratively calculate the handoff scripts w/ the info available after each lap
+    for l in xrange(2, data['lap'].max() + 1):
+
+        print("lap : %s" % (l))
+        # FIXME : don't count w/ 'w3' after lap 5 for trace 82
+        if (l > 6) & (int(trace_nr) == 82):
+            nodes = ['m1', 'w1', 'w2']
 
         # calc handoff script from laps [... , l - 2, l - 1]
-        handoff_script = data[data['lap'] < l].sort_values(by = ['ref-dist', 'direction'])
+        _data = data[(data['lap'] < l) & (data['lap'] >= 0)]
+        # apply filter, if applicable
         for node in nodes:
             if 'filter' in args:
-                handoff_script.loc[handoff_script[node] > args['filter'], node] = np.nan
+                _data.loc[_data[node] > args['filter'], node] = np.nan
+        _data.dropna()
 
-        handoff_script.dropna()
-
-        for node in nodes:
-            analysis.metrics.smoothen(handoff_script, column = node, span = 50)
-
-        # find best ap of each row (max rss)
-        handoff_script['best'] = handoff_script[nodes].idxmax(axis = 1)
         # determine handoff distances
         k = {1 : 1, 0 : -1}
         for d in k:
+
             # handoff distances depend on direction:
             #   - if E to W (ref-dist decreases): handoff is triggered at higher distance of an best
             #   - if W to E (ref-dist increases): handoff is triggered at lower distance of an best            
-            hs = handoff_script[handoff_script['direction'] == d]
+            hs = _data[_data['direction'] == d]
+            hs = hs.sort_values(by = ['ref-dist']).reset_index(drop = True)
+            for node in nodes:
+                analysis.trace.utils.metrics.smoothen(hs, column = node, span = 50)
+
+            # find best ap of each row (max rss)
+            hs['best'] = hs[nodes].idxmax(axis = 1)
             hs['handoff'] = (hs['best'] != hs['best'].shift(k[d])).astype(int)
             hs = hs[hs['handoff'] == 1].reset_index(drop = True)
             print(hs[['direction', 'ref-dist', 'best']])
@@ -264,4 +291,4 @@ def scripted_handoffs(input_dir, trace_nr,
                 else:
                     data.loc[(data['lap'] == l) & (data['direction'] == d) & (data['ref-dist'] < h['ref-dist']), 'best'] = h['best']
 
-    parsing.utils.to_hdf5(data, sh_db, database)
+    utils.hdfs.to_hdfs(data, sh_db, database)

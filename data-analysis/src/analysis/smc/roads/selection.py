@@ -11,43 +11,26 @@ import gmplot
 import time
 import hashlib
 import timeit
-
-# for parallel processing of sessions
 import multiprocessing as mp 
-# for maps
 import pdfkit
-# for MySQL & pandas
 import MySQLdb as mysql
 import sqlalchemy
 import shapely.geometry
+import geopandas as gp
 
 from datetime import date
 from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
-
-# geodesic distance
 from geopy.distance import geodesic
-
-# for ap location estimation
 from shapely.geometry import Point
 
 # custom imports
-import analysis.metrics
-import analysis.trace
-import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
-
-import analysis.smc.roads.main
+#   - analysis.smc.roads
+import analysis.smc.roads.extract
 import analysis.smc.roads.utils
 
-import parsing.utils
-import mapping.utils
-
-import geopandas as gp
-
-def best_rss(ap_data):
+def best_rss(ap_data, threshold = -80):
 
     # FIXME: is this correct? 
     # shouldn't you calculate rss plans session by session instead of 
@@ -57,7 +40,7 @@ def best_rss(ap_data):
     aps = list(ap_data.columns)
     aps.remove('xx')
 
-    w = 10
+    w = 20
     for ap in aps:
         #   - interpolate small nan gaps
         ap_data[ap] = ap_data[ap].interpolate(limit = 3)
@@ -70,6 +53,8 @@ def best_rss(ap_data):
     # (2) get the 'best' ap per xx pos
     ap_data['best'] = ap_data[aps].idxmax(axis = 1)
     ap_data['best'] = ap_data['best'].fillna(-1)
+    ap_data['bestval'] = ap_data[aps].max(axis = 1)
+    ap_data['bestval'] = ap_data['bestval'].fillna(-80.0)
 
     # (3) apply smoothed rss + hysteresis algorithm:
     #   - assume a hysteresis of 5 dBm
@@ -99,10 +84,12 @@ def best_rss(ap_data):
             curr_rss = curr_rss.max()
         prev_rss = ap_data[prev_b].loc[i]
 
-        if (prev_rss > (curr_rss - 5.0)) and (prev_rss > -80.0):
+        if (prev_rss > (curr_rss - 5.0)) and (prev_rss > -75.0):
             ap_data.loc[i, 'best'] = prev_b
-        elif (curr_rss > -80.0):
+            ap_data.loc[i, 'bestval'] = prev_rss
+        elif (curr_rss > -75.0):
             prev_b = b
+            ap_data.loc[i, 'bestval'] = curr_rss            
         else:
             ap_data.loc[i, 'best'] = -1
 
@@ -110,22 +97,21 @@ def best_rss(ap_data):
 
     #   - drop rows w/ no best ap
     ap_data = ap_data[ap_data['best'] > 0].reset_index(drop = True)
-    #   - find consecutive positions w/ the same best ap
-    ap_data['block'] = (ap_data['best'] != ap_data['best'].shift(1)).astype(int).cumsum()
+    #   - mark consecutive positions w/ the same best ap
+    ap_data['block'] = ((ap_data['xx'] - ap_data['xx'].shift(1) > 1.0)).astype(int).cumsum()
+    ap_data['block'] = ((ap_data['best'] != ap_data['best'].shift(1)) | (ap_data['block'] != ap_data['block'].shift(1))).astype(int).cumsum()
 
     # (4) build handoff plan out of the blocks
-    handoff_plan = ap_data.groupby(['block']).agg({'xx' : ['min', 'max'], 'best' : 'max'}).reset_index(drop = True)
+    handoff_plan = ap_data.groupby(['block']).agg({'xx' : ['min', 'max'], 'best' : 'max', 'bestval' : 'mean'}).reset_index(drop = True)
     #   - revert from pandas multi-index & set ap_id to int type
     handoff_plan.columns = list(map(''.join, handoff_plan.columns.values))
-    handoff_plan.rename(index = str, columns = {'bestmax' : 'ap_id', 'xxmax' : 'xx-max', 'xxmin' : 'xx-min'}, inplace = True)
+    handoff_plan.rename(index = str, columns = {'bestmax' : 'ap_id', 'xxmax' : 'xx-max', 'xxmin' : 'xx-min', 'bestvalmean' : 'mean'}, inplace = True)
     #   - calculate the range of the ap
     handoff_plan['range'] = handoff_plan['xx-max'] - handoff_plan['xx-min']
 
-    # (5) restrict ap ranges to previously computed ranges
-    # FIXME: ok, is this correct? 
-    #   - i think it's fair, because the outliers are probably just that, 
-    #     and those would result in a wrong sense of coverage
-    # handoff_plan = sanitize_coverage(handoff_plan, coverage)
+    handoff_plan = handoff_plan[handoff_plan['range'] > 10.0].reset_index(drop = True)
+    handoff_plan['overlaps?'] = (handoff_plan['xx-min'] < handoff_plan['xx-max'].shift(1)).astype(int)
+    print(handoff_plan)
     
     return handoff_plan, ap_data[['xx'] + handoff_plan['ap_id'].astype(str).drop_duplicates().tolist()]
     
@@ -141,31 +127,39 @@ def greedy(data):
     #       - if set is not empty, set curr_ap to first ap in set. goto 2)
     #   5) if set is not empty, pick ap with *furthest* coverage. set it to curr_ap. goto 2)
 
-    coverage, ap_data = analysis.smc.roads.utils.get_coverage(data, threshold = -70.0)
+    coverage, ap_data = analysis.smc.roads.utils.get_coverage(data, threshold = -75.0)
 
-    # find first ap in road (xx-coord-wise). set it to the current ap.
-    curr_ap = coverage.loc[coverage['xx-min'].idxmin()]
+    # find first ap in road (xx-coord-wise). set it to the current ap
+    #   - if multiple aps are available, tie-break based on range and mean rss, in that order
+    coverage = coverage.sort_values(by = ['xx-min', 'xx-max', 'mean'], ascending = [True, False, False]).reset_index(drop = True)
+
+    handoff_plan = coverage.iloc[0:1]
+
     stop = False
-    handoff_plan = coverage[coverage['ap_id'] == curr_ap['ap_id']]
     while not stop:
-        #   - overlaps w/ current ap (curr_ap)
-        over = coverage[(coverage['ap_id'] != curr_ap['ap_id']) 
-            & (coverage['xx-min'] < curr_ap['xx-max']) 
-            & (coverage['xx-max'] > curr_ap['xx-max'])]
-        
-        if over.empty:
 
-            remain = coverage[coverage['xx-min'] > curr_ap['xx-max']].reset_index(drop = True)
+        #   - overlaps w/ current ap (curr_ap)
+        overlap = coverage[(coverage['xx-min'] <= handoff_plan.iloc[-1]['xx-max']) 
+            & (coverage['xx-max'] > handoff_plan.iloc[-1]['xx-max'])].sort_values(by = ['xx-max', 'mean'], ascending = [False, False]).reset_index(drop = True)
+
+        if overlap.empty:
+
+            remain = coverage[coverage['xx-min'] >= handoff_plan.iloc[-1]['xx-max']].sort_values(by = ['xx-min', 'xx-max', 'mean'], ascending = [True, False, False]).reset_index(drop = True)
             if remain.empty:
                 stop = True
             else:
-                curr_ap = remain.loc[remain['xx-min'].idxmin()]
-                handoff_plan = pd.concat([handoff_plan, remain[remain['ap_id'] == curr_ap['ap_id']]], ignore_index = True)
+                handoff_plan = pd.concat([handoff_plan, remain.iloc[0:1]], ignore_index = True)
 
             continue
 
         #   - has maximum reach (i.e. xx-max)
-        curr_ap = over.loc[over['xx-max'].idxmax()]
-        handoff_plan = pd.concat([handoff_plan, over[over['ap_id'] == curr_ap['ap_id']]], ignore_index = True)
+        handoff_plan = pd.concat([handoff_plan, overlap.iloc[0:1]], ignore_index = True)
+
+    # get rid of handoff plan rows in which the difference between xx-mins is < 5 m
+    handoff_plan['coincides?'] = (handoff_plan['xx-min'] - handoff_plan['xx-min'].shift(-1) > -10.0).astype(int)
+    handoff_plan['overlaps?'] = (handoff_plan['xx-min'] < handoff_plan['xx-max'].shift(1)).astype(int)
+    handoff_plan = handoff_plan[handoff_plan['coincides?'] < 1].reset_index(drop = True)
+    handoff_plan = handoff_plan[handoff_plan['range'] > 10.0].reset_index(drop = True)
+    print(handoff_plan)
 
     return handoff_plan, ap_data[['xx'] + handoff_plan['ap_id'].astype(str).drop_duplicates().tolist()]

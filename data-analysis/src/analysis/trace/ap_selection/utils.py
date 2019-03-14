@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -14,35 +31,30 @@ import time
 import timeit
 import subprocess
 import csv
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-
-import mapping.utils
-import mapping.openstreetmap
-
 import geopandas as gp
-
-import parsing.utils
-
-import analysis.metrics
-import analysis.gps
-import analysis.channel
-import analysis.trace
-
 import shapely.geometry
 
 from random import randint
-
 from collections import defaultdict
 from collections import OrderedDict
 from collections import namedtuple
-
 from prettytable import PrettyTable
-
 from sklearn import linear_model
+
+# custom imports
+#   - hdfs utils
+import utils.hdfs
+# #   - analysis
+# import analysis.utils.metrics
+# import analysis.utils.data
+# import analysis.gps
+# import analysis.ap_selection.rss
+# import analysis.ap_selection.gps
+# import analysis.ap_selection.utils
 
 def extract_performance(
     input_dir, trace_nr,
@@ -51,18 +63,20 @@ def extract_performance(
     force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    # save data on .hdf5 database
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database = utils.hdfs.get_db(trace_dir, 'database.hdf5')
+    # database =     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+    database_keys = utils.hdfs.get_db_keys(trace_dir)
 
     perf_db = ('/selection-performance/%s/%s' % (metric, db_selection.replace('/selection/', '')))
-    if perf_db in database.keys():
+    if perf_db in database_keys:
         if force_calc:
-            database.remove(perf_db)
+            # database.remove(perf_db)
+            utils.hdfs.remove_dbs(trace_dir, [perf_db])
         else:
             sys.stderr.write("""[INFO] %s already in database. skipping data extraction.\n""" % (perf_db))
             return
 
-    if db_selection not in database.keys():
+    if db_selection not in database_keys:
         sys.stderr.write("""[ERROR] %s not in database. abort.\n""" % (db_selection))
         return
 
@@ -94,4 +108,4 @@ def extract_performance(
 
     sel_perf = sel_perf.sort_values(by = ['timed-tmstmp']).reset_index(drop = True)
     sel_perf[metric] = sel_perf[metric].fillna(0.0)
-    parsing.utils.to_hdf5(sel_perf, ('/selection-performance/%s/%s' % (metric, db_selection.replace('/selection/', ''))), database)
+    utils.hdfs.to_hdfs(sel_perf, ('/selection-performance/%s/%s' % (metric, db_selection.replace('/selection/', ''))), database)
