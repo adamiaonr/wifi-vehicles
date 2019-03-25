@@ -465,6 +465,30 @@ def handle_list_traces(input_dir, trace_nr):
     else:
         sys.stderr.write("""%s: [ERROR] trace info not available for trace %s\n""" % (sys.argv[0], trace_nr))
 
+def handle_list_laps(input_dir, trace_nr):
+
+    laps = analysis.trace.utils.data.extract_laps(args.input_dir, args.trace_nr)
+
+    if laps is None:
+        return
+
+    laps['speed'] = (laps['end xx'] - laps['start-xx']) / (laps['end-time'] - laps['start-time'])
+
+    # print list of traces
+    table = PrettyTable(['lap nr.', 'dir.', 'start xx', 'end xx', 'start time', 'end time', 'speed'])
+    for i, row in laps.iterrows():
+        table.add_row([
+            ('%s' % (row['lap'])),
+            ('%s' % (row['direction'])), 
+            ('%d' % (row['start-xx'])), 
+            ('%d' % (row['end xx'])),
+            ('%d' % (row['start-time'])), 
+            ('%d' % (row['end-time'])),
+            ('%d' % (row['speed']))
+            ])
+
+    print(table)
+
 if __name__ == "__main__":
 
     # use an ArgumentParser for a nice CLI
@@ -483,6 +507,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--list-dbs", 
          help = """lists dbs in .hdfs database""",
+         action = 'store_true')
+
+    parser.add_argument(
+        "--list-laps", 
+         help = """lists available laps""",
          action = 'store_true')
 
     parser.add_argument(
@@ -538,6 +567,10 @@ if __name__ == "__main__":
 
     if args.list_dbs:
         handle_list_dbs(args.input_dir, args.trace_nr)
+        sys.exit(0)
+
+    if args.list_laps:
+        handle_list_laps(args.input_dir, args.trace_nr)
         sys.exit(0)
 
     if not args.output_dir:

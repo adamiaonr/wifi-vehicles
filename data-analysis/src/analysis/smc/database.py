@@ -60,13 +60,30 @@ def save_query(input_dir, queries, db_eng = None):
             print("%s::save_query() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
             analysis.smc.utils.to_hdf5(data, queries[query]['name'], database)
 
-def do_sql_query(queries):
-    engine = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
-    with engine.connect() as eng:
-        for query in queries:
-            start_time = timeit.default_timer()
-            eng.execute(queries[query]['query'])
-            print("%s::do_sql_query() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
+def exec_query(queries, db_eng = None):
+
+    if not db_eng:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    for query in queries:
+        start_time = timeit.default_timer()
+        db_eng.execute(queries[query]['query'])
+        print("%s::exec_query() : [INFO] sql query took %.3f sec" % (sys.argv[0], timeit.default_timer() - start_time))
+
+def to_csv(queries, db_eng = None):
+
+    if not db_eng:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    for query in queries:
+        start_time = timeit.default_timer()
+        data = pd.read_sql(queries[query]['query'], con = db_eng)
+        print("%s::to_csv() : [INFO] %s sql query took %.3f sec" % (sys.argv[0], queries[query]['filename'], timeit.default_timer() - start_time))
+
+        if 'name' in data.columns:
+            data['name'] = data['name'].apply(lambda x : x.encode('utf-8'))
+
+        data.to_csv(queries[query]['filename'])
 
 def table_exists(table_name, db_eng = None):
     
@@ -76,6 +93,60 @@ def table_exists(table_name, db_eng = None):
     query = ("""SELECT COUNT(*) as cnt FROM %s""" % (table_name))
     data = pd.read_sql(query, con = db_eng)
     return (data.iloc[0]['cnt'] > 0)
+
+def create_road_stats_table(db_eng = None):
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+
+    # list of queries to make on mysql database
+    queries = {
+
+        'road_stats' : {
+            'name' : 'road_stats',
+            'query' : ("""CREATE TABLE IF NOT EXISTS road_stats
+            SELECT road_id, count(distinct ap_id) as ap_cnt, count(distinct ess_id) as essid_cnt, count(distinct operator_id) as operator_cnt, count(distinct r.cell_id) as cell_cnt, count(rss) as rss_cnt, avg(rss) as rss_mean, stddev(rss) as rss_stddev
+            FROM roads_cells r
+            INNER JOIN sessions s
+            ON r.cell_id = s.cell_id
+            WHERE operator_id > 0
+            GROUP BY road_id""")},
+
+        'road_operators' : {
+            'name' : 'road_operators',
+            'query' : ("""CREATE TABLE IF NOT EXISTS road_operators
+            SELECT 
+                road_id, 
+                COUNT(DISTINCT CASE WHEN operator_id = 1 THEN s.ap_id ELSE NULL END) as '1',
+                COUNT(DISTINCT CASE WHEN operator_id = 2 THEN s.ap_id ELSE NULL END) as '2',
+                COUNT(DISTINCT CASE WHEN operator_id = 3 THEN s.ap_id ELSE NULL END) as '3',
+                COUNT(DISTINCT CASE WHEN operator_id = 4 THEN s.ap_id ELSE NULL END) as '4',
+                COUNT(DISTINCT CASE WHEN operator_id = 5 THEN s.ap_id ELSE NULL END) as '5'
+            FROM roads_cells r
+            INNER JOIN sessions s
+            ON r.cell_id = s.cell_id
+            GROUP BY road_id""")},
+
+        # 'road_cell_stats' : {
+        #     'name' : 'road_cell_stats', 
+        #     'query' : ("""CREATE TABLE road_cell_stats
+        #     SELECT road_id, cell_id, avg(bssid_cnt) as bssid_cnt_avg, stddev(bssid_cnt) as bssid_cnt_stddev, max(bssid_cnt) as bssid_cnt_max, min(bssid_cnt) as bssid_cnt_min, avg(essid_cnt) as essid_cnt_avg, stddev(essid_cnt) as essid_cnt_stddev, max(essid_cnt) as essid_cnt_max, min(essid_cnt) as essid_cnt_min, avg(operator_cnt) as operator_cnt_avg, stddev(operator_cnt) as operator_cnt_stddev, max(operator_cnt) as operator_cnt_max, min(operator_cnt) as operator_cnt_min, avg(rss_mean) as rss_mean, stddev(rss_mean) as rss_stddev, max(rss_max) as rss_max, min(rss_min) as rss_min
+        #     FROM(
+        #         SELECT road_id, r.cell_id, session_id, count(distinct bssid) as bssid_cnt, count(distinct essid) as essid_cnt, count(distinct operator) as operator_cnt, avg(rss) as rss_mean, max(rss) as rss_max, min(rss) as rss_min
+        #         FROM roads_cells r
+        #         INNER JOIN sessions s
+        #         ON r.cell_id = s.cell_id
+        #         WHERE in_road = 1 AND operator_public = 1 AND operator_known = 1
+        #         GROUP BY road_id, r.cell_id, session_id
+        #         ) as T
+        #     GROUP BY road_id, cell_id
+        #     """)},
+    }
+
+    # make 'raw' sql query, to be saved in another table
+    analysis.smc.database.exec_query(queries)
+
+    return 0
 
 def create_operator_table(db_eng = None):
 
@@ -127,6 +198,7 @@ def insert_aps(data, db_eng = None):
     #       - b) inner join a) with ess on essid_hash to find ess_id for each ap
     #       - c) insert rows from b) into ap
     start_time = timeit.default_timer()
+    # FIXME : the use of 'IGNORE' made it significantly faster
     query = """INSERT IGNORE INTO ap (bssid, frequency, band, auth_orig, auth_custom, is_public, ess_id, operator_id)
             SELECT bssid, frequency, band, auth_orig, auth_custom, t2.is_public as is_public, id as ess_id, t2.operator_id as operator_id
             FROM(

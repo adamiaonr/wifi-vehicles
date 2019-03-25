@@ -115,9 +115,9 @@ def best_rss(ap_data, threshold = -80):
     
     return handoff_plan, ap_data[['xx'] + handoff_plan['ap_id'].astype(str).drop_duplicates().tolist()]
     
-def greedy(data):
+def schedule(data, threshold = -70.0):
     
-    # (greedy) algorithm:
+    # schedule algorithm:
     #   1) find first ap in road. set it to curr_ap
     #   2) add curr_ap to handoff plan.
     #   3) find set of subsequent aps whose coverage overlaps w/ curr_ap
@@ -126,15 +126,18 @@ def greedy(data):
     #       - if set is empty, terminate
     #       - if set is not empty, set curr_ap to first ap in set. goto 2)
     #   5) if set is not empty, pick ap with *furthest* coverage. set it to curr_ap. goto 2)
+    
+    if threshold is None:
+        threshold = -70.0
 
-    coverage, ap_data = analysis.smc.roads.utils.get_coverage(data, threshold = -75.0)
+    coverage, ap_data = analysis.smc.roads.utils.get_coverage(data, threshold = threshold)
+    print(ap_data)
 
     # find first ap in road (xx-coord-wise). set it to the current ap
     #   - if multiple aps are available, tie-break based on range and mean rss, in that order
     coverage = coverage.sort_values(by = ['xx-min', 'xx-max', 'mean'], ascending = [True, False, False]).reset_index(drop = True)
 
     handoff_plan = coverage.iloc[0:1]
-
     stop = False
     while not stop:
 

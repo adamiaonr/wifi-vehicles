@@ -312,7 +312,7 @@ def map(input_dir, output_dir,
         plot.gps.heatmap(data.groupby(['lat', 'lon']).size().reset_index(name = 'counts'), maps_dir, 
             map_cntr = [center_lat, center_lon], map_types = ['heatmap', 'clustered-marker'])
 
-def rss(input_dir, output_dir, road_id, strategy, plan):
+def rss(input_dir, output_dir, road_id, strategy, restriction):
 
     # load rss data of the aps involved in the handoff plan
     database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
@@ -320,8 +320,11 @@ def rss(input_dir, output_dir, road_id, strategy, plan):
 
     if strategy == 'raw':
 
+
         ap_data = database.select(('/roads/%s/rss' % (road_id)))
-        cov, ap_data = analysis.smc.roads.utils.get_coverage(ap_data, threshold = -80.0)
+        hp, ap_data = analysis.smc.roads.selection.schedule(ap_data, threshold = -80.0)
+        # cov, ap_data = analysis.smc.roads.utils.get_coverage(ap_data, threshold = -80.0)
+        # ap_data = ap_data.sort_values(by = ['xx']).reset_index(drop = True)
 
     else:
         hp_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, plan['type'], plan['operator']))
@@ -339,7 +342,7 @@ def rss(input_dir, output_dir, road_id, strategy, plan):
     # fill any nan w/ -80 dBm
     ap_data.fillna(-80.0, inplace = True)
     # downsample distances to n meter granularity (only keep max RSS in n meter periods)
-    n = 10
+    n = 1
     ap_data['xx'] = ap_data['xx'].apply(lambda x : (int(x / (n)) * (n)))
     ap_data = ap_data.groupby(['xx']).max().reset_index(drop = True)
 
@@ -347,17 +350,22 @@ def rss(input_dir, output_dir, road_id, strategy, plan):
     # https://stackoverflow.com/questions/33260045/python-using-pcolor-with-panda-dataframes
 
     plt.style.use('classic')
-    fig = plt.figure(figsize = (3.0, 3.0))
+    fig = plt.figure(figsize = (4.0, 3.0))
 
     ax = fig.add_subplot(1, 1, 1)
     # ax.set_title('%s' % (plot_configs['title']))
-    ax.xaxis.grid(True, ls = 'dotted', lw = 0.05)
-    ax.yaxis.grid(True, ls = 'dotted', lw = 0.05)
+    ax.xaxis.grid(True, ls = 'dotted', lw = 0.05, color = 'white')
+    ax.yaxis.grid(True, ls = 'dotted', lw = 0.05, color = 'white')
 
     print(len(ap_data))
 
+    ax.set_ylabel('rss vs distance (road %s)' % (road_id))
+
     mplt = ax.pcolor(ap_data)
     plt.colorbar(mplt)
+
+    ax.set_xlabel('ap id')
+    ax.set_ylabel('distance (m)')
 
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, ("roads/handoff/%s/%s/rss.pdf" % (strategy, road_id))), bbox_inches = 'tight', format = 'pdf')
@@ -400,7 +408,7 @@ def handoff(input_dir, output_dir,
         #     'length' : 1390.0
         # }
     },
-    strategy = 'greedy',
+    strategy = 'schedule',
     restrictions = [
         {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : ['red', 'lightsalmon']},
         {'open' : 'open', 'operator' : 'any', 'label' : 'open any', 'color' : ['blue', 'lightblue']},
@@ -583,7 +591,7 @@ def coverage(input_dir, output_dir,
         #     'length' : 1390.0
         # }
     },
-    strategy = 'greedy',
+    strategy = 'schedule',
     restrictions = [
         {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'color' : 'red'},
         {'open' : 'open', 'operator' : 'any', 'label' : 'open any', 'color' : 'blue'},

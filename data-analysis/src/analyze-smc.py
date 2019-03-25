@@ -49,6 +49,7 @@ from sklearn import linear_model
 # custom imports
 # - analysis.smc
 import analysis.smc.utils
+import analysis.smc.database
 # - plot.smc
 import plot.smc.roads
 import plot.smc.sessions
@@ -84,8 +85,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--populate", 
-         help = """populates sql tables w/ smc data""",
-         action = 'store_true')
+         help = """populates sql tables w/ smc data""")
 
     parser.add_argument(
         "--list-dbs", 
@@ -141,16 +141,41 @@ if __name__ == "__main__":
         # fill roads & cells tables
         bbox = [LONW, LATS, LONE, LATN]
         osm_tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']
-        mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
-        mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
-        # fill operator table
-        analysis.smc.database.create_operator_table(db_eng = db_eng)
-        # fill sessions table
-        analysis.smc.database.insert_sessions(args.input_dir, db_eng = db_eng)
+
+        if args.populate == 'sessions':
+
+            # create tables:
+            #   - roads
+            mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            #   - roads cells 'link' table
+            mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            #   - operator
+            analysis.smc.database.create_operator_table(db_eng = db_eng)
+            #   - session data
+            analysis.smc.database.insert_sessions(args.input_dir, db_eng = db_eng)
+
+        if args.populate == 'road-stats':
+
+            analysis.smc.database.create_road_stats_table(db_eng = db_eng)
+
+            queries = {
+                'road-stats' : {
+                    'query' : """SELECT * FROM road_stats rs
+                    INNER JOIN roads r
+                    ON rs.road_id = r.id
+                    INNER JOIN road_operators ro
+                    ON r.id = ro.road_id""",
+                    'filename' :  os.path.join(args.output_dir, 'road-stats.csv')
+                }
+            }
+            
+            analysis.smc.database.to_csv(queries, db_eng = db_eng)
+
 
     if args.analyze_roads:
 
         roads = args.analyze_roads.split(',')
+
         # for road in roads:
         # #     analysis.smc.roads.extract.coverage(name = road, input_dir = args.input_dir, db_eng = db_eng)
         #     analysis.smc.roads.utils.print_info(name = road, input_dir = args.input_dir, db_eng = db_eng)
@@ -164,7 +189,7 @@ if __name__ == "__main__":
         plot.smc.roads.rss(args.input_dir, args.graph_dir, 
             road_id = 834,
             strategy = 'raw', 
-            plan = {'type' : 'any', 'operator' : 'any', 'label' : 'any'})
+            restriction = {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'threshold' : -80.0})
 
     if args.analyze_sessions:
 

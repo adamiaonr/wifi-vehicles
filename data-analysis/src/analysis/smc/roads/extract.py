@@ -258,8 +258,12 @@ def get_handoff_plan(road_id, input_dir, strategy, restriction):
     if 'best-rss' in strategy:
         handoff_plan, ap_data = analysis.smc.roads.selection.best_rss(ap_data)
 
-    elif 'greedy' in strategy:
-        handoff_plan, ap_data = analysis.smc.roads.selection.greedy(ap_data)
+    elif 'schedule' in strategy:
+        t = None
+        if 'threshold' in restriction:
+            t = restriction['threshold']
+
+        handoff_plan, ap_data = analysis.smc.roads.selection.schedule(ap_data, threshold = t)
 
     #   - merge info about ess, operator and public flag
     handoff_plan = analysis.smc.roads.utils.add_ap_info(handoff_plan, coverage)

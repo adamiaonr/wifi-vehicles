@@ -95,20 +95,20 @@ def extract_road_stats(output_dir):
             WHERE in_road = 1 AND operator_public = 1 AND operator_known = 1
             GROUP BY road_id""")},
 
-        'road_cell_stats' : {
-            'name' : 'road_cell_stats', 
-            'query' : ("""CREATE TABLE road_cell_stats
-            SELECT road_id, cell_id, avg(bssid_cnt) as bssid_cnt_avg, stddev(bssid_cnt) as bssid_cnt_stddev, max(bssid_cnt) as bssid_cnt_max, min(bssid_cnt) as bssid_cnt_min, avg(essid_cnt) as essid_cnt_avg, stddev(essid_cnt) as essid_cnt_stddev, max(essid_cnt) as essid_cnt_max, min(essid_cnt) as essid_cnt_min, avg(operator_cnt) as operator_cnt_avg, stddev(operator_cnt) as operator_cnt_stddev, max(operator_cnt) as operator_cnt_max, min(operator_cnt) as operator_cnt_min, avg(rss_mean) as rss_mean, stddev(rss_mean) as rss_stddev, max(rss_max) as rss_max, min(rss_min) as rss_min
-            FROM(
-                SELECT road_id, r.cell_id, session_id, count(distinct bssid) as bssid_cnt, count(distinct essid) as essid_cnt, count(distinct operator) as operator_cnt, avg(rss) as rss_mean, max(rss) as rss_max, min(rss) as rss_min
-                FROM roads_cells r
-                INNER JOIN sessions s
-                ON r.cell_id = s.cell_id
-                WHERE in_road = 1 AND operator_public = 1 AND operator_known = 1
-                GROUP BY road_id, r.cell_id, session_id
-                ) as T
-            GROUP BY road_id, cell_id
-            """)},
+        # 'road_cell_stats' : {
+        #     'name' : 'road_cell_stats', 
+        #     'query' : ("""CREATE TABLE road_cell_stats
+        #     SELECT road_id, cell_id, avg(bssid_cnt) as bssid_cnt_avg, stddev(bssid_cnt) as bssid_cnt_stddev, max(bssid_cnt) as bssid_cnt_max, min(bssid_cnt) as bssid_cnt_min, avg(essid_cnt) as essid_cnt_avg, stddev(essid_cnt) as essid_cnt_stddev, max(essid_cnt) as essid_cnt_max, min(essid_cnt) as essid_cnt_min, avg(operator_cnt) as operator_cnt_avg, stddev(operator_cnt) as operator_cnt_stddev, max(operator_cnt) as operator_cnt_max, min(operator_cnt) as operator_cnt_min, avg(rss_mean) as rss_mean, stddev(rss_mean) as rss_stddev, max(rss_max) as rss_max, min(rss_min) as rss_min
+        #     FROM(
+        #         SELECT road_id, r.cell_id, session_id, count(distinct bssid) as bssid_cnt, count(distinct essid) as essid_cnt, count(distinct operator) as operator_cnt, avg(rss) as rss_mean, max(rss) as rss_max, min(rss) as rss_min
+        #         FROM roads_cells r
+        #         INNER JOIN sessions s
+        #         ON r.cell_id = s.cell_id
+        #         WHERE in_road = 1 AND operator_public = 1 AND operator_known = 1
+        #         GROUP BY road_id, r.cell_id, session_id
+        #         ) as T
+        #     GROUP BY road_id, cell_id
+        #     """)},
     }
 
     # make 'raw' sql query, to be saved in another table
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     # mapping.openstreetmap.create_roads_table(args.output_dir, road_hash)
     # mapping.openstreetmap.create_roads_cells_table(args.output_dir, road_hash)
-    # extract_road_stats(args.output_dir)
-    # to_csv(args.output_dir)
+    extract_road_stats(args.output_dir)
+    to_csv(args.output_dir)
 
     sys.exit(0)
