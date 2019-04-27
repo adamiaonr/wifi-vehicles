@@ -95,6 +95,8 @@ def add_band(data):
     data['band'] = data['band'].astype(int)
 
 def get_operator(essid):
+    print('XXXXXXXX')
+    print(essid)
     for op in operators:
         if any(ss in essid for ss in operators[op]['match-str'].split('|')):
             return op

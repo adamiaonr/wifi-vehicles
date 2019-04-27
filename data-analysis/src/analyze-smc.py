@@ -14,47 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
-import re
 import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import timeit
-import subprocess
-import csv
-import multiprocessing as mp 
-import hashlib
-import datetime
-import json
-import geopandas as gp
-import shapely.geometry
-import MySQLdb as mysql
 import sqlalchemy
-
-from random import randint
-from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-from prettytable import PrettyTable
-from sklearn import linear_model
 
 # custom imports
 # - analysis.smc
 import analysis.smc.utils
 import analysis.smc.database
+import analysis.smc.sessions.extract
 # - plot.smc
 import plot.smc.roads
 import plot.smc.sessions
 # - hdfs utils
 import utils.hdfs
+# - mapping utils
+import utils.mapping.openstreetmap
+import utils.mapping.utils
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -85,7 +62,11 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--populate", 
-         help = """populates sql tables w/ smc data""")
+         help = """populates sql tables w/ data""")
+
+    parser.add_argument(
+        "--db-name", 
+         help = """name of db to use""")    
 
     parser.add_argument(
         "--list-dbs", 
@@ -124,9 +105,14 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
+    if not args.db_name:
+        sys.stderr.write("""%s: [ERROR] must a db name\n""" % sys.argv[0]) 
+        parser.print_help()
+        sys.exit(1)        
+
     if args.list_dbs:
-        database = utils.hdfs.get_db(args.input_dir, 'smc.hdf5')
-        database_keys = utils.hdfs.get_db_keys(args.input_dir, 'smc.hdf5')
+        database = utils.hdfs.get_db(args.input_dir, ('%s.hdf5' % (args.db_name)))
+        database_keys = utils.hdfs.get_db_keys(args.input_dir, ('%s.hdf5' % (args.db_name)))
         sys.stderr.write("""%s: [INFO] keys in .hdfs database:\n""" % (sys.argv[0]))
         for key in database_keys:
             print('\t%s' % (key))
@@ -134,7 +120,8 @@ if __name__ == "__main__":
     if args.remove_dbs:
         utils.hdfs.remove_dbs(args.input_dir, args.remove_dbs.split(','))
 
-    db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+    db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (args.db_name))
+    db_eng = sqlalchemy.create_engine(db_str)
 
     if args.populate:
 
@@ -146,9 +133,9 @@ if __name__ == "__main__":
 
             # create tables:
             #   - roads
-            mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            utils.mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
             #   - roads cells 'link' table
-            mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            utils.mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
             #   - operator
             analysis.smc.database.create_operator_table(db_eng = db_eng)
             #   - session data
@@ -160,17 +147,21 @@ if __name__ == "__main__":
 
             queries = {
                 'road-stats' : {
-                    'query' : """SELECT * FROM road_stats rs
+                    'query' : """SELECT 
+                        rs.road_id, name, length,
+                        ap_cnt, ess_cnt, op_cnt, rss_cnt_avg, rss_cnt_std,
+                        rss_1, rss_2, rss_3,
+                        num_cells
+                    FROM road_stats rs
                     INNER JOIN roads r
                     ON rs.road_id = r.id
-                    INNER JOIN road_operators ro
-                    ON r.id = ro.road_id""",
+                    INNER JOIN road_rss_stats rrs
+                    ON r.id = rrs.road_id""",
                     'filename' :  os.path.join(args.output_dir, 'road-stats.csv')
-                }
+                },
             }
             
             analysis.smc.database.to_csv(queries, db_eng = db_eng)
-
 
     if args.analyze_roads:
 
@@ -183,15 +174,18 @@ if __name__ == "__main__":
         # plot.smc.roads.handoff(args.input_dir, args.graph_dir, strategy = 'best-rss')
         # plot.smc.roads.coverage_blocks(args.input_dir, args.graph_dir)
         # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss')
-        # plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss')        
+        plot.smc.roads.coverage(args.input_dir, args.graph_dir, strategy = 'best-rss', db_name = args.db_name)
         # plot.smc.roads.signal_quality(args.input_dir, args.graph_dir)
         # plot.smc.roads.map(args.input_dir, args.graph_dir)
-        plot.smc.roads.rss(args.input_dir, args.graph_dir, 
-            road_id = 834,
-            strategy = 'raw', 
-            restriction = {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'threshold' : -80.0})
+#        plot.smc.roads.rss(args.input_dir, args.graph_dir, 
+#            road_id = 834,
+#            strategy = 'raw', 
+#            restriction = {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'threshold' : -80.0})
 
     if args.analyze_sessions:
+
+        # analysis.smc.sessions.extract.device_scans(args.input_dir, db_eng = db_eng, db_name = args.db_name)
+        # plot.smc.sessions.device_scans(args.input_dir, args.graph_dir)
 
         # plot_contact(database, args.output_dir)
         # plot_bands(database, args.output_dir)
@@ -204,10 +198,10 @@ if __name__ == "__main__":
         # analysis.smc.sessions.extract_auth(args.input_dir)
         # analysis.smc.sessions.extract_operators(args.input_dir)
 
-        # plot.smc.sessions.signal_quality(args.input_dir, args.graph_dir)
-        # plot.smc.sessions.esses(args.input_dir, args.graph_dir, draw_map = True)
+        plot.smc.sessions.signal_quality(args.input_dir, args.graph_dir, db_name = args.db_name)
+        plot.smc.sessions.esses(args.input_dir, args.graph_dir, draw_map = False)
         # plot.smc.sessions.channels(args.input_dir, args.graph_dir)
         # plot.smc.sessions.auth(args.input_dir, args.graph_dir)
-        plot.smc.sessions.operators(args.input_dir, args.graph_dir)
+        # plot.smc.sessions.operators(args.input_dir, args.graph_dir)
 
     sys.exit(0)

@@ -16,34 +16,12 @@
 from __future__ import absolute_import
 
 import pandas as pd
-import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
-import re
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
 import timeit
-import subprocess
-import csv
-# for parallel processing of sessions
-import multiprocessing as mp 
-import hashlib
-import datetime
-import json
-import geopandas as gp
-import shapely.geometry
 
-from random import randint
-from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-from prettytable import PrettyTable
+import datetime
 
 # custom imports
 # - analysis.smc
@@ -68,9 +46,9 @@ ref_points = {
     834 : [41.150972, -8.593940],
     1524 : [41.161120, -8.598267]}
 
-def timespan(road_id, input_dir, output_dir):
+def timespan(road_id, input_dir, output_dir, db_name = 'smf'):
 
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
 
     # (1) load data
     # - get subset of selected aps
@@ -216,7 +194,7 @@ def signal_quality(input_dir, output_dir,
         #     'label' : 'road C',
         #     'length' : 1390.0
         # }
-    }):
+    }, db_name = 'smf'):
 
     plot_configs = {
         'x-label' : 'RSS (dBm)',
@@ -240,8 +218,8 @@ def signal_quality(input_dir, output_dir,
 
     for road in sorted(roads.keys()):
     
-        database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-        database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+        database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+        database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
         db_name = ('/roads/%s/data' % (road))
         if (db_name not in database_keys):
             sys.stderr.write("""[ERROR] %s not in database. skipping.\n""" % (db_name))
@@ -294,9 +272,10 @@ def map(input_dir, output_dir,
         #     'length' : 1390.0
         # }
     },
-    bbox = [-8.650, 41.140, -8.575, 41.175]):
+    bbox = [-8.650, 41.140, -8.575, 41.175],
+    db_name = 'smf'):
 
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
 
     for road in roads:
 
@@ -312,11 +291,11 @@ def map(input_dir, output_dir,
         plot.gps.heatmap(data.groupby(['lat', 'lon']).size().reset_index(name = 'counts'), maps_dir, 
             map_cntr = [center_lat, center_lon], map_types = ['heatmap', 'clustered-marker'])
 
-def rss(input_dir, output_dir, road_id, strategy, restriction):
+def rss(input_dir, output_dir, road_id, strategy, restriction, db_name = 'smf'):
 
     # load rss data of the aps involved in the handoff plan
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
 
     if strategy == 'raw':
 
@@ -416,8 +395,8 @@ def handoff(input_dir, output_dir,
         {'open' : 'open', 'operator' : 3, 'label' : 'open meo', 'color' : ['green', 'lightgreen']},
         # {'type' : 'public', 'operator' : 4, 'label' : 'vodaf.'},
         # {'type' : 'public', 'operator' : 5, 'label' : 'plan 5', 'color' : 'pink'}
-        ]
-    ):
+        ],
+    db_name = 'smf'):
 
     plt.style.use('classic')
     plot_configs = {
@@ -597,8 +576,8 @@ def coverage(input_dir, output_dir,
         {'open' : 'open', 'operator' : 'any', 'label' : 'open any', 'color' : 'blue'},
         {'open' : 'open', 'operator' : 2, 'label' : 'open zon', 'color' : 'orange'},
         {'open' : 'open', 'operator' : 3, 'label' : 'open meo', 'color' : 'green'}
-        ]
-    ):
+        ],
+    db_name = 'smf'):
 
     plt.style.use('classic')
 
@@ -738,9 +717,9 @@ def coverage_blocks(input_dir, output_dir,
         #     'label' : 'road C',
         #     'length' : 1390.0
         # }
-    }):
+    }, db_name = 'smf'):
 
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
 
     plt.style.use('classic')
 

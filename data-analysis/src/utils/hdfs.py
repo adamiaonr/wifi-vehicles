@@ -15,60 +15,48 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 import os
-import re
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import subprocess
-import csv
-# for parallel processing of sessions
-import multiprocessing as mp 
-import hashlib
-import datetime
-import json
-
-from random import randint
-from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-from matplotlib.gridspec import GridSpec
-from prettytable import PrettyTable
-
-# global variable to keep hdfs keys in memory
-# this is done to avoid excessive lookup time when calling db.keys()
-# e.g., issue reported here : https://github.com/pandas-dev/pandas/issues/17593 
-db_keys = []
 
 def get_db(input_dir, hdfs_file = 'database.hdf5'):
     db_dir = os.path.join(input_dir, ("processed"))
     if not os.path.isdir(db_dir):
         os.makedirs(db_dir)
+        
     database = pd.HDFStore(os.path.join(db_dir, hdfs_file))
     return database
 
 def get_db_keys(input_dir, hdfs_file = 'database.hdf5'):
-    global db_keys
-    if not db_keys:
-        db_keys = get_db(input_dir, hdfs_file = hdfs_file).keys()
-    return db_keys
+    database = get_db(input_dir, hdfs_file = hdfs_file)
+    return database.select('/keys')['keys'].tolist()
+
+def update_db_keys(database, db_keys = None):
+
+    if db_keys is None:
+        db_keys = database.keys()
+
+    # FIXME: we keep a special key w/ the keys of the hdfs db, for quick access
+    df_keys = pd.DataFrame(columns = ['keys'])
+    df_keys['keys'] = db_keys
+
+    if '/keys' in db_keys:
+        database.remove('/keys')
+    database.append(
+        '/keys',
+        df_keys,
+        data_columns = df_keys.columns,
+        format = 'table')
 
 def to_hdfs(data, metric, database):
+
     database.append(
         ('%s' % (metric)),
         data,
         data_columns = data.columns,
         format = 'table')
 
-    # update database keys everytime you save a table
-    global db_keys
-    db_keys = database.keys()
+    # update database keys whenever table is added
+    update_db_keys(database)
 
 def remove_dbs(input_dir, hdfs_file = 'database.hdf5', dbs = []):
 
@@ -82,6 +70,5 @@ def remove_dbs(input_dir, hdfs_file = 'database.hdf5', dbs = []):
         else:
             sys.stderr.write("""%s: [INFO] db %s not in database\n""" % (sys.argv[0], db))
 
-    # update database keys everytime you remove tables
-    global db_keys
-    db_keys = database.keys()
+    # update database keys whenever table is removed
+    update_db_keys(database)

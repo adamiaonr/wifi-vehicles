@@ -87,9 +87,9 @@ DROP TABLE IF EXISTS `hw`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `hw` (
   `id` bigint(20) NOT NULL PRIMARY KEY auto_increment,
-  `hw_hash` varchar(32) NOT NULL,
-  `hw_descr` text,
-  UNIQUE(hw_hash)
+  `hash` varchar(32) NOT NULL,
+  `descr` text,
+  UNIQUE(hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -98,9 +98,9 @@ DROP TABLE IF EXISTS `sw`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sw` (
   `id` bigint(20) NOT NULL PRIMARY KEY auto_increment,
-  `sw_hash` varchar(32) NOT NULL,
-  `sw_descr` text,
-  UNIQUE(sw_hash)
+  `hash` varchar(32) NOT NULL,
+  `descr` text,
+  UNIQUE(hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -135,6 +135,8 @@ CREATE TABLE `sessions` (
   `id` bigint(20) NOT NULL PRIMARY KEY auto_increment,
   `timestamp` bigint(20) DEFAULT NULL,
   `session_id` bigint(20) DEFAULT NULL,
+  `user_id` bigint(20) DEFAULT NULL,
+  `daily_user_id` bigint(20) DEFAULT NULL,    
   `ap_id` bigint(20) DEFAULT NULL,
   `ess_id` bigint(20) DEFAULT NULL,
   `operator_id` bigint(20) DEFAULT NULL,
@@ -142,6 +144,7 @@ CREATE TABLE `sessions` (
   -- `bssid` text,
   `rss` bigint(20) DEFAULT NULL,
   `frequency` bigint(20) DEFAULT NULL,
+  `channel_width` bigint(20) DEFAULT NULL,
   -- `band` bigint(20) DEFAULT NULL,
   `auth_orig` bigint(20) DEFAULT NULL,  
   `auth_custom` bigint(20) DEFAULT NULL,

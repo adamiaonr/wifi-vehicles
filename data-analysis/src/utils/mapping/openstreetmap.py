@@ -1,3 +1,20 @@
+# analyze-trace.py : code to analyze custom wifi trace collections
+# Copyright (C) 2018  adamiaonr@cmu.edu
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -9,27 +26,28 @@ import glob
 import math
 import gmplot
 import time
-# for parallel processing of sessions
 import multiprocessing as mp 
 import hashlib
-# 
 import urllib
 import geopandas as gp
-import geopandas_osm.osm
 import shapely.geometry
-
 import timeit
-
-import mapping.utils
+import sqlalchemy
 
 from random import randint
 from datetime import date
 from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
-
 from prettytable import PrettyTable
-import sqlalchemy
+
+# custom imports
+#   - analysis
+import analysis.smc.database
+import analysis.trace.utils.gps
+#   - mapping utils
+import utils.mapping.utils
+import utils.mapping.geopandas_osm.osm as osm
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -43,7 +61,7 @@ LONW = LON - 0.06
 CELL_SIZE = 20.0
 
 def get_road_hash(bbox, tags):
-    return hashlib.md5(','.join([str(c) for c in bbox]) + ',' + ','.join(tags)).hexdigest()
+    return hashlib.md5((','.join([str(c) for c in bbox]) + ',' + ','.join(tags)).encode('utf-8')).hexdigest()
 
 def create_cells_table(data, db_eng = None):
 
@@ -161,7 +179,7 @@ def extract_roads(output_dir,
     start = timeit.default_timer()
     # extract road information from OpenStreetMap (OSM) service
     for tag in tags:
-        roads.append(geopandas_osm.osm.query_osm('way', bbox, recurse = 'down', tags = tag))
+        roads.append(osm.query_osm('way', bbox, recurse = 'down', tags = tag))
     print("%s::extract_roads() : [INFO] extracted road data from OpenStreetMaps in %.3f sec" % (sys.argv[0], timeit.default_timer() - start))
 
     # concat all tags in single dataframe
@@ -185,7 +203,7 @@ def extract_cells(
         return
 
     # extract nr. of cells in the designated area
-    xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
+    xx, yy = analysis.trace.utils.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
     w = (LONE - LONW) / float(xx)
     h = (LATN - LATS) / float(yy)
 

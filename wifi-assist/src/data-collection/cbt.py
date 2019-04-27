@@ -44,7 +44,7 @@ def set_channel(iface, channel = 1, bw = 'HT20'):
         return -1
         
     if bw in ['HT20', 'HT40+', 'HT40-']:
-        cmds[-1].append(bw) 
+        cmds[-1].append(bw)
     else:
         sys.stderr.write("""%s: [ERROR] invalid channel bw argument. aborting.\n""" % sys.argv[0]) 
         return -1

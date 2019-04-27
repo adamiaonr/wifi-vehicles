@@ -17,30 +17,8 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import os
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import hashlib
-import timeit
-import multiprocessing as mp 
-import pdfkit
-import MySQLdb as mysql
 import sqlalchemy
-import shapely.geometry
-import geopandas as gp
-
-from datetime import date
-from datetime import datetime
-from collections import defaultdict
-from collections import OrderedDict
-from geopy.distance import geodesic
-from shapely.geometry import Point
 
 # custom imports
 #   - analysis 
@@ -52,28 +30,30 @@ import utils.mapping.utils
 #   - hdfs utils
 import utils.hdfs
 
-def get_id(name, db_eng = None):
+def get_id(name, db_eng = None, db_name = 'smf'):
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (db_name))
+        db_eng = sqlalchemy.create_engine(db_str)
 
     # select id, name and length from roads table
     query = ("""SELECT id, name, length FROM roads WHERE name = '%s'""" % (name))
     road = pd.read_sql(query, con = db_eng)
     return road.iloc[0]['id'], road.iloc[0]['name'], road.iloc[0]['length']
 
-def print_info(name, input_dir, db_eng = None):
+def print_info(name, input_dir, db_eng = None, db_name = 'smf'):
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (db_name))
+        db_eng = sqlalchemy.create_engine(db_str)
 
     road_id, name, length = analysis.smc.roads.utils.get_id(name, db_eng)
     print("road info:")
     print("name : %s, id : %d, length : %s" % (name, road_id, length))
 
     # session info
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
 
     session_db = ('/roads/%s/sessions' % (road_id))
     print("sessions:")
@@ -119,10 +99,10 @@ def get_geo_stats(data):
 
     return geo
 
-def get_overlap(road_id, input_dir):
+def get_overlap(road_id, input_dir, db_name = 'smf'):
     
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
     coverage_db = ('/roads/%s/coverage' % (road_id))
     if (coverage_db not in database_keys):
         sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (coverage_db))

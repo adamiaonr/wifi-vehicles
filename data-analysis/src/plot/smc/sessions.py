@@ -17,33 +17,11 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
-import re
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
 import timeit
-import subprocess
-import csv
-import multiprocessing as mp 
-import hashlib
-import datetime
-import json
 import geopandas as gp
-import shapely.geometry
-
-from random import randint
-from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-from prettytable import PrettyTable
-from sklearn import linear_model
 
 # custom imports
 #   - mapping
@@ -56,6 +34,10 @@ import analysis.trace
 import analysis.smc.sessions
 #   - plot
 import plot.utils
+#   - mapping utils
+import utils.mapping.utils
+#   - trace analysis
+import analysis.trace.utils.gps
 
 # gps coords for a 'central' pin on porto, portugal
 LAT  = 41.163158
@@ -84,6 +66,80 @@ auth_types = {
     3 : {'name' : 'WPA-x', 'types' : [2, 3, 4], 'operators' : []},
     4 : {'name' : '802.11x', 'types' : [5], 'operators' : []}}
 
+def device_scans(input_dir, output_dir, db_name = 'smf',
+    limits = {'top-devices' : 5, 'min-session-samples' : 5}):
+
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
+
+    plot_configs = {
+        'db_name' : ('/devices/scan-times/%d-%d' % (limits['min-session-samples'], limits['top-devices'])),
+        'x-label' : 'scan interval (sec)',
+        'title' : 'scan interval per\n<device, session>',
+        'coef' : 1.0,
+        'linewidth' : 0.0,
+        'markersize' : 1.25,
+        'marker' : 'o',
+        'markeredgewidth' : 0.0,
+        'label' : '', 
+        'color' : '',
+        # 'x-ticks' : [0.0, 2.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0],
+        'x-lim' : [1, 1000]
+    }
+
+    devices = {
+        165 : {'label' : 'LG-H650', 'color' : 'blue'},
+        132 : {'label' : 'OnePlus A5000', 'color' : 'red'},
+        124 : {'label' : 'Moto G Plus', 'color' : 'green'},
+        127 : {'label' : 'Google Pixel', 'color' : 'orange'},
+        173 : {'label' : 'Sony F8131', 'color' : 'purple'},
+        160 : {'label' : 'Xiaomi Mi A1', 'color' : 'grey'},
+        177 : {'label' : 'LG-M400', 'color' : 'black'},
+        101 : {'label' : 'OnePlus A3003', 'color' : 'lightblue'},
+        232 : {'label' : 'Vodafone 710', 'color' : 'pink'},
+    }
+
+    if (plot_configs['db_name'] not in database_keys):
+        sys.stderr.write("""[ERROR] %s not in database. aborting.\n""" % (plot_configs['db_name']))
+        return
+
+    data = database.select(plot_configs['db_name'])
+
+    plt.style.use('classic')
+
+    fig = plt.figure(figsize = (3.5, 3.0))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_title(plot_configs['title'])
+
+    data = data.groupby(['hw_id', 'scan_interval']).size().reset_index(name = 'counts', drop = False)
+    for hw_id in set(data['hw_id'].tolist()):
+        x = data[data['hw_id'] == hw_id]['scan_interval'].values
+        y = data[data['hw_id'] == hw_id]['counts'].cumsum().astype(float).values
+        y = y / y[-1]
+
+        ax.plot(x, y, 
+                alpha = .75, 
+                linewidth = 1.00, 
+                color = devices[hw_id]['color'], 
+                label = devices[hw_id]['label'], 
+                linestyle = '-')
+
+    ax.set_xscale("log", nonposx = 'clip')
+    plt.show()
+    sys.exit(0)
+
+    for hw_id in set(data['hw_id'].tolist()):
+        _data = data[data['hw_id'] == hw_id]
+
+        plot_configs['color'] = devices[hw_id]['color']
+        plot_configs['label'] = devices[hw_id]['label']        
+        plot.utils.cdf(ax, _data, metric = 'scan_interval', plot_configs = plot_configs)
+
+    ax.set_xscale("log", nonposx = 'clip')
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(output_dir, ("sessions/device-scan-times.pdf")), bbox_inches = 'tight', format = 'pdf')
+
 # answers:
 #   - how good is the signal in road cells?
 #       - cdf of avg(rss)
@@ -91,16 +147,20 @@ auth_types = {
 #       - cdf of stddev(rss)
 #   - where do you get which type of signal?
 #       - map of rss (?)
-def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = False):
+def signal_quality(input_dir, output_dir, 
+                   cell_size = 20, threshold = -80, draw_map = False,
+                   db_name = 'smc'):
 
-    database = analysis.smc.utils.get_db(input_dir)
+#    database = analysis.smc.utils.get_db(input_dir)
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
 
     plt.style.use('classic')
 
     plot_configs = {
         'rss_mean' : {
                 'x-label' : 'RSS (dBm)',
-                'title' : 'mean RSS per\n<cell, session>',
+                'title' : 'mean RSS per\n<cell, trip>',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -127,7 +187,7 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
     }
 
     db = ('/signal-quality/rss/%s/%s' % (cell_size, int(abs(threshold))))
-    if db not in database.keys():
+    if db not in database_keys:
         sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (db))
         return
 
@@ -148,14 +208,14 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
     # map
     if draw_map:
         bbox = [-8.650, 41.140, -8.575, 41.175]
-        dy = mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
-        dx = mapping.utils.gps_to_dist(bbox[1], bbox[0], bbox[1], bbox[2])
+        dy = utils.mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
+        dx = utils.mapping.utils.gps_to_dist(bbox[1], bbox[0], bbox[1], bbox[2])
         fig = plt.figure(figsize = ((dx / dy) * 3.75, 3.5))
 
         ax = fig.add_subplot(111)
         # all cells which overlap w/ roads in Porto
         roadcells_all = gp.GeoDataFrame.from_file(os.path.join(input_dir, "roadcells-raw"))
-        num_roadcells = float(len(roadcells_all['index'].drop_duplicates()))
+#        num_roadcells = float(len(roadcells_all['index'].drop_duplicates()))
         # all cells which overlap w/ roads in Porto, captured in SMC dataset
         roadcells_smc = gp.GeoDataFrame.from_file(os.path.join(input_dir, "roadcells-smc"))
         road_coverage = gp.GeoDataFrame.from_file(os.path.join(input_dir, ("processed/signal-quality/%s-%s" % (cell_size, int(abs(threshold))))))
@@ -183,16 +243,19 @@ def signal_quality(input_dir, output_dir, cell_size = 20, threshold = -80, draw_
 
 def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = False,
     bbox = [LONW, LATS, LONE, LATN], 
-    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']):
+    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential'],
+    db_name = 'smc'):
 
-    database = analysis.smc.utils.get_db(input_dir)
+#    database = analysis.smc.utils.get_db(input_dir)
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
 
     plt.style.use('classic')
 
     plot_configs = {
         'bssid_cnt' : {
                 'x-label' : '# of BSSIDs',
-                'title' : '(a) mean # of aps\nper <session, cell>',
+                'title' : 'mean # of aps\nper <cell, trip>',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -206,7 +269,7 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
         },
         'essid_cnt' : {
                 'x-label' : '# of ESSIDs',
-                'title' : '(b) mean # of esses\nper <session, cell>',
+                'title' : 'mean # of esses\nper cell',
                 'coef' : 1.0,
                 'linewidth' : 0.0,
                 'markersize' : 1.25,
@@ -234,12 +297,12 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
         # }
     }
 
-    to_plot = ['bssid_cnt', 'essid_cnt']
+    to_plot = ['bssid_cnt']
     fig = plt.figure(figsize = (len(to_plot) * 3.0, 3.0))
     axs = []
     for s, stat in enumerate(to_plot):
 
-        if plot_configs[stat]['db'] not in database.keys():
+        if plot_configs[stat]['db'] not in database_keys:
             sys.stderr.write("""[ERROR] database not available (%s). abort.\n""" % (plot_configs[stat]['db']))
             return
 
@@ -265,16 +328,19 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
 
         # FIXME : smaller bbox to focus on cental Porto
         bbox = [-8.650, 41.140, -8.575, 41.175]
-        dy = mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
-        dx = mapping.utils.gps_to_dist(bbox[1], bbox[0], bbox[1], bbox[2])
+        dy = utils.mapping.utils.gps_to_dist(bbox[3], 0.0, bbox[1], 0.0)
+        dx = utils.mapping.utils.gps_to_dist(bbox[1], bbox[0], bbox[1], bbox[2])
+        
         fig = plt.figure(figsize = ((dx / dy) * 4.0, 4.0))
+
         ax = fig.add_subplot(111)
         ax.xaxis.grid(True, ls = 'dotted', lw = 0.75, color = 'white')
         ax.yaxis.grid(True, ls = 'dotted', lw = 0.75, color = 'white')
 
         # FIXME : hardcoded path ?
-        cells_dir = os.path.join('/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/traceroutes', 'cells')
-        road_hash = mapping.openstreetmap.get_road_hash(bbox = [LONW, LATS, LONE, LATN], tags = tags)
+        cells_dir = os.path.join('/home/adamiaonr/workbench/wifi-vehicles/data-analysis/data/wifi-scans/traceroutes', 'cells')
+#        road_hash = utils.mapping.openstreetmap.get_road_hash(bbox = [LONW, LATS, LONE, LATN], tags = tags)
+        road_hash = '77bd2960fd40274230c7e7b77f13ddac'
         cells_dir = os.path.join(cells_dir, road_hash)
 
         # if db_eng is None:
@@ -294,15 +360,15 @@ def esses(input_dir, output_dir, cell_size = 20, threshold = -80, draw_map = Fal
         # draw cells in w/ 0 aps in black
         road_cells[road_cells['bssid_cnt'] < 1.0].plot(ax = ax, facecolor = 'black', zorder = 1, linewidth = 0.0)
         # draw remaining cells w/ 'YlOrRd' color scale according on ap count
-        p = road_cells[road_cells['bssid_cnt'] > 0.0].plot(ax = ax, column = 'bssid_cnt', cmap = 'YlOrRd', zorder = 10, legend = True, linewidth = 0.0)
+        p = road_cells[road_cells['bssid_cnt'] > 0.0].plot(ax = ax, column = 'bssid_cnt', cmap = 'RdYlGn', zorder = 10, legend = True, linewidth = 0.0)
         # background : midnightblue
-        p.set_axis_bgcolor('midnightblue')
+        p.set_facecolor('midnightblue')
 
-        ax.set_title('mean # of aps per <cell, session>')
+        ax.set_title('mean # of aps per cell')
         ax.set_xlabel('distance (km)')
         ax.set_ylabel('distance (km)')
 
-        x_cell_num, y_cell_num = analysis.gps.get_cell_num(cell_size = cell_size, lat = [bbox[1], bbox[3]], lon = [bbox[0], bbox[2]])
+        x_cell_num, y_cell_num = analysis.trace.utils.gps.get_cell_num(cell_size = cell_size, lat = [bbox[1], bbox[3]], lon = [bbox[0], bbox[2]])
         w = (bbox[2] - bbox[0]) / float(x_cell_num)
         h = (bbox[3] - bbox[1]) / float(y_cell_num)
 

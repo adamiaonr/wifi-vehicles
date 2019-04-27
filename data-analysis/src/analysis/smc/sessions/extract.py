@@ -17,49 +17,90 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 import os
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import hashlib
-import timeit
-
-# for parallel processing of sessions
-import multiprocessing as mp 
-# for maps
-import pdfkit
-# for MySQL & pandas
-import MySQLdb as mysql
 import sqlalchemy
-import shapely.geometry
 
-from datetime import date
-from datetime import datetime
 from collections import defaultdict
-from collections import OrderedDict
-
-# geodesic distance
-from geopy.distance import geodesic
-
-# for ap location estimation
-from shapely.geometry import Point
 
 # custom imports
-import analysis.metrics
+#   - data transformations
+import analysis.smc.database
+#   - analysis 
 import analysis.trace
-import analysis.gps
-import analysis.ap_selection.rssi
-import analysis.ap_selection.gps
-
+#   - smc analysis
 import analysis.smc.utils
-import mapping.utils
+#   - trace analysis
+import analysis.trace.utils.gps
+#   - hdfs utils
+import utils.hdfs
 
-import geopandas as gp
+def device_scans(
+    input_dir, 
+    limits = {'top-devices' : 5, 'min-session-samples' : 5}, 
+    db_eng = None, db_name = 'smf'):
+
+    if db_eng is None:
+        db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (db_name))
+        db_eng = sqlalchemy.create_engine(db_str)
+
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
+    print(database_keys)
+
+    queries = {
+
+        # FIXME: this query seems too inneficient...
+        'device-scans' : {
+            'query' : ("""SELECT 
+                scan_intervals.hw_id, 
+                scan_intervals.session_id, 
+                scan_intervals.scan_interval
+            FROM (
+                SELECT 
+                    s.hw_id, 
+                    s.session_id, 
+                    s.timestamp, 
+                    IF( @last_session = s.session_id, s.timestamp - @last_tmstmp, 0.0) as scan_interval, 
+                    @last_tmstmp := s.timestamp, 
+                    @last_session := s.session_id 
+                FROM (
+                    SELECT hw_id, session_id, timestamp 
+                    FROM sessions 
+                    GROUP BY hw_id, session_id, timestamp 
+                    ORDER BY hw_id, session_id, timestamp ASC 
+                    ) AS s,
+                ( SELECT @last_tmstmp := 0, @last_session := 0 ) vars
+                GROUP BY s.hw_id, s.session_id, s.timestamp) AS scan_intervals
+            INNER JOIN
+            (SELECT 
+                session_id 
+            FROM (
+                SELECT session_id, COUNT(DISTINCT timestamp) AS session_size 
+                FROM sessions 
+                GROUP BY session_id) AS t 
+            WHERE session_size > %d) as session_sizes
+            ON session_sizes.session_id = scan_intervals.session_id
+            INNER JOIN
+            (SELECT 
+                hw_id, 
+                count(distinct session_id) as session_cnt 
+            FROM sessions 
+            GROUP BY hw_id 
+            ORDER BY session_cnt DESC LIMIT %d) AS top_devices
+            ON top_devices.hw_id = scan_intervals.hw_id""" % (limits['min-session-samples'], limits['top-devices'])),
+            'columns' : [],
+            'filename' : ('/devices/scan-times/%d-%d' % (limits['min-session-samples'], limits['top-devices']))
+        }
+    }
+
+    for query in queries:
+        print(queries[query]['filename'])
+        if queries[query]['filename'] in database_keys:
+            sys.stderr.write("""[INFO] %s already in database. skipping extraction.\n""" % (queries[query]['filename']))
+            continue
+
+        analysis.smc.database.save_query(input_dir, query, db_eng = db_eng)
 
 def signal_quality(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
@@ -79,7 +120,7 @@ def signal_quality(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'columns' : []},
     }
 
-    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+    analysis.smc.database.save_query(input_dir, queries, cell_size, threshold, in_road)
 
 def operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
@@ -131,7 +172,7 @@ def operators(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'columns' : ['cell_x, cell_y, operator, operator_public', 'bssid_cnt']},
     }
 
-    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+    analysis.smc.database.save_query(input_dir, queries, cell_size, threshold, in_road)
 
 def esses(input_dir, cell_size = 20, threshold = -80, db_eng = None):
 
@@ -174,7 +215,7 @@ def session_nr(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'columns' : []}
     }
 
-    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+    analysis.smc.database.save_query(input_dir, queries, cell_size, threshold, in_road)
 
 def channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
@@ -192,7 +233,7 @@ def channels(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'columns' : []}
     }
 
-    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+    analysis.smc.database.save_query(input_dir, queries, cell_size, threshold, in_road)
 
 def auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
 
@@ -210,7 +251,7 @@ def auth(input_dir, cell_size = 20, threshold = -80, in_road = 1):
             'columns' : []}
     }
 
-    analysis.smc.data.save_sql_query(input_dir, queries, cell_size, threshold, in_road)
+    analysis.smc.database.save_query(input_dir, queries, cell_size, threshold, in_road)
 
 def bands(data, database):
 
@@ -230,13 +271,13 @@ def bands(data, database):
     # bands = bands[['session_id', 'encode', 'cell-x', 'cell-y', 'band', 'snr', 'count']].reset_index(drop = True)
 
     # print(bands)
-    # analysis.smc.utils.to_hdf5(bands, ('/bands/snr'), database)
+    # utils.hdfs.to_hdfs(bands, ('/bands/snr'), database)
 
     # FIXME: cells w/ 5.0 GHz data are so rare, that we can simply save the full rows
     raw = data[data['cell'].isin(cells)].reset_index(drop = True)[['seconds', 'session_id', 'encode', 'snr', 'auth', 'frequency', 'new_lat', 'new_lon', 'new_err', 'ds', 'acc_scan', 'band', 'cell-x', 'cell-y']]
     raw['session_id'] = raw['session_id'].astype(str).apply(lambda x : x.split(',')[0]).astype(int)
     raw['encode'] = raw['encode'].astype(str)
-    analysis.smc.utils.to_hdf5(raw, ('/bands/raw'), database)
+    utils.hdfs.to_hdfs(raw, ('/bands/raw'), database)
     
 def _contact(data, processed_data):
 
@@ -248,7 +289,7 @@ def _contact(data, processed_data):
     aps['time'] = aps['seconds'].apply(lambda x : x[-1] - x[0])
     aps['distance'] = distances['dist']
     aps['speed'] = (aps['distance'] / aps['time'].astype(float)).fillna(0.0)
-    aps['speed'] = aps['speed'].apply(analysis.metrics.custom_round)
+    aps['speed'] = aps['speed'].apply(analysis.trace.utils.metrics.custom_round)
 
     # - filter out low speeds (e.g., < 1.0 m/s)
     aps = aps[aps['speed'] > 1.0].reset_index(drop = True)
@@ -309,7 +350,7 @@ def contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1):
             continue
 
         # add cell info
-        analysis.smc.utils.add_cells(chunk, cell_size)
+        analysis.trace.utils.gps.add_cells(chunk, cell_size)
 
         # extract_bands(chunk, database)
         _contact(chunk, processed_data)
@@ -318,4 +359,4 @@ def contact(input_dir, cell_size = 20.0, threshold = -80.0, in_road = 1):
     for cat in to_extract:
         db = ('/contact/%s/%s/%s' % (cat, cell_size, int(abs(threshold))))
         if db not in database.keys():
-            analysis.smc.utils.to_hdf5(processed_data[cat], db, database)
+            utils.hdfs.to_hdfs(processed_data[cat], db, database)

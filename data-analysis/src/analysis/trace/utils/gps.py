@@ -17,38 +17,17 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
-import re
-import argparse
-import sys
 import glob
-import math
-import gmplot
-import time
-import timeit
-import subprocess
-import csv
-import multiprocessing as mp 
-import hashlib
 import datetime
-import json
-import geopandas as gp
-import shapely.geometry
 
-from random import randint
 from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-from prettytable import PrettyTable
-from sklearn import linear_model
 
 # custom imports
 #   - hdfs utils
 import utils.hdfs
-#   - analysis
+#   - mapping utils
+import utils.mapping.utils
 
 # north, south, west, east gps coord limits of FEUP map
 LATN = 41.176796
@@ -90,9 +69,9 @@ def get_cell_datetimes(gps_data):
 def get_cell_num(cell_size, lat = [LATN, LATS], lon = [LONW, LONE]):
     # x-axis : longitude
     LAT = sum(np.array(lat)) / 2.0
-    X_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(LAT, lon[0], LAT, lon[1]) / cell_size)))
+    X_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(LAT, lon[0], LAT, lon[1]) / cell_size)))
     # y-axis : latitude
-    Y_CELL_NUM = int(np.ceil((mapping.utils.gps_to_dist(lat[0], 0.0, lat[1], 0.0) / cell_size)))
+    Y_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(lat[0], 0.0, lat[1], 0.0) / cell_size)))
     return X_CELL_NUM, Y_CELL_NUM
 
 def add_cells(data, cell_size, bbox = [LONW, LATS, LONE, LATN]):
@@ -103,7 +82,7 @@ def add_cells(data, cell_size, bbox = [LONW, LATS, LONE, LATN]):
     lon_e = bbox[2]
 
     # extract nr. of cells in the designated area
-    xx, yy = analysis.gps.get_cell_num(cell_size = cell_size, lat = [lat_n, lat_s], lon = [lon_w, lon_e])
+    xx, yy = get_cell_num(cell_size = cell_size, lat = [lat_n, lat_s], lon = [lon_w, lon_e])
     # add cell ids to data, based on [new_lat, new_lon]
     data['cell_x'] = data['lon'].apply(lambda x : int((x - lon_w) / (lon_e - lon_w) * xx)).astype(int)
     data['cell_y'] = data['lat'].apply(lambda y : int((y - lat_s) / (lat_n - lat_s) * yy)).astype(int)

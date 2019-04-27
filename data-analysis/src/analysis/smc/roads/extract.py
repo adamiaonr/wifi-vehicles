@@ -17,30 +17,8 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import os
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import hashlib
-import timeit
-import multiprocessing as mp 
-import pdfkit
-import MySQLdb as mysql
 import sqlalchemy
-import shapely.geometry
-import geopandas as gp
-
-from datetime import date
-from datetime import datetime
-from collections import defaultdict
-from collections import OrderedDict
-from geopy.distance import geodesic
-from shapely.geometry import Point
 
 # custom imports
 #   - parsing
@@ -62,17 +40,17 @@ ref_points = {
     834 : [41.150972, -8.593940],
     1524 : [41.161120, -8.598267]}
 
-def data(name, input_dir, db_eng = None):
+def data(name, input_dir, db_eng = None, db_name = 'smf'):
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (db_name))
+        db_eng = sqlalchemy.create_engine(db_str)
 
     # id, name, length of road
     road_id, name, length = analysis.smc.roads.utils.get_id(name, db_eng)
-
     # extract session data along road to .hdf5 file for convenience (if not available yet)
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
     
     db_name = ('/roads/%s/data' % (road_id))
     if db_name not in database_keys:
@@ -109,17 +87,16 @@ def data(name, input_dir, db_eng = None):
         sys.stderr.write("""[INFO] %s already in database. skipping extraction.\n""" % (db_name))
         return
 
-def coverage(name, input_dir, db_eng = None):
+def coverage(name, input_dir, db_eng = None, db_name = 'smf'):
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (db_name))
+        db_eng = sqlalchemy.create_engine(db_str)
 
     # id, name, length of road
     road_id, name, length = analysis.smc.roads.utils.get_id(name, db_eng)
-
-    # extract data to .hdf5 file for convenience (if not available yet)
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
 
     db_name = ('/roads/%s/data' % (road_id))
     if db_name not in database_keys:
@@ -221,9 +198,8 @@ def coverage(name, input_dir, db_eng = None):
 
 def get_handoff_plan(road_id, input_dir, strategy, restriction):
 
-    print(road_id)
-    database = utils.hdfs.get_db(input_dir, 'smc.hdf5')
-    database_keys = utils.hdfs.get_db_keys(input_dir, 'smc.hdf5')
+    database = utils.hdfs.get_db(input_dir, ('%s.hdf5' % (db_name)))
+    database_keys = utils.hdfs.get_db_keys(input_dir, ('%s.hdf5' % (db_name)))
 
     handoff_plan_db = ('/roads/%s/handoff/%s/%s/%s' % (road_id, strategy, restriction['open'], restriction['operator']))
     if (handoff_plan_db in database_keys):
@@ -273,3 +249,55 @@ def get_handoff_plan(road_id, input_dir, strategy, restriction):
     utils.hdfs.to_hdfs(ap_data, ('%s/data' % (handoff_plan_db)), database)
 
     return handoff_plan, ap_data
+
+# def clusters(db_eng = None, db_name = 'smf'):
+
+#     if db_eng is None:
+#         db_str = ('mysql+mysqlconnector://root:xpto12x1@localhost/%s' % (db_name))
+#         db_eng = sqlalchemy.create_engine(db_str)
+
+#     # extract data
+#     query = """SELECT 
+#         rs.road_id,
+#         ap_cnt, ess_cnt, op_cnt, rss_cnt_avg, rss_cnt_std,
+#         rss_1, rss_2, rss_3,
+#         num_cells
+#         FROM road_stats rs
+#         INNER JOIN roads r
+#         ON rs.road_id = r.id
+#         INNER JOIN road_rss_stats rrs
+#         ON r.id = rrs.road_id"""
+
+#     data = pd.read_sql(query, con = db_eng)
+#     data['rss_score'] = (data['rss_1'] + 10.0 * data['rss_2'] + 100.0 * data['rss_3'])
+#     data['rss_score'] /= data['rss_score'].max()
+#     data['ap_cnt'] /= data['ap_cnt'].max()
+#     columns = list(data.columns)
+#     columns.remove('road_id')
+#     print(columns)
+#     X = data[['ap_cnt', 'rss_score']].values
+#     y_pred = KMeans(n_clusters = 4, random_state = 0).fit_predict(X)
+#     print(y_pred)
+
+#     plt.figure(figsize=(12, 12))
+#     ax = plt.subplot(221)
+#     ax.scatter(X[:, 0], X[:, 1], c = y_pred)
+#     ax.set_xlabel('# aps')
+#     ax.set_ylabel('rss_score')
+
+#     # ax = plt.subplot(222)
+#     # ax.scatter(X[:, 0], X[:, 1], c = y_pred)
+#     # ax.set_xlabel('# aps')
+#     # ax.set_ylabel('rss_score')
+
+#     # ax = plt.subplot(223)
+#     # ax.scatter(X[:, 0], X[:, 6], c = y_pred)
+#     # ax.set_xlabel('# aps')
+#     # ax.set_ylabel('# (-75 dBm < rss < -70 dBm)')
+
+#     # ax = plt.subplot(224)
+#     # ax.scatter(X[:, 0], X[:, 7], c = y_pred)
+#     # ax.set_xlabel('# aps')
+#     # ax.set_ylabel('# (rss > -70 dBm)')
+
+#     plt.show()

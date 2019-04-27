@@ -16,34 +16,8 @@
 from __future__ import absolute_import
 
 import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
-import re
-import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import timeit
-import subprocess
-import csv
-import multiprocessing as mp 
-import hashlib
-import datetime
-import json
-import geopandas as gp
-import shapely.geometry
-
-from random import randint
-from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
-from prettytable import PrettyTable
-from sklearn import linear_model
 
 # custom imports
 #   - hdfs utils
