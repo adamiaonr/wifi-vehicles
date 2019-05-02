@@ -32,7 +32,7 @@ Choose the following settings:
 | Setup by Activity | Uncheck |
 | Data type | NMEA |
 | Connection Method | Use Bluetooth to send NMEA or host a GPSD server |
-| Name | e.g., *wifi-vehicles* |
+| Name | leave empty |
 
 Click the '**Next**' button. 
 Leave the '**Auto Find**' option checked, then select the laptop's Bluetooth address on the list that pops up.
