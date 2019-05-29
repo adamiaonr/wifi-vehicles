@@ -63,6 +63,10 @@ def cdf(
         cdf = data.groupby([metric]).size().reset_index(name = 'counts')
     else:
         cdf = data
+        
+    fontsize = 10
+    if 'fontsize' in plot_configs:
+        fontsize = plot_configs['fontsize']
 
     cdf['counts'] = np.array(cdf['counts'].cumsum(), dtype = float)
     cdf['counts'] = cdf['counts'] / cdf['counts'].values[-1]
@@ -78,13 +82,16 @@ def cdf(
         label = plot_configs['label'], 
         linestyle = linestyle)
 
-    ax.set_xlabel(plot_configs['x-label'])
-    ax.set_ylabel("CDF")
+    ax.set_xlabel(plot_configs['x-label'], fontsize = fontsize)
+    ax.set_ylabel("CDF", fontsize = fontsize)
+
+    ax.tick_params(axis = 'both', which = 'major', labelsize = fontsize)
+    ax.tick_params(axis = 'both', which = 'minor', labelsize = fontsize)
 
     if 'x-ticks' in plot_configs:
         ax.set_xticks(plot_configs['x-ticks'])
     if 'x-ticklabels' in plot_configs:
-        ax.set_xticklabels(plot_configs['x-ticklabels'])
+        ax.set_xticklabels(plot_configs['x-ticklabels'], fontsize = fontsize)
     if 'x-lim' in plot_configs:
         ax.set_xlim(plot_configs['x-lim'])
 
@@ -94,7 +101,7 @@ def cdf(
 
     if plot_configs['label'] != '':
         legend = ax.legend(
-            fontsize = 10, 
+            fontsize = 8, 
             ncol = 1, loc = plot_configs['loc'],
             handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
