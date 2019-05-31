@@ -79,31 +79,33 @@ def extract_vht_compressed_bf_report(input_dir):
     bf_dir = os.path.join(input_dir, ('filtered/beamforming/csv'))
     for test_file in sorted(glob.glob(os.path.join(bf_dir, ('test*.csv')))):
         
-        bf_filename = os.path.join(bf_dir, ("vht-compressed-bf-%s.csv" % (test_file.split('/')[-1]).rstrip('.csv')))
-        if os.path.exists(bf_filename):
+        bf_ss_filename = os.path.join(bf_dir, ("vht-compressed-bf-snr-%s.csv" % (test_file.split('/')[-1]).rstrip('.csv')))
+        bf_sc_filename = os.path.join(bf_dir, ("vht-compressed-bf-angles-%s.csv" % (test_file.split('/')[-1]).rstrip('.csv')))
+
+        if os.path.exists(bf_sc_filename) and os.path.exists(bf_ss_filename):
             continue
         
         print(test_file)
         test_data = pd.read_csv(test_file)
+        bf_sc_data, bf_ss_data = ac.decode_vht_compressed_bf_report(test_data)
 
-        bf_data = ac.decode_vht_compressed_bf_report(test_data)
+        if not bf_sc_data.empty:
+            bf_sc_data = pd.merge(test_data[['no', 'epoch time', 'wlan src addr']], bf_sc_data, on = ['no'], how = 'left').reset_index(drop = True)
+            bf_sc_data.to_csv(os.path.join(bf_dir, bf_sc_filename), sep = ',')
 
-        if bf_data.empty:
-            continue
-        
-        bf_data = pd.merge(test_data, bf_data, on = ['no'], how = 'left').reset_index(drop = True)
-        bf_data.to_csv(os.path.join(bf_dir, bf_filename), sep = ',')
-        
+        if not bf_ss_data.empty:
+            bf_ss_data = pd.merge(test_data[['no', 'epoch time', 'wlan src addr']], bf_ss_data, on = ['no'], how = 'left').reset_index(drop = True)
+            bf_ss_data.to_csv(os.path.join(bf_dir, bf_ss_filename), sep = ',')
+
 def extract_vht_mu_exclusive_bf_report(input_dir):
     
     bf_dir = os.path.join(input_dir, ('filtered/beamforming/csv'))
-    for test_file in sorted(glob.glob(os.path.join(bf_dir, ('vht-compressed-bf-test*.csv')))):
+    for test_file in sorted(glob.glob(os.path.join(bf_dir, ('test*.csv')))):
         
         bf_filename = os.path.join(bf_dir, ("vht-mu-exclusive-bf-%s.csv" % (test_file.split('/')[-1]).rstrip('.csv')))
         if os.path.exists(bf_filename):
             continue
         
-        print(test_file)
         test_data = pd.read_csv(test_file)
 
         bf_data = ac.decode_vht_mu_exclusive_bf_report(test_data)
@@ -111,7 +113,7 @@ def extract_vht_mu_exclusive_bf_report(input_dir):
         if bf_data.empty:
             continue
         
-        bf_data = pd.merge(bf_data, test_data, on = ['no'], how = 'left').reset_index(drop = True)
+        bf_data = pd.merge(bf_data, test_data[['no', 'epoch time', 'wlan src addr']], on = ['no'], how = 'left').reset_index(drop = True)
         bf_data.to_csv(os.path.join(bf_dir, bf_filename), sep = ',')
 
 def parse_iperf3(input_dir, output_dir):
@@ -616,8 +618,9 @@ def plot_mimo_overhead(test_nr, input_dir, graph_dir):
     
 def plot_vht_compressed_bf_report(test_nr, input_dir, graph_dir):
 
-    bf_dir = os.path.join(input_dir, ('filtered/beamforming/csv'))        
-    bf_filename = os.path.join(bf_dir, ("vht-compressed-bf-test%d.csv" % (test_nr)))
+    bf_dir = os.path.join(input_dir, ('filtered/beamforming/csv'))
+    
+    bf_filename = os.path.join(bf_dir, ("vht-compressed-bf-snr-test%d.csv" % (test_nr)))
     bf_data = pd.read_csv(bf_filename)
 
     # cdfs of avg snr per client    
@@ -655,6 +658,7 @@ def plot_vht_compressed_bf_report(test_nr, input_dir, graph_dir):
     for c, client in enumerate(['tp-02', 'tp-03']):
         
         df = bf_data[bf_data['wlan src addr'] == clients[client]['mac-addr']]
+        
         sses = [x for x in df.columns if 'avg-snr-' in x]
         
         axs[c].set_title('avg. snr per sstream (%s)' % (clients[client]['label']), fontsize = 10)
@@ -685,7 +689,10 @@ def plot_vht_compressed_bf_report(test_nr, input_dir, graph_dir):
             
     fig.tight_layout()
     plt.savefig(os.path.join(graph_dir, ("avg-snr-sstream-%s.pdf" % (test_nr))), bbox_inches = 'tight', format = 'pdf')
-    
+
+    bf_filename = os.path.join(bf_dir, ("vht-compressed-bf-angles-test%d.csv" % (test_nr)))
+    bf_data = pd.read_csv(bf_filename)
+
     # cdfs of (avg.?) angles per client    
     plt.style.use('classic')
     fig = plt.figure(figsize = (6.0, 4.0))
@@ -828,9 +835,8 @@ if __name__ == "__main__":
 #    plot_mimo_frames(10, args.input_dir, args.graph_dir)
 #    plot_mimo_frames(11, args.input_dir, args.graph_dir)
     
-#    decode_vht_compressed_beamforming_report()
-#    extract_compressed_bf_report(args.input_dir)
-#    extract_vht_mu_exclusive_bf_report(args.input_dir)
+    extract_vht_compressed_bf_report(args.input_dir)
+    extract_vht_mu_exclusive_bf_report(args.input_dir)
 
-    for i in range(1, 1):
-        plot_vht_compressed_bf_report(i, args.input_dir, args.graph_dir)
+#    for i in range(1, 12):
+#        plot_vht_compressed_bf_report(i, args.input_dir, args.graph_dir)
