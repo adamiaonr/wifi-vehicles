@@ -101,7 +101,7 @@ def cdf(
 
     if plot_configs['label'] != '':
         legend = ax.legend(
-            fontsize = 8, 
+            fontsize = 7, 
             ncol = 1, loc = plot_configs['loc'],
             handletextpad = 0.2, handlelength = 1.0, labelspacing = 0.2, columnspacing = 0.5)
 
