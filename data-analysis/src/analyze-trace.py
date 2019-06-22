@@ -1,4 +1,4 @@
-# analyze-trace.py : code to analyze custom wifi trace collections
+# analyze-trace.py : main entry script for wifi trace analysis
 # Copyright (C) 2018  adamiaonr@cmu.edu
 
 # This program is free software: you can redistribute it and/or modify
@@ -16,33 +16,16 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
-import re
 import argparse
 import sys
-import glob
-import math
-import gmplot
-import time
-import timeit
-import subprocess
-import csv
-import multiprocessing as mp 
 import hashlib
 import datetime
 import json
-import geopandas as gp
-import shapely.geometry
 
-from random import randint
 from collections import defaultdict
-from collections import OrderedDict
-from collections import namedtuple
 from prettytable import PrettyTable
-from sklearn import linear_model
 
 # custom imports
 #   - hdfs utils
@@ -427,7 +410,8 @@ def plot_trace_description(input_dir, trace_nr, output_dir, mode = 'all', time_l
         plt.savefig(os.path.join(output_dir, ("trace-description.pdf")), bbox_inches = 'tight', format = 'pdf')
 
 def handle_list_dbs(input_dir, trace_nr):
-    dbs = utils.hdfs.get_db(input_dir, trace_nr)
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    dbs = utils.hdfs.get_db(trace_dir)
     sys.stderr.write("""%s: [INFO] keys in .hdfs database:\n""" % (sys.argv[0]))
     for db in dbs:
         print('\t%s' % (db))
@@ -440,10 +424,11 @@ def handle_list_traces(input_dir, trace_nr):
         table.add_row([
             ('%s' % (row['trace-nr'])),
             ('%s' % (row['proto'])), 
-            ('%d' % (row['channel'])), 
-            ('%d' % (row['bw'])),
+            ('%s' % (row['channel'].replace(':', ','))),
+            ('%s' % (row['bw'].replace(':', ','))),
             ('%s' % (('%s Mbps' % row['bitrate']) if row['bitrate'] != '*' else row['bitrate']))
             ])
+    
     print(table)
 
     # print info about the requested trace
@@ -488,6 +473,17 @@ def handle_list_laps(input_dir, trace_nr):
             ])
 
     print(table)
+    
+def handle_aggr_csv(input_dir, trace_nr):
+    
+    prefixes = {
+        'cbt' : ['ap1', 'ap2', 'ap3', 'ap4'],
+#        'cpu' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1', 'ap1', 'ap2', 'ap3', 'ap4'],
+#        'ntpstat' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1']
+    }
+    
+    for prefix in prefixes:
+        analysis.trace.utils.data.aggregate_csv(input_dir, trace_nr, prefix = prefix, nodes = prefixes[prefix])
 
 if __name__ == "__main__":
 
@@ -512,6 +508,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--list-laps", 
          help = """lists available laps""",
+         action = 'store_true')
+    
+    parser.add_argument(
+        "--node-info", 
+         help = """lists information about participating nodes""",
+         action = 'store_true')
+    
+    parser.add_argument(
+        "--aggr-csv", 
+         help = """aggregate csv files""",
          action = 'store_true')
 
     parser.add_argument(
@@ -572,6 +578,14 @@ if __name__ == "__main__":
     if args.list_laps:
         handle_list_laps(args.input_dir, args.trace_nr)
         sys.exit(0)
+        
+    if args.node_info:
+        analysis.trace.utils.data.get_node_info(args.input_dir, args.trace_nr)
+        sys.exit(0)
+
+    if args.aggr_csv:
+        handle_aggr_csv(args.input_dir, args.trace_nr)
+        sys.exit(0)        
 
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] must provide an output dir\n""" % sys.argv[0]) 

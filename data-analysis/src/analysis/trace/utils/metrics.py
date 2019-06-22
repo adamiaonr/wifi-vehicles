@@ -1,4 +1,4 @@
-# analyze-trace.py : code to analyze custom wifi trace collections
+# metrics.py : extract/manipulate metrics from data
 # Copyright (C) 2018  adamiaonr@cmu.edu
 
 # This program is free software: you can redistribute it and/or modify
@@ -17,28 +17,8 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import os
-import argparse
-import sys
-import glob
-import math
-import gmplot
-import time
-import multiprocessing as mp 
-import hashlib
 
-from random import randint
-from datetime import date
-from datetime import datetime
 from collections import defaultdict
-from collections import OrderedDict
-from datetime import date
-from datetime import datetime
-from collections import defaultdict
-from collections import OrderedDict
-from prettytable import PrettyTable
 
 def process_metric(data, metric, time_delta = 0.5):
 
@@ -64,66 +44,49 @@ def calc_frame_duration(wlan_frames):
     duration = (( 8.0 * (wlan_frames['frame len'].values)) / wlan_frames['wlan data rate'].values) + wlan_frames['wlan preamble']
     return duration
 
-def get_channel_util(data):
+def get_channel_util(data, timestamps = []):
+    
+    # reference:
+    #   - cat : channel active time : amount of time in ms the radio spent on the channel
+    #   - cbt : channel busy time : amount of time the primary channel was sensed busy
+    #   - crt : channel rcv time : amount of time the radio spent receiving data 
+    #   - ctt : channel tx time : amount of time the radio spent transmitting data
 
     # filter out invalid data:
     #   - invalid timestamps
-    #       - FIXME : very sloppy test, but it works
-    data['timestamp'] = data['timestamp'].astype(float)
-    data = data[data['timestamp'] > 1000000000.0]
+    if timestamps:
+        data['timestamp'] = data['timestamp'].astype(float)
+        data = data[(data['timestamp'] >= timestamps[0]) & (data['timestamp'] <= timestamps[1])]
+
     data['timestamp'] = data['timestamp'].astype(int)
 
     # for debugging purposes, timestamps in str format
     # data['timestamp-str'] = [ str(ts) for ts in data['timestamp'] ]
 
-    # FIXME: from a quick (eyes-only) analysis of the data, 
-    # we observe that cat and cbt increase monotonically in the same time segments.
-    # as such, we identify segments of increasingly monotonic cat
-    data['cutil'] = 0.0
+    # FIXME: from a quick 'eyeballed' analysis of the data, 
+    # we observe that cat and cbt increase monotonically over some period.
+    # this means cat and cbt accumulate over the period.
+    # after each period, the cat and cbt values overflow, and a monotonically increasing period starts again.
+    
+    # as such, we calculate channel util. over segments of increasingly monotonic cat and cbt
     segments = list(data.index[(data['cat'] - data['cat'].shift(1)) < 0.0])
     segments.append(len(data))
     prev_seg = 0
+    data['ch-util'] = 0.0
     for seg in segments:
-        _data = data.iloc[prev_seg:seg]
-        if len(_data) == 1:
+        
+        seg_data = data.iloc[prev_seg:seg]
+        if len(seg_data) == 1:
             continue
-        _data['diff-cat'] = _data['cat'] - _data['cat'].shift(1)
-        _data['diff-cbt'] = _data['cbt'] - _data['cbt'].shift(1)
-        data.loc[prev_seg:seg, 'cutil'] = (_data['diff-cbt'].astype(float) / _data['diff-cat'].astype(float)) * 100.0
-        data = data.dropna(subset = ['cutil'])
+        
+        # get cat and cbt per each row via the differences between consecutive acc'ed values
+        seg_data['diff-cat'] = seg_data['cat'] - seg_data['cat'].shift(1)
+        seg_data['diff-cbt'] = seg_data['cbt'] - seg_data['cbt'].shift(1)
+        
+        data.loc[prev_seg:seg, 'ch-util'] = (seg_data['diff-cbt'].astype(float) / seg_data['diff-cat'].astype(float)) * 100.0
+        data = data.dropna(subset = ['ch-util'])
 
     return data
-
-def calc_cbt(input_file):
-
-    # dataframe to contain all cbt info for some channel
-    cbt = pd.DataFrame(columns = ['timestamp', 'cbt', 'utilization'])
-    frame_types = pd.DataFrame()
-
-    chunksize = 10 ** 5
-    for chunk in pd.read_csv(input_file, chunksize = chunksize):
-
-        # divide chunk in 1 sec periods:
-        #   - calculate the end transmission times (epoch time + frame duration), in micro sec
-        chunk['end-time'] = chunk['epoch time'] + (chunk['wlan duration'] / 1000000.0)
-        #   - we calculate cbt per each 1 sec block
-        chunk['timestamp'] = chunk['epoch time'].astype(int)
-        # get count of type / subtypes per 1 sec period
-        counts = chunk.groupby(['timestamp', 'wlan phy', 'wlan preamble', 'wlan type-subtype', 'frame len', 'wlan data rate', 'wlan duration'])['no'].agg('count').reset_index()
-        counts.columns = ['timestamp', 'wlan phy', 'wlan preamble', 'wlan type-subtype', 'frame len', 'wlan data rate', 'wlan duration', 'count']
-        counts['frame duration'] = calc_frame_duration(counts)
-        frame_types = pd.concat([frame_types, counts], ignore_index = True)
-        # print(counts[['period-no', 'wlan type-subtype', 'count']])
-
-        # calc cbt per 1 sec period
-        for ts in counts['timestamp'].unique():
-            _counts = counts[counts['timestamp'] == ts]
-            # _cbt = np.sum(_counts['count'].values * _counts['wlan duration'].values)
-            _cbt = np.sum(_counts['count'].values * _counts['frame duration'].values)
-            # append result to final dataframe
-            cbt = cbt.append({'timestamp' : ts, 'cbt' : _cbt, 'utilization' : ((_cbt / 1000000.0) * 100.0)}, ignore_index = True)
-
-    return cbt, frame_types
 
 def extract_ip_id(ip_id):
     return float(ip_id.split(' ')[-1].lstrip('(').rstrip(')'))

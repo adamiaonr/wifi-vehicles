@@ -28,6 +28,9 @@ def get_db(input_dir, hdfs_file = 'database.hdf5'):
 
 def get_db_keys(input_dir, hdfs_file = 'database.hdf5'):
     database = get_db(input_dir, hdfs_file = hdfs_file)
+    if '/keys' not in database:
+        update_db_keys(database)
+        
     return database.select('/keys')['keys'].tolist()
 
 def update_db_keys(database, db_keys = None):

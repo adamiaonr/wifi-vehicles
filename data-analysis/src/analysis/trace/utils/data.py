@@ -1,4 +1,4 @@
-# analyze-trace.py : code to analyze custom wifi trace collections
+# data.py : manipulate wifi trace data
 # Copyright (C) 2018  adamiaonr@cmu.edu
 
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ import utils.hdfs
 #   - mapping utils
 import utils.mapping.utils
 #   - analysis
-
+import analysis.trace
 
 # north, south, west, east limits of map, in terms of geo coordinates
 LATN = 41.176796
@@ -47,6 +47,36 @@ Y_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) 
 
 ref = {'lat' : 41.178685, 'lon' : -8.597872}
 
+def aggregate_csv(input_dir, trace_nr, prefix = 'cbt', nodes = ['ap1', 'ap2', 'ap3', 'ap4']):
+    
+    node_info = get_node_info(input_dir, trace_nr)
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+
+    data = pd.DataFrame()
+    for node in nodes:
+        # dir w/ multiple .csv files named w/ pattern <node>.*.csv
+        csv_dir = os.path.join(trace_dir, ("%s" % (node)))
+        for filename in sorted(glob.glob(os.path.join(csv_dir, ('%s.*.csv' % (prefix))))):            
+            
+            # read .csv file
+            _data = pd.read_csv(filename)
+            # if prefix is 'cbt', pre-processing required
+            if prefix == 'cbt':
+                laps = extract_laps(input_dir, trace_nr)
+                _data = analysis.trace.utils.metrics.get_channel_util(_data, timestamps = [laps.iloc[0]['start-time'], laps.iloc[-1]['end-time']])
+            
+            # add node id and mac addr columns
+            _data['id'] = node
+            _data['mac-addr'] = ''
+            if node in node_info['id'].tolist():
+                _data['mac-addr'] = node_info[node_info['id'].str.contains(node)].iloc[0]['mac-addr']
+                
+            # append to aggregated .csv file
+            data = pd.concat([_data, data], ignore_index = True)
+            
+    # save aggrgated .csv file
+    data.to_csv(os.path.join(trace_dir, ("%s.csv" % (prefix))), sep = ',')
+    
 def load_best(database, metric):
 
     # 1) db key
@@ -121,6 +151,10 @@ def get_info(input_dir, trace_nr, mode = 'rx'):
     trace_info = database.select(database_name)
     return trace_info
 
+def get_node_info(input_dir, trace_nr):
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    return pd.read_csv(os.path.join(trace_dir, ("node-info.csv")))
+    
 def merge_gps(input_dir, trace_nr, metric, cell_size = 20.0):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
@@ -185,7 +219,7 @@ def extract_bitrates(input_dir, trace_nr, protocol = 'udp', time_delta = 0.5, fo
                 # extract beacon frames & store them directly in database
                 beacon_data = chunk[ (chunk['wlan type-subtype'] == 'Beacon frame') ][['epoch time', 'wlan tsf time', 'wlan rssi', 'wlan data rate', 'wlan seq number']].reset_index(drop = True)
                 beacon_data['wlan data rate'] = beacon_data['wlan data rate'].astype(float)
-                parsing.utils.to_hdf5(beacon_data, ('/%s/%s/%s' % (node, 'basic', 'beacons')), database)
+                utils.hdfs.to_hdfs(beacon_data, ('/%s/%s/%s' % (node, 'basic', 'beacons')), database)
 
                 # for wlan data frames create new timestamp, for each interval of .5 seconds
                 qos_data['timed-tmstmp'] = qos_data['epoch time'].apply(analysis.metrics.custom_round)
@@ -195,30 +229,34 @@ def extract_bitrates(input_dir, trace_nr, protocol = 'udp', time_delta = 0.5, fo
                     _proc_qos_data = analysis.metrics.process_metric(qos_data, metric, time_delta = time_delta)
                     proc_qos_data = pd.merge(proc_qos_data, _proc_qos_data, on = ['timed-tmstmp'], how = 'left')
                 # save bitrates in database
-                parsing.utils.to_hdf5(proc_qos_data, ('/%s/%s/%s' % (node, 'basic', 'bitrates')), database)
+                utils.hdfs.to_hdfs(proc_qos_data, ('/%s/%s/%s' % (node, 'basic', 'bitrates')), database)
 
-def extract_distances(input_dir, trace_nr, time_delta = 0.5):
+def extract_distances(input_dir, trace_nr, time_delta = 0.5, force = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
     db_name = ('/%s/%s' % ('gps', 'distances'))
     if db_name in database.keys():
-        return
+        
+        if force:
+            database.remove(db_name)
+        else:
+            return
 
     # extract gps data
-    gps_data = analysis.gps.get_data(input_dir, trace_dir)
+    gps_data = analysis.trace.utils.gps.get_data(input_dir, trace_dir)
     # oversample to .5 time_delta
     gps_data['timed-tmstmp'] = gps_data['timestamp'].astype(float)
-    # calculate distances to fixed ap positions
+    # calculate distances to fixed positions
     # FIXME : this should be loaded from a file
-    ap_pos = {'p1' : {'lat' : 41.178563, 'lon' : -8.596012}, 'p2' : {'lat' : 41.178518, 'lon' : -8.595366}}
+    ap_pos = {'p1' : {'lat' : 41.178563, 'lon' : -8.596012}, 'p2' : {'lat' : 41.178518, 'lon' : -8.595366}, 'ref' : {'lat' : 41.178685, 'lon' : -8.597872}}
     pos = [ [ row['lat'], row['lon'] ] for index, row in gps_data[['lat', 'lon']].iterrows() ]
     for ap in ap_pos:
         gps_data[ap] = [ utils.mapping.utils.gps_to_dist(ap_pos[ap]['lat'], ap_pos[ap]['lon'], p[0], p[1]) for p in pos ]
 
     gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
-    parsing.utils.to_hdf5(gps_data[['timestamp'] + list(ap_pos.keys())], ('/%s/%s' % ('gps', 'distances')), database)
+    utils.hdfs.to_hdfs(gps_data[['timestamp'] + list(ap_pos.keys())], db_name, database)
 
 def extract_channel_util(input_dir, trace_nr, time_delta = 0.5):
 
@@ -240,7 +278,7 @@ def extract_channel_util(input_dir, trace_nr, time_delta = 0.5):
         cbt = cbt.sort_values(by = ['timestamp']).reset_index(drop = True)
         cutil = analysis.metrics.get_channel_util(cbt)
         cutil = cutil.sort_values(by = ['timestamp']).reset_index(drop = True)
-        parsing.utils.to_hdf5(cutil[['timestamp', 'freq', 'cutil']], db_name, database)
+        utils.hdfs.to_hdfs(cutil[['timestamp', 'freq', 'cutil']], db_name, database)
 
 def get_data(node, metric, database):
 
