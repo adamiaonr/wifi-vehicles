@@ -51,6 +51,8 @@ For reference, the `run-wardrive` script calls 4 other scripts:
 * `get-gps.py` : reads values from a GPS device via the `gpsd` daemon. Saves the GPS information every second on a .csv file.
 * `get-cpu.sh` : logs CPU utilization on the device in a .csv file.
 
+Note: the scripts require `sudo` privileges because they must configure wireless interfaces and run `tcpdump`.
+
 ## Setting up GPS devices
 
 ### Setup 1 : Stand-alone GPS USB dongle
