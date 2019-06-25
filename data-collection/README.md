@@ -19,8 +19,8 @@ Note: I may have forgotten some, just install them according to the error messag
 * Symlink the main scripts to `/usr/local/bin`
 
 ```
-$ sudo ln -sfv /<src-dir-absolute-path>/war-drive /usr/local/bin
-$ sudo ln -sfv /<src-dir-absolute-path>/kill-war-drive /usr/local/bin
+$ sudo ln -sfv /<src-dir-absolute-path>/run-wardrive /usr/local/bin
+$ sudo ln -sfv /<src-dir-absolute-path>/kill-wardrive /usr/local/bin
 ```
 
 This allows you to call the main scripts without specifying a specific path.
