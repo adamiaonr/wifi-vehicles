@@ -1,8 +1,57 @@
 # Data collection
 
-## Authentication data
+## Testing procedure
 
-## GPS data
+The test procedure below refers to a passive measurement setup.
+This has been tested with Ubuntu 16.04, on a VMWare Fusion 8.5.10 VM. 
+
+### Pre-requesites
+
+* Install the necessary Linux and Python packages
+
+```
+sudo apt-get install iw tcpdump ntpstat timeout gpsd
+sudo pip install gps
+```
+
+Note: I may have forgotten some, just install them according to the error messages you get.
+
+* Symlink the main scripts to `/usr/local/bin`
+
+```
+$ sudo ln -sfv /<src-dir-absolute-path>/war-drive /usr/local/bin
+$ sudo ln -sfv /<src-dir-absolute-path>/kill-war-drive /usr/local/bin
+```
+
+This allows you to call the main scripts without specifying a specific path.
+
+* Since you're using a VM, make sure the VM has access to the WiFi device (e.g., in my case, VMWare Fusion allowed me to get access to a USB dongle).
+
+### Procedure
+
+You can start the complete set of passive measurements by invoking the script `run-wardrive`:
+
+```
+$ sudo run-wardrive <trace-nr> <wlan-iface>
+```
+
+* `<trace-nr>` : Identifier a particular collection, just so that results from different runs don't get mixed. The collection logs are saved in a dir named `trace-<trace-nr>`, which is a subdir of the dir specified in the variable `output_dir` (set inside the `wardrive` script, you'll need to change this).
+* `<wlan-iface>` : The name of the wireless interface used to capture frames, e.g., `wlan0`.
+
+To stop the collection, you can simply call:
+
+```
+$ sudo kill-wardrive
+```
+
+For reference, the `run-wardrive` script calls 4 other scripts:
+
+* `scan-loop.py` : a Python script which starts iterative scans, looping through a list of `<channel>:<bandwidth>` tuples. It also starts `tcpdump` captures, saving the results in .pcap files, which you can read with Wireshark. Read the script's comments for more details.
+* `get-cbt.sh` : a bash script that reads channel utilization values via the `iw dev <wlan-iface> survey dump` command. It saves the results in a .csv file.
+* `get-gps.py` : reads values from a GPS device via the `gpsd` daemon. Saves the GPS information every second on a .csv file.
+* `get-cpu.sh` : logs CPU utilization on the device in a .csv file.
+
+## Setting up GPS devices
 
 ### Setup 1 : Stand-alone GPS USB dongle
 
