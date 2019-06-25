@@ -89,6 +89,14 @@ def fix_channel_bonding(channel_list):
 
 if __name__ == "__main__":
 
+    # $ sudo python run-wardrive.py --iface wlan0 --channel-list '1:20,6:20,36:40+' --scan-time 20 --output-dir ~/wardrive &
+    # In this example, the `wlan0` interface will start an iterative scan, 
+    # scanning channel i (i &isin; `channel-list`) for `scan-time` seconds.
+    # At every iteration, the script starts WLAN frame captures with `tcpdump`, 
+    # also saving values of GPS position, channel utilization 
+    # (if such capability is made available by the WiFi driver), CPU usage, etc. 
+    # The results are saved as `.pcap` or `.csv` files in the directory specified as `output-dir`.
+
     # use an ArgumentParser for a nice CLI
     parser = argparse.ArgumentParser()
 
