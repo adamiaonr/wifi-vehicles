@@ -44,7 +44,7 @@ To stop the collection, you can simply call:
 $ sudo kill-wardrive
 ```
 
-For reference, the `run-wardrive` script calls 4 other scripts:
+For reference, the `run-wardrive` script calls 4 other scripts, which you can inspect and run independently:
 
 * `scan-loop.py` : a Python script which starts iterative scans, looping through a list of `<channel>:<bandwidth>` tuples. It also starts `tcpdump` captures, saving the results in .pcap files, which you can read with Wireshark. Read the script's comments for more details.
 * `get-cbt.sh` : a bash script that reads channel utilization values via the `iw dev <wlan-iface> survey dump` command. It saves the results in a .csv file.
