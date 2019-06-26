@@ -20,6 +20,7 @@ import numpy as np
 import os
 import sys
 import glob
+import datetime
 
 # custom imports
 #   - hdfs utils
@@ -47,6 +48,81 @@ Y_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) 
 
 ref = {'lat' : 41.178685, 'lon' : -8.597872}
 
+def iperf3_to_csv(input_dir, trace_nr, nodes = ['w3', 'w2', 'w1', 'm1']):
+
+    multiplier = {
+        'Bytes' : 1.0,
+        'KBytes' : 1000.0,
+        'MBytes' : 1000000.0,
+        'GBytes' : 1000000000.0,
+        'bits/sec' : 1.0,
+        'Kbits/sec' : 1000.0,
+        'Mbits/sec' : 1000000.0,
+        'Gbits/sec' : 1000000000.0
+    }
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+
+    iperf3_data = pd.DataFrame()
+    for node in nodes:
+        iperf3_dir = os.path.join(trace_dir, ("%s" % (node)))
+        for filename in sorted(glob.glob(os.path.join(iperf3_dir, ('iperf3.*.out')))):
+
+            data = []
+            reverse = False
+            measurement_section = False
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+
+            for line in lines:
+
+                if 'Time:' in line:
+                    # format e.g.: Tue, 29 Jan 2019 16:42:22 GMT
+                    date_str = line.split('Time:')[-1].strip()
+                    base_timestamp = float(datetime.datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %Z").timestamp())
+
+                if 'Reverse mode' in line:
+                    reverse = True
+
+                if 'connected to' in line:
+                    local_ip    = line.split('local ')[-1].split()[0]
+                    local_port  = line.split('local ')[-1].split()[2]
+                    remote_ip   = line.split('connected to ')[-1].split()[0]
+                    remote_port = line.split('connected to ')[-1].split()[2]
+
+                if 'Starting Test:' in line:
+                    protocol = line.split('protocol:')[-1].split()[0].rstrip(',')
+                    measurement_section = True
+
+                if ('sec ' in line) and (measurement_section):
+                    line = line.split(']')[-1].lstrip()
+                    values = line.split()
+
+                    data.append({
+                        'protocol' : protocol.lower(),
+                        'src-addr' : remote_ip if reverse else local_ip,
+                        'src-port' : remote_port if reverse else local_port,
+                        'dst-addr' : local_ip if reverse else remote_ip,
+                        'dst-port' : local_port if reverse else remote_port,
+                        'interval-start' : base_timestamp + float(values[0].split('-')[0]),
+                        'interval-end' : base_timestamp + float(values[0].split('-')[1]), 
+                        'data-volume' : float(values[2]) * multiplier[values[3]],
+                        'data-rate' : float(values[4]) * multiplier[values[5]],
+                        'jitter' : float(values[6]),
+                        'pckt-lost' : int(values[8].split('/')[0]),
+                        'pckt-total' : int(values[8].split('/')[1])
+                        })
+
+                if 'Test Complete' in line:
+                    measurement_section = False
+
+            data = pd.DataFrame(data)
+            data['client-id'] = node
+
+            iperf3_data = pd.concat([iperf3_data, data], ignore_index = True)
+
+    iperf3_data.to_csv(os.path.join(trace_dir, ("%s.csv" % ('iperf3'))), sep = ',')
+
 def aggregate_csv(input_dir, trace_nr, prefix = 'cbt', nodes = ['ap1', 'ap2', 'ap3', 'ap4']):
     
     node_info = get_node_info(input_dir, trace_nr)
@@ -56,7 +132,7 @@ def aggregate_csv(input_dir, trace_nr, prefix = 'cbt', nodes = ['ap1', 'ap2', 'a
     for node in nodes:
         # dir w/ multiple .csv files named w/ pattern <node>.*.csv
         csv_dir = os.path.join(trace_dir, ("%s" % (node)))
-        for filename in sorted(glob.glob(os.path.join(csv_dir, ('%s.*.csv' % (prefix))))):            
+        for filename in sorted(glob.glob(os.path.join(csv_dir, ('%s.*.csv' % (prefix))))):
             
             # read .csv file
             _data = pd.read_csv(filename)

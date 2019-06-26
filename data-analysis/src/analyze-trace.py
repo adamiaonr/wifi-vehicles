@@ -475,7 +475,6 @@ def handle_list_laps(input_dir, trace_nr):
     print(table)
     
 def handle_aggr_csv(input_dir, trace_nr):
-    
     prefixes = {
         'cbt' : ['ap1', 'ap2', 'ap3', 'ap4'],
 #        'cpu' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1', 'ap1', 'ap2', 'ap3', 'ap4'],
@@ -484,6 +483,10 @@ def handle_aggr_csv(input_dir, trace_nr):
     
     for prefix in prefixes:
         analysis.trace.utils.data.aggregate_csv(input_dir, trace_nr, prefix = prefix, nodes = prefixes[prefix])
+
+def handle_extract_iperf3(input_dir, trace_nr):
+    nodes = ['m1', 'w1', 'w2', 'w3']
+    analysis.trace.utils.data.iperf3_to_csv(input_dir, trace_nr, nodes = nodes)        
 
 if __name__ == "__main__":
 
@@ -519,6 +522,11 @@ if __name__ == "__main__":
         "--aggr-csv", 
          help = """aggregate csv files""",
          action = 'store_true')
+
+    parser.add_argument(
+        "--extract-iperf3", 
+         help = """extract iperf3 data from .out files to .csv format""",
+         action = 'store_true')    
 
     parser.add_argument(
         "--trace-nr", 
@@ -585,6 +593,10 @@ if __name__ == "__main__":
 
     if args.aggr_csv:
         handle_aggr_csv(args.input_dir, args.trace_nr)
+        sys.exit(0)
+
+    if args.extract_iperf3:
+        handle_extract_iperf3(args.input_dir, args.trace_nr)
         sys.exit(0)        
 
     if not args.output_dir:
