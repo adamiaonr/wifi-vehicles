@@ -1,4 +1,4 @@
-# analyze-trace.py : code to analyze custom wifi trace collections
+# hdfs.py : utils to interact w/ .hdfs files
 # Copyright (C) 2018  adamiaonr@cmu.edu
 
 # This program is free software: you can redistribute it and/or modify

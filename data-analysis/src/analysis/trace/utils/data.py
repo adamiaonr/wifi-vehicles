@@ -48,6 +48,84 @@ Y_CELL_NUM = int(np.ceil((utils.mapping.utils.gps_to_dist(LAT, LONW, LAT, LONE) 
 
 ref = {'lat' : 41.178685, 'lon' : -8.597872}
 
+def merge_traces(input_dir, traces_nrs = [], nodes = [], new_trace_nr = 0):
+
+    output_dir = os.path.join(input_dir, ("trace-%03d" % (int(new_trace_nr))))
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # beacon files
+    for node in nodes:
+
+        output_file = os.path.join(output_dir, ("%s/beacons.csv" % (node)))
+        if os.path.isfile(output_file):
+            sys.stderr.write("""%s: [INFO] %s exists. skipping merge.\n""" % (sys.argv[0], output_file))
+            continue
+
+        if not os.path.exists(os.path.join(output_dir, ("%s" % (node)))):
+            os.makedirs(os.path.join(output_dir, ("%s" % (node))))
+
+        for trace_nr in traces_nrs:
+
+            trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+            for filename in sorted(glob.glob(os.path.join(trace_dir, ('%s/beacons*.csv' % (node))))):
+                chunksize = 10 ** 5
+
+                for chunk in pd.read_csv(filename, chunksize = chunksize):
+
+                    chunk['trace-nr'] = int(trace_nr)
+                    if not os.path.isfile(output_file):
+                        chunk.to_csv(output_file, sep = ',')
+                    else:
+                        chunk.to_csv(output_file, sep = ',', mode = 'a', header = False)
+
+    # monitor files
+    for node in nodes:
+
+        output_file = os.path.join(output_dir, ("%s/monitor.csv" % (node)))
+        if os.path.isfile(output_file):
+            sys.stderr.write("""%s: [INFO] %s exists. skipping merge.\n""" % (sys.argv[0], output_file))            
+            continue
+
+        if not os.path.exists(os.path.join(output_dir, ("%s" % (node)))):
+            os.makedirs(os.path.join(output_dir, ("%s" % (node))))
+
+        for trace_nr in traces_nrs:
+
+            trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+            for filename in sorted(glob.glob(os.path.join(trace_dir, ('%s/monitor*.csv' % (node))))):
+                chunksize = 10 ** 5
+
+                for chunk in pd.read_csv(filename, chunksize = chunksize):
+
+                    chunk['trace-nr'] = int(trace_nr)
+                    if not os.path.isfile(output_file):
+                        chunk.to_csv(output_file, sep = ',')
+                    else:
+                        chunk.to_csv(output_file, sep = ',', mode = 'a', header = False)
+
+    # all other filename patterns
+    for pattern in ['cbt.csv', 'cpu.csv', 'gps-log*.csv', 'iperf3.csv', 'laps.csv', 'ntpstat.csv']:
+
+        output_file = os.path.join(output_dir, pattern.replace('*', ''))
+        if os.path.isfile(output_file):
+            sys.stderr.write("""%s: [INFO] %s exists. skipping merge.\n""" % (sys.argv[0], output_file))
+            continue
+
+        for trace_nr in traces_nrs:
+            trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+
+            for filename in sorted(glob.glob(os.path.join(trace_dir, (pattern)))):
+                chunksize = 10 ** 5
+
+                for chunk in pd.read_csv(filename, chunksize = chunksize):
+
+                    chunk['trace-nr'] = int(trace_nr)
+                    if not os.path.isfile(output_file):
+                        chunk.to_csv(output_file, sep = ',')
+                    else:
+                        chunk.to_csv(output_file, sep = ',', mode = 'a', header = False)
+
 def iperf3_to_csv(input_dir, trace_nr, nodes = ['w3', 'w2', 'w1', 'm1']):
 
     multiplier = {
@@ -253,22 +331,9 @@ def merge_gps(input_dir, trace_nr, metric, cell_size = 20.0):
 
     return data
 
-def extract_laps(input_dir, trace_nr):
-
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    filename = os.path.join(trace_dir, ("laps.csv"))
-    if not os.path.isfile(filename):
-        sys.stderr.write("""%s: [ERROR] no 'laps.csv' at %s\n""" % (sys.argv[0], input_dir))
-        # return empty dataframe
-        return pd.DataFrame()
-
-    laps = pd.read_csv(filename)
-    return laps
-
 def extract_bitrates(input_dir, trace_nr, protocol = 'udp', time_delta = 0.5, force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    # we keep data in disk for quick access  (.hdf5 database)
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
     # FIXME : this should be loaded from a file
     nodes = ['m1', 'w1', 'w2', 'w3']
@@ -276,7 +341,6 @@ def extract_bitrates(input_dir, trace_nr, protocol = 'udp', time_delta = 0.5, fo
         for sub_type in ['beacons', 'bitrates']:
             db = ('/%s/%s/%s' % (node, 'basic', sub_type))
             if db in database.keys():
-                # if force_calc is set, remove database for re-calculation
                 if force_calc:
                     database.remove(db)
                 else:
@@ -285,29 +349,31 @@ def extract_bitrates(input_dir, trace_nr, protocol = 'udp', time_delta = 0.5, fo
                         nodes.remove(node)
 
     for node in nodes:
-        for filename in sorted(glob.glob(os.path.join(trace_dir, ('%s/monitor.*.csv' % (node))))):
+        for filename in sorted(glob.glob(os.path.join(trace_dir, ('%s/monitor*.csv' % (node))))):
 
             chunksize = 10 ** 5
             for chunk in pd.read_csv(filename, chunksize = chunksize):
 
+                # # extract beacon frames & store them directly in database
+                # beacon_data = chunk[ (chunk['wlan type-subtype'] == 'Beacon frame') ][['epoch time', 'wlan tsf time', 'wlan rssi', 'wlan data rate', 'wlan seq number']].reset_index(drop = True)
+                # beacon_data['wlan data rate'] = beacon_data['wlan data rate'].astype(float)
+                # utils.hdfs.to_hdfs(beacon_data, ('/%s/%s/%s' % (node, 'basic', 'beacons')), database)
+
                 # extract wlan data frame data
                 qos_data = chunk[ (chunk['ip proto'] == protocol.upper()) ].reset_index(drop = True)
-                # extract beacon frames & store them directly in database
-                beacon_data = chunk[ (chunk['wlan type-subtype'] == 'Beacon frame') ][['epoch time', 'wlan tsf time', 'wlan rssi', 'wlan data rate', 'wlan seq number']].reset_index(drop = True)
-                beacon_data['wlan data rate'] = beacon_data['wlan data rate'].astype(float)
-                utils.hdfs.to_hdfs(beacon_data, ('/%s/%s/%s' % (node, 'basic', 'beacons')), database)
-
-                # for wlan data frames create new timestamp, for each interval of .5 seconds
-                qos_data['timed-tmstmp'] = qos_data['epoch time'].apply(analysis.metrics.custom_round)
+                # analyze for intervals of .5 seconds
+                qos_data['timed-tmstmp'] = qos_data['epoch time'].apply(analysis.trace.utils.metrics.custom_round)
+                # get interval timestamps for later merge
                 proc_qos_data = qos_data[['timed-tmstmp']].drop_duplicates().reset_index(drop = True)
+                # calculate each metric, and merge according to timed-tmstmp 
                 for metric in ['throughput', 'wlan data rate']:
+                    res = analysis.trace.utils.metrics.process_metric(qos_data, metric, time_delta = time_delta)
+                    proc_qos_data = pd.merge(proc_qos_data, res, on = ['timed-tmstmp'], how = 'left')
 
-                    _proc_qos_data = analysis.metrics.process_metric(qos_data, metric, time_delta = time_delta)
-                    proc_qos_data = pd.merge(proc_qos_data, _proc_qos_data, on = ['timed-tmstmp'], how = 'left')
                 # save bitrates in database
                 utils.hdfs.to_hdfs(proc_qos_data, ('/%s/%s/%s' % (node, 'basic', 'bitrates')), database)
 
-def extract_distances(input_dir, trace_nr, time_delta = 0.5, force = False):
+def extract_distances(input_dir, trace_nr, time_delta = 0.5, force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
@@ -315,24 +381,28 @@ def extract_distances(input_dir, trace_nr, time_delta = 0.5, force = False):
     db_name = ('/%s/%s' % ('gps', 'distances'))
     if db_name in database.keys():
         
-        if force:
+        if force_calc:
             database.remove(db_name)
         else:
             return
 
     # extract gps data
-    gps_data = analysis.trace.utils.gps.get_data(input_dir, trace_dir)
+    gps_data = analysis.trace.utils.gps.get_data(input_dir, trace_dir, tag_laps = True)
     # oversample to .5 time_delta
     gps_data['timed-tmstmp'] = gps_data['timestamp'].astype(float)
     # calculate distances to fixed positions
     # FIXME : this should be loaded from a file
-    ap_pos = {'p1' : {'lat' : 41.178563, 'lon' : -8.596012}, 'p2' : {'lat' : 41.178518, 'lon' : -8.595366}, 'ref' : {'lat' : 41.178685, 'lon' : -8.597872}}
+    ap_pos = {
+        'p1' : {'lat' : 41.178563, 'lon' : -8.596012}, 
+        'p2' : {'lat' : 41.178518, 'lon' : -8.595366}, 
+        'ref' : ref
+    }
     pos = [ [ row['lat'], row['lon'] ] for index, row in gps_data[['lat', 'lon']].iterrows() ]
     for ap in ap_pos:
         gps_data[ap] = [ utils.mapping.utils.gps_to_dist(ap_pos[ap]['lat'], ap_pos[ap]['lon'], p[0], p[1]) for p in pos ]
 
     gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
-    utils.hdfs.to_hdfs(gps_data[['timestamp'] + list(ap_pos.keys())], db_name, database)
+    utils.hdfs.to_hdfs(gps_data[['timestamp', 'lat', 'lon', 'lap', 'direction'] + list(ap_pos.keys())], db_name, database)
 
 def extract_channel_util(input_dir, trace_nr, time_delta = 0.5):
 
@@ -348,11 +418,13 @@ def extract_channel_util(input_dir, trace_nr, time_delta = 0.5):
             continue
 
         cbt = pd.DataFrame()
-        for filename in sorted(glob.glob(os.path.join(trace_dir, ('%s/cbt.*.csv' % (ap))))):
+        for filename in sorted(glob.glob(os.path.join(trace_dir, ('cbt*.csv' % (ap))))):
             cbt = pd.concat([cbt, pd.read_csv(filename)], ignore_index = True)
 
+        print(cbt)
+
         cbt = cbt.sort_values(by = ['timestamp']).reset_index(drop = True)
-        cutil = analysis.metrics.get_channel_util(cbt)
+        cutil = analysis.trace.utils.metrics.get_channel_util(cbt)
         cutil = cutil.sort_values(by = ['timestamp']).reset_index(drop = True)
         utils.hdfs.to_hdfs(cutil[['timestamp', 'freq', 'cutil']], db_name, database)
 

@@ -477,8 +477,8 @@ def handle_list_laps(input_dir, trace_nr):
 def handle_aggr_csv(input_dir, trace_nr):
     prefixes = {
         'cbt' : ['ap1', 'ap2', 'ap3', 'ap4'],
-#        'cpu' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1', 'ap1', 'ap2', 'ap3', 'ap4'],
-#        'ntpstat' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1']
+        'cpu' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1', 'ap1', 'ap2', 'ap3', 'ap4'],
+        'ntpstat' : ['m1', 'w1', 'w2', 'w3', 'w4', 'b1']
     }
     
     for prefix in prefixes:
@@ -486,7 +486,11 @@ def handle_aggr_csv(input_dir, trace_nr):
 
 def handle_extract_iperf3(input_dir, trace_nr):
     nodes = ['m1', 'w1', 'w2', 'w3']
-    analysis.trace.utils.data.iperf3_to_csv(input_dir, trace_nr, nodes = nodes)        
+    analysis.trace.utils.data.iperf3_to_csv(input_dir, trace_nr, nodes = nodes)
+
+def handle_merge_traces(input_dir, traces_nrs, new_trace_nr):
+    nodes = ['m1', 'w1', 'w2', 'w3']
+    analysis.trace.utils.data.merge_traces(input_dir, traces_nrs = traces_nrs, nodes = nodes, new_trace_nr = new_trace_nr)
 
 if __name__ == "__main__":
 
@@ -526,7 +530,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--extract-iperf3", 
          help = """extract iperf3 data from .out files to .csv format""",
-         action = 'store_true')    
+         action = 'store_true')
+
+    parser.add_argument(
+        "--merge-traces", 
+         help = """merge files of n different traces into a new trace. 
+         e.g., '--merge-traces "082,083:084"'""")
 
     parser.add_argument(
         "--trace-nr", 
@@ -565,6 +574,12 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)        
 
+    if args.merge_traces:
+        to_merge = args.merge_traces.split(':')[0].split(',')
+        new_trace_nr = args.merge_traces.split(':')[1]
+        handle_merge_traces(args.input_dir, traces_nrs = to_merge, new_trace_nr = new_trace_nr)
+        sys.exit(0)
+
     if not args.trace_nr:
         sys.stderr.write("""%s: [ERROR] must provide a trace nr. to analyze\n""" % sys.argv[0]) 
         parser.print_help()
@@ -597,7 +612,7 @@ if __name__ == "__main__":
 
     if args.extract_iperf3:
         handle_extract_iperf3(args.input_dir, args.trace_nr)
-        sys.exit(0)        
+        sys.exit(0)
 
     if not args.output_dir:
         sys.stderr.write("""%s: [ERROR] must provide an output dir\n""" % sys.argv[0]) 
@@ -629,13 +644,18 @@ if __name__ == "__main__":
     #     plot.trace.bitrate(args.input_dir, args.trace_nr, trace_output_dir)
     #     sys.exit(0)
 
-    # analysis.trace.extract_bitrates(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
-    # analysis.trace.extract_distances(args.input_dir, args.trace_nr)
-    # analysis.trace.extract_channel_util(args.input_dir, args.trace_nr)
-
-    trace_dir = os.path.join(args.input_dir, ("trace-%03d" % (int(args.trace_nr))))
     database = utils.hdfs.get_db(trace_dir, 'database.hdf5')
-    database_keys = utils.hdfs.get_db_keys(trace_dir)
+    # database_keys = utils.hdfs.get_db_keys(trace_dir)
+
+    # extract basic metrics into .hdfs, if not available
+    if not [s for s in database if 'bitrate' in s]:
+        analysis.trace.utils.data.extract_bitrates(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
+    if not [s for s in database if 'distances' in s]:
+        analysis.trace.utils.data.extract_distances(args.input_dir, args.trace_nr, force_calc = True)
+    # if not [s for s in database if 'channel-util' in s]:
+    #     analysis.trace.utils.data.extract_channel_util(args.input_dir, args.trace_nr)
+
+    sys.exit(0)
 
     # plot_trace_description(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits)
     # plot.trace.maps(args.input_dir, args.trace_nr, trace_output_dir, time_limits = time_limits, redraw = True)

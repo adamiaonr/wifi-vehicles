@@ -46,16 +46,6 @@ def get_closest_cell(cell, candidates):
     cells['diff'] = np.abs(cells['cell-x'] - cell[0]) + np.abs(cells['cell-y'] - cell[1])
     return cells.ix[cells['diff'].idxmin()]
 
-def get_lap_datetimes(gps_data):
-
-    segments = gps_data.groupby(['lap-number'])['interval-tmstmp'].apply(np.array).reset_index(drop = False)
-    timestamps = defaultdict(datetime.datetime)
-    for i, segment in segments.iterrows():
-        dates = [ datetime.datetime.fromtimestamp(float(dt)) for dt in [ segment['interval-tmstmp'][0], segment['interval-tmstmp'][-1] ] ]
-        timestamps[segment['lap-number']] = dates[0]
-
-    return timestamps
-
 def get_cell_datetimes(gps_data):
 
     segments = gps_data.groupby(['cell-x', 'cell-y', 'lap-number', 'direction'])['interval-tmstmp'].apply(np.array).reset_index(drop = False)
@@ -91,40 +81,25 @@ def add_cells(data, cell_size, bbox = [LONW, LATS, LONE, LATN]):
     # it will be useful to get a single integer id
     data['cell_id'] = (data['cell_y'].apply(lambda y : (y * xx)) + data['cell_x']).astype(int)    
 
-def add_lap_numbers(data, lap_timestamps):
+def update_lap_numbers(data, laps):
+    for l, row in laps.iterrows():
 
-    # reset 'lap-number' and 'direction' columns
-    data['lap-number'] = -1.0
-    data['direction'] = -1.0
+        if row['lap'] == -1:
+            continue
 
-    i = 0
-    while (i + 1) < len(lap_timestamps['start']):
-        # set lap nr.
-        data.loc[(data['timestamp'] > float(lap_timestamps['start'][i])) & (data['timestamp'] <= float(lap_timestamps['start'][i + 1])), 'lap-number'] = i + 1
+        data.loc[(data['timestamp'] >= row['start-time']) & (data['timestamp'] < row['end-time']), 'lap'] = row['lap'].astype(int)
+        data.loc[(data['timestamp'] >= row['start-time']) & (data['timestamp'] < row['end-time']), 'direction'] = row['direction'].astype(int)
 
-        # set direction(s) :
-        #    1 : East to West
-        #   -1 : West to East
-        data.loc[(data['timestamp'] > float(lap_timestamps['start'][i])) & (data['timestamp'] <= float(lap_timestamps['turn'][i])), 'direction'] = 1
-        data.loc[(data['timestamp'] > float(lap_timestamps['turn'][i]))  & (data['timestamp'] <= float(lap_timestamps['start'][i + 1])), 'direction']  = -1
+def get_laps(trace_dir):
 
-        i += 1
+    filename = os.path.join(trace_dir, ("laps.csv"))
+    if not os.path.isfile(filename):
+        sys.stderr.write("""%s: [ERROR] no 'laps.csv' at %s\n""" % (sys.argv[0], input_dir))
+        # return empty dataframe
+        return pd.DataFrame()
 
-# def get_lap_timestamps(data, ref = {'lat' : 41.178685, 'lon' : -8.597872}):
-#     # find 'peaks' of distance to a ref position, guaranteed to be outside of the experimental circuit
-#     pos = [ [row['lat'], row['lon'] ] for index, row in data.iterrows() ]
-#     data['lap-dist'] = [ mapping.utils.gps_to_dist(ref['lat'], ref['lon'], gps[0], gps[1]) for gps in pos ]
-#     return analysis.metrics.find_peaks(data, x_metric = 'timestamp', y_metric = 'lap-dist')
-
-def get_lap_timestamps(input_dir, trace_nr, ref_ap = 'w1', threshold = 155.0):
-
-    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
-    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
-
-    dist = database.select('/best/distances').sort_values(by = ['timed-tmstmp'])
-    dist = dist[dist[ref_ap] > threshold]
-    dist['lap'] = (dist['timed-tmstmp'] - dist['timed-tmstmp'].shift(1) > 5.0).astype(int).cumsum()
-    return dist.sort_values(by = ['lap', 'w1']).drop_duplicates(subset = 'lap')[['timed-tmstmp', 'lap']].reset_index(drop = True)
+    laps = pd.read_csv(filename)
+    return laps
 
 def get_data(input_dir, trace_dir, tag_laps = False, use_gps_time = True):
 
@@ -136,24 +111,20 @@ def get_data(input_dir, trace_dir, tag_laps = False, use_gps_time = True):
     if use_gps_time:
         time_column = 'time'
 
-    for filename in sorted(glob.glob(os.path.join(trace_dir, 'gps-log.*.csv'))):
+    for filename in sorted(glob.glob(os.path.join(trace_dir, 'gps-log*.csv'))):
         
         gps_data = pd.read_csv(filename)
         gps_data['timestamp'] = gps_data[time_column].astype(int)
         gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
 
-        # reset 'lap-number' and 'direction' columns
-        gps_data['lap-number'] = -1.0
+        # lap nrs initially not set
+        gps_data['lap'] = -1.0
         gps_data['direction'] = -1.0
-        # if lap numbers are to be tagged, add them to gps_data
-        if tag_laps:
-            # get lap timestamps
-            lap_timestamps = get_lap_timestamps(gps_data)
-            # add lap numbers and direction
-            add_lap_numbers(gps_data, lap_timestamps)
+        # set lap numbers if specified & possible
+        if tag_laps and (os.path.isfile(os.path.join(trace_dir, ("laps.csv")))):
+            laps = get_laps(trace_dir)
+            update_lap_numbers(gps_data, laps)
 
-        # sort by unix timestamp
-        # FIXME: why a second time?
         gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
 
     return gps_data
