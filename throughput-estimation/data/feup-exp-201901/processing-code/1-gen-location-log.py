@@ -10,13 +10,14 @@
   between different clients.
   
   Output line format:
-    gpstime, lat, lon, speed, alt, ap1DeltaX, ap1DeltaY, ap2DeltaX, ap2DeltaY, \
-        ap3DeltaX, ap3DeltaY, ap1DeltaX, ap4DeltaY
+    gpstime, lat, lon, speed, alt, ap1Dist, ap1DeltaX, ap1DeltaY, ap2Dist, \
+        ap2DeltaX, ap2DeltaY, ap3Dist, ap3DeltaX, ap3DeltaY, ap4Dist, \
+        ap4DeltaX, ap4DeltaY
         
   Rui Meireles 2019.06.25
 """
 
-import pandas, math
+import pandas, math, numpy
 
 IN_FNAMES = ["../trace-082/gps-log.1548779007.csv", \
              "../trace-083/gps-log.1548781295.csv"]
@@ -24,10 +25,10 @@ IN_FNAMES = ["../trace-082/gps-log.1548779007.csv", \
 OUT_FNAME = "../summary/location-log.csv"
 
 
-AP_COORDS_LIST = [{'lat': 41.178563, 'lon': -8.596012}, \
-                  {'lat': 41.178563, 'lon': -8.596012}, \
+AP_COORDS_LIST = [{'lat': 41.178518, 'lon': -8.595366}, \
                   {'lat': 41.178518, 'lon': -8.595366}, \
-                  {'lat': 41.178518, 'lon': -8.595366}]
+                  {'lat': 41.178563, 'lon': -8.596012}, \
+                  {'lat': 41.178563, 'lon': -8.596012}]
 
 ######################
 ### HELPER METHODS ###
@@ -45,9 +46,8 @@ def compDist(p1, p2):
   lat1Rad = math.radians(p1['lat'])
   lat2Rad = math.radians(p2['lat'])
 
-  a = math.sin(dlat/2) * math.sin(dlat/2) + \
-      math.sin(dlon/2) * math.sin(dlon/2) * \
-      math.cos(lat1Rad) * math.cos(lat2Rad);
+  a = ((math.sin(dlat/2.0)**2) + (math.sin(dlon/2.0)**2)) * \
+       math.cos(lat1Rad) * math.cos(lat2Rad);
   c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a));
   d = 6371000 * c # earth radius * c
 
@@ -68,9 +68,6 @@ def compDeltaCartesian(p1, p2):
   deltaY = compDist(p1y, p2)
   if p2['lat'] < p1['lat']:
     deltaY *= -1
-
-  #print("gpstime: ", gpstime, ", p1: ", p1, ", p2: ", p2, ", deltaX: ", deltaX, ", deltaY:", deltaY)
-
 
   return deltaX, deltaY
 
@@ -99,42 +96,46 @@ if __name__ == "__main__":
 
   dframe = pandas.concat(dframeList, ignore_index=True) # concat all frames
 
-  # compute relative distances
-  # prepare empty lists
-  deltaXList = []
-  deltaYList = []
-  apIdxRange = range(len(AP_COORDS_LIST))
+  # compute relative distances for each row
 
-  for _ in apIdxRange:
-    deltaXList.append([])
-    deltaYList.append([])
+  # add new rows
+  apIdxRange = range(len(AP_COORDS_LIST))
+  for idx in apIdxRange:
+    apId = "ap" + str(idx+1)
+
+    distColName = apId + "Dist"
+    dframe[distColName] = numpy.nan
+
+    deltaXColName = apId + "DeltaX"
+    dframe[deltaXColName] = numpy.nan
+
+    deltaYColName = apId + "DeltaY"
+    dframe[deltaYColName] = numpy.nan
+
 
   # compute position deltas
   for index, row in dframe.iterrows():
     p2 = {'lat': row["lat"], 'lon': row["lon"]} # point p2
     for idx in apIdxRange:
+      apId = "ap" + str(idx+1)
+
+      # compute tx-rx distance
+      dist = compDist(AP_COORDS_LIST[idx], p2)
+      distColName = apId + "Dist"
+      dframe.at[index,distColName] = dist
+
+      # compute tx-rx distance (x,y) deltas
       deltaX, deltaY = compDeltaCartesian(AP_COORDS_LIST[idx], p2)
-      deltaXList[idx].append(deltaX)
-      deltaYList[idx].append(deltaY)
-
-  assert len(deltaXList) == len(AP_COORDS_LIST)
-  assert len(deltaXList) == len(deltaYList)
-
-  # add distances to data frame
-  for idx in apIdxRange:
-    apNum = str(idx + 1)
-    nameX = "ap" + apNum + "DeltaX"
-    seriesX = pandas.Series(deltaXList[idx], name=nameX)
-    dframe[nameX] = seriesX
-    
-    nameY = "ap" + apNum + "DeltaY"
-    seriesY = pandas.Series(deltaYList[idx], name=nameY)
-    dframe[nameY] = seriesY
+      deltaXColName = apId + "DeltaX"
+      dframe.at[index,deltaXColName] = deltaX
+      deltaYColName = apId + "DeltaY"
+      dframe.at[index,deltaYColName] = deltaY
 
   # reorder colums
-  colTitles = ['gpstime', 'lat', 'lon', 'speed', 'alt', 'ap1DeltaX', \
-               'ap1DeltaY', 'ap2DeltaX', 'ap2DeltaY', 'ap3DeltaX', 'ap3DeltaY', \
-               'ap4DeltaX', 'ap4DeltaY']
+  colTitles = ['gpstime', 'lat', 'lon', 'speed', 'alt', 'ap1Dist', \
+               'ap1DeltaX', 'ap1DeltaY', 'ap2Dist', 'ap2DeltaX', 'ap2DeltaY', \
+               'ap3Dist', 'ap3DeltaX', 'ap3DeltaY', 'ap4Dist', 'ap4DeltaX', \
+               'ap4DeltaY']
   dframe = dframe.reindex(columns=colTitles)
 
   # write out the results
