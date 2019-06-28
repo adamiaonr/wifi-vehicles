@@ -55,9 +55,56 @@ Note: the scripts require `sudo` privileges because they must configure wireless
 
 ## Setting up GPS devices
 
+### Prereqs.
+
+**1:** Install GPS libraries:
+
+```
+$ sudo apt-get install gpsd cgps
+```
+
+**2:** I think this should be enough, but I may have forgotten something...
+
+Symlink the `start-gps` script to `/usr/local/bin`:
+
+```
+$ sudo ln -sfv /<src-dir-absolute-path>/start-gps /usr/local/bin
+```
+
 ### Setup 1 : Stand-alone GPS USB dongle
 
-TODO
+**1:** After connecting your USB device to the laptop and run 
+
+```
+$ dmesg
+``` 
+
+You should see a line identifying the device file to access the GPS device (e.g., `/dev/ttyUSB0`
+
+**2:** Run
+
+```
+$ sudo start-gps <gps-device-file>
+```
+
+After this, you should be able to get GPS output by running
+
+```
+$ cgps
+```
+
+**3:** Test the `get-gps.py` script
+
+```
+$ sudo python get-gps.py --output-dir <some-dir>
+```
+
+The script should start appending GPS measurements to a `<some-dir>/gps-log.<timestamp>.csv` file.
+Check the status of the collection with
+
+```
+$ tail -f <some-dir>/gps-log.<timestamp>.csv
+```
 
 ### Setup 2 : Share GPS of Android phone over Bluetooth
 
