@@ -63,9 +63,9 @@ Note: the scripts require `sudo` privileges because they must configure wireless
 $ sudo apt-get install gpsd cgps
 ```
 
-**2:** I think this should be enough, but I may have forgotten something...
+I think this should be enough, but I may have forgotten something...
 
-Symlink the `start-gps` script to `/usr/local/bin`:
+**2:** Symlink the `start-gps` script to `/usr/local/bin`:
 
 ```
 $ sudo ln -sfv /<src-dir-absolute-path>/start-gps /usr/local/bin
