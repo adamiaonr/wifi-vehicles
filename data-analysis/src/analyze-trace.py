@@ -307,13 +307,13 @@ def plot_trace_description_indiv(input_dir, trace_nr, output_dir, metric, time_l
     ax = fig.add_subplot(1, 1, 1)
 
     if metric in ['throughput', 'wlan data rate']:
-        plot.trace.rates(ax, input_dir, trace_nr, metric, time_limits = time_limits)
+        plot.trace.metrics.rates(ax, input_dir, trace_nr, metric)
     elif metric == 'channel_util':
-        plot.trace.channel_util(ax, input_dir, trace_nr, time_limits = time_limits)
+        plot.trace.metrics.channel_util(ax, input_dir, trace_nr)
     elif metric == 'distances':
-        plot.trace.distances(ax, input_dir, trace_nr, time_limits = time_limits)
+        plot.trace.metrics.distances(ax, input_dir, trace_nr)
     elif metric == 'rss':
-        plot.trace.rss(ax, input_dir, trace_nr, time_limits = time_limits)
+        plot.trace.metrics.rss(ax, input_dir, trace_nr)
 
     # adjust time xx scale to be the same for all graphs
     # divide xx axis in 5 ticks
@@ -329,6 +329,7 @@ def plot_trace_description_indiv(input_dir, trace_nr, output_dir, metric, time_l
         ax.set_ylim(ax.get_ylim()[0], np.ceil(ax.get_ylim()[1] * 1.15))
 
     # x-ticks
+    print(time_limits)
     xticks = plot.utils.get_time_xticks(time_limits)
     ax.set_xticks(xticks)
     # ax.set_xticklabels([str(xt)[11:-7] for xt in xticks])
@@ -503,33 +504,12 @@ if __name__ == "__main__":
          help = """dir w/ trace data""")
 
     parser.add_argument(
+        "--output-dir", 
+         help = """dir to save graphs & other output data""")
+
+    parser.add_argument(
         "--list-traces", 
          help = """lists available traces""",
-         action = 'store_true')
-
-    parser.add_argument(
-        "--list-dbs", 
-         help = """lists dbs in .hdfs database""",
-         action = 'store_true')
-
-    parser.add_argument(
-        "--list-laps", 
-         help = """lists available laps""",
-         action = 'store_true')
-    
-    parser.add_argument(
-        "--node-info", 
-         help = """lists information about participating nodes""",
-         action = 'store_true')
-    
-    parser.add_argument(
-        "--aggr-csv", 
-         help = """aggregate csv files""",
-         action = 'store_true')
-
-    parser.add_argument(
-        "--extract-iperf3", 
-         help = """extract iperf3 data from .out files to .csv format""",
          action = 'store_true')
 
     parser.add_argument(
@@ -542,8 +522,33 @@ if __name__ == "__main__":
          help = """nr of trace to analyze. e.g., '--trace-nr 009'""")
 
     parser.add_argument(
-        "--output-dir", 
-         help = """dir to save graphs & other output data""")
+        "--aggr-csv", 
+         help = """aggregate .csv files w/ a given prefix, within the given trace""",
+         action = 'store_true')
+
+    parser.add_argument(
+        "--extract-iperf3", 
+         help = """extract iperf3 data from .out files to .csv format, within the given trace""",
+         action = 'store_true')
+
+    parser.add_argument(
+        "--list-dbs", 
+         help = """lists trace dbs in .hdfs database""",
+         action = 'store_true')
+
+    parser.add_argument(
+        "--list-laps", 
+         help = """lists available laps for trace""",
+         action = 'store_true')
+    
+    parser.add_argument(
+        "--list-node-info", 
+         help = """lists information about nodes in trace""",
+         action = 'store_true')
+
+    parser.add_argument(
+        "--plot", 
+         help = """e.g., '--plot "trace-description:individual:throughput"'""")
 
     parser.add_argument(
         "--compare", 
@@ -572,7 +577,11 @@ if __name__ == "__main__":
     if trace_list.empty:
         sys.stderr.write("""%s: [ERROR] no trace information available\n""" % sys.argv[0]) 
         parser.print_help()
-        sys.exit(1)        
+        sys.exit(1)
+
+    if args.list_traces:
+        handle_list_traces(args.input_dir, args.trace_nr)
+        sys.exit(0)
 
     if args.merge_traces:
         to_merge = args.merge_traces.split(':')[0].split(',')
@@ -584,15 +593,12 @@ if __name__ == "__main__":
         sys.stderr.write("""%s: [ERROR] must provide a trace nr. to analyze\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
+
     else:
         if int(args.trace_nr) not in list(trace_list['trace-nr']):
             sys.stderr.write("""%s: [ERROR] provided trace nr. doesn't exist\n""" % sys.argv[0]) 
             parser.print_help()
             sys.exit(1)
-
-    if args.list_traces:
-        handle_list_traces(args.input_dir, args.trace_nr)
-        sys.exit(0)
 
     if args.list_dbs:
         handle_list_dbs(args.input_dir, args.trace_nr)
@@ -602,7 +608,7 @@ if __name__ == "__main__":
         handle_list_laps(args.input_dir, args.trace_nr)
         sys.exit(0)
         
-    if args.node_info:
+    if args.list_node_info:
         analysis.trace.utils.data.get_node_info(args.input_dir, args.trace_nr)
         sys.exit(0)
 
@@ -652,8 +658,35 @@ if __name__ == "__main__":
         analysis.trace.utils.data.extract_bitrates(args.input_dir, args.trace_nr, protocol = trace['proto'].values[-1])
     if not [s for s in database if 'distances' in s]:
         analysis.trace.utils.data.extract_distances(args.input_dir, args.trace_nr, force_calc = True)
-    # if not [s for s in database if 'channel-util' in s]:
-    #     analysis.trace.utils.data.extract_channel_util(args.input_dir, args.trace_nr)
+    if not [s for s in database if 'channel-util' in s]:
+        analysis.trace.utils.data.extract_channel_util(args.input_dir, args.trace_nr, force_calc = True)
+    if not [s for s in database if 'beacons' in s]:
+        analysis.trace.utils.data.extract_beacon_features(args.input_dir, args.trace_nr, force_calc = True)
+
+    analysis.trace.ap_selection.ml.regression_beacons(args.input_dir, args.trace_nr)
+    analysis.trace.ap_selection.ml.classification_beacons(args.input_dir, args.trace_nr)
+
+    if args.plot:
+
+        plot_type = args.plot.split(':')[0]
+        if 'trace-description' in plot_type:
+
+            plot_mode = args.plot.split(':')[1]
+            if 'individual' in plot_mode:
+
+                plot_metric = args.plot.split(':')[2]
+                # FIXME: this shouldn't be set here...
+                time_limits = {
+                    '082' : [1548779137.0 - 2, 1548780210.0 - 5],
+                    '083' : [1548781780.0 - 10, 1548782663.0 + 4],
+                    '084' : [1548781780.0 - 10, 1548782663.0 + 4]
+                }
+
+                for tl in time_limits:
+                    print('%s : %s' % (tl, time_limits[tl]))
+
+                tls = [datetime.datetime.fromtimestamp(time_limits[args.trace_nr][0]), datetime.datetime.fromtimestamp(time_limits[args.trace_nr][-1])]
+                plot_trace_description_indiv(args.input_dir, args.trace_nr, trace_output_dir, metric = plot_metric, time_limits = tls)
 
     sys.exit(0)
 

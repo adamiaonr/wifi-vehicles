@@ -25,6 +25,8 @@ import datetime
 # custom imports
 #   - hdfs utils
 import utils.hdfs
+#   - ieee 802.11 utils
+import utils.ieee80211
 #   - mapping utils
 import utils.mapping.utils
 #   - analysis
@@ -404,29 +406,118 @@ def extract_distances(input_dir, trace_nr, time_delta = 0.5, force_calc = False)
     gps_data = gps_data.sort_values(by = ['timestamp']).reset_index(drop = True)
     utils.hdfs.to_hdfs(gps_data[['timestamp', 'lat', 'lon', 'lap', 'direction'] + list(ap_pos.keys())], db_name, database)
 
-def extract_channel_util(input_dir, trace_nr, time_delta = 0.5):
+def extract_channel_util(input_dir, trace_nr, time_delta = 0.5, force_calc = False):
 
     trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
     database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
 
-    aps = ['ap1', 'ap2', 'ap3', 'ap4']
-    cutil = pd.DataFrame()
-    for ap in aps:
+    db_name = ('/%s/%s' % ('basic', 'channel-util'))
+    if db_name in database.keys():
+        
+        if force_calc:
+            database.remove(db_name)
+        else:
+            return
 
-        db_name = ('/%s/%s/%s' % (ap, 'basic', 'channel-util'))
-        if db_name in database.keys():
-            continue
+    # load cbt data from .csv
+    cbt = pd.read_csv(os.path.join(trace_dir, ('cbt.csv')))
+    # load iperf3 activity
+    iperf3_data = pd.read_csv(os.path.join(trace_dir, ('iperf3.csv')))
+    # ap-client pairings
+    # FIXME: should be in file...
+    pairs = {
+        'ap1' : 'w2',
+        'ap2' : 'm1',
+        'ap3' : 'w3',
+        'ap4' : 'w1'
+    }
 
-        cbt = pd.DataFrame()
-        for filename in sorted(glob.glob(os.path.join(trace_dir, ('cbt*.csv' % (ap))))):
-            cbt = pd.concat([cbt, pd.read_csv(filename)], ignore_index = True)
+    # mark each cbt reading w/ an indicator of iperf3 activity
+    cbt_marked = pd.DataFrame()
+    for ap in pairs:
 
-        print(cbt)
+        # data = iperf3_data[(iperf3_data['pckt-total'] > 0) & (iperf3_data['client-id'].str.contains(pairs[ap]))].reset_index(drop = True)
+        data = iperf3_data[(iperf3_data['client-id'].str.contains(pairs[ap]))].reset_index(drop = True)
+        # create a dataframe w/ timestamps in which iperf3 was active
+        active_ts = []
+        for i, row in data.iterrows():
+            active_ts = np.append(active_ts, np.arange(row['interval-start'], row['interval-end'] + 1, 1))
 
-        cbt = cbt.sort_values(by = ['timestamp']).reset_index(drop = True)
-        cutil = analysis.trace.utils.metrics.get_channel_util(cbt)
-        cutil = cutil.sort_values(by = ['timestamp']).reset_index(drop = True)
-        utils.hdfs.to_hdfs(cutil[['timestamp', 'freq', 'cutil']], db_name, database)
+        active_ts = pd.DataFrame({'timestamp' : active_ts})
+        active_ts.drop_duplicates(inplace = True)
+        active_ts['iperf3-on'] = 1
+
+        # left merge cbt w/ active ts dataframe
+        tmp = pd.merge(cbt[cbt['id'].str.contains(ap)], active_ts, on = ['timestamp'], how = 'left')
+        cbt_marked = pd.concat([cbt_marked, tmp], ignore_index = True)
+
+    # fill nan gaps w/ 0
+    cbt_marked.fillna({'iperf3-on' : 0}, inplace = True)
+    cbt_marked = cbt_marked.sort_values(by = ['timestamp']).reset_index(drop = True)
+
+    # FIXME: cope w/ this stupid 'Unnamed' column problem...
+    cols = [c for c in cbt_marked.columns if 'Unnamed' not in c]
+    utils.hdfs.to_hdfs(cbt_marked[cols], db_name, database)
+
+def extract_beacon_features(input_dir, trace_nr, force_calc = True):
+
+    trace_dir = os.path.join(input_dir, ("trace-%03d" % (int(trace_nr))))
+    database = pd.HDFStore(os.path.join(trace_dir, "processed/database.hdf5"))
+
+    for node in ['m1', 'w1', 'w2', 'w3']:
+
+        db_name = ('/%s/%s/%s' % (node, 'basic', 'beacons'))
+        if db_name in database:
+            if force_calc:
+                database.remove(db_name)
+            else:
+                return
+
+        beacons = pd.read_csv(os.path.join(trace_dir, '%s/beacons.csv' % (node)))
+        # add .5 precision timestamp
+        beacons['timed-tmstmp'] = beacons['epoch time'].apply(analysis.trace.utils.metrics.custom_round)
+        beacons = beacons.reset_index(drop = True)
+
+        # select subset of features
+        # some features require decoding w/ specified function
+        subset = {
+            'timed-tmstmp' : None, 
+            'wlan rssi' : None, 
+            'wlan ds current channel' : None, 
+            'wlan ht supported channel width' : utils.ieee80211.beacon.decode_ht_supported_channel_width,
+            'wlan ht capabilities' : utils.ieee80211.beacon.decode_ht_capabilities, 
+            'wlan ht a-mpdu' : utils.ieee80211.beacon.decode_ht_ampdu, 
+            'wlan ht info subset 1' : utils.ieee80211.beacon.decode_ht_info_subset, 
+            # 'wlan beacon interval' : 1, 
+            # 'wlan beacon timestamp' : 0,
+            'wlan vht  capabilities' : utils.ieee80211.beacon.decode_vht_capabilities,
+            'wlan vht op channel width' : utils.ieee80211.beacon.decode_vht_op_channel_width, 
+            'wlan vht channel op center seg 0' : None, 
+            'wlan vht channel op center seg 1' : None, 
+            'trace-nr' : None
+        }
+
+        for c in ['wlan vht tpe tx pwr constraint 20 mhz', 'wlan vht tpe tx pwr constraint 40 mhz']:
+            beacons[c] = beacons[c].apply(lambda x : utils.ieee80211.beacon.decode_vht_tpe_tx_pwr_constraint(x))
+
+        beacons = beacons[list(subset.keys())]
+        to_merge = pd.DataFrame()
+        to_remove = []
+        for feature in subset:
+
+            if not subset[feature]:
+                continue
+
+            to_remove.append(feature)
+
+            res = pd.DataFrame(beacons[feature].apply(lambda x : subset[feature](x)).tolist())
+            to_merge[list(res.columns)] = res
+
+        beacons[list(to_merge.columns)] = to_merge
+        columns = [x for x in list(beacons.columns) if x not in to_remove]
+        beacons = beacons[columns].reset_index(drop = True)
+        
+        utils.hdfs.to_hdfs(beacons, db_name, database)
 
 def get_data(node, metric, database):
 
