@@ -10,14 +10,14 @@
   laps log: tells us whether a lap was being per
   
   Output line format:
-    systime, senderId, receiverId, receiverX, receiverY, receiverAlt, \
-        receiverSpeed, channelFreq, channelBw, chanUtil, isInLap, isIperfOn, \
-        isDataReceived, rssiMean, dataRateMean, nBytesReceived
+    systime, senderId, receiverId, receiverDist, receiverX, receiverY, \
+        receiverAlt, receiverSpeed, channelFreq, channelBw, chanelUtil, \
+        isInLap, isIperfOn, rssiMean, dataRateMean, nBytesReceived
 
   Rui Meireles 2019.06.25
 """
 
-import pandas, math
+import pandas, math, numpy
 
 LOCATION_LOG_FNAME = "../summary/location-log.csv"
 THROUGHPUT_LOG_FNAME = "../summary/reception-log.csv"
@@ -39,55 +39,67 @@ VALID_CLI_IDS = ("m1","w1","w2","w3")
 ### HELPER METHODS ###
 ######################
 
-def getLoc(locDic, systime, xColName, yColName):
+def getLoc(locDic, systime, senderId):
   """
     Uses location dictionary to extract location for a given system time,
     using X and Y column names.
     If system time is not present in the dictionary, but inside its boundaries,
     we perform a linear interpolation between the two closest points.
     If system time is outside the dictionary's boundaries, we throw our hands
-    up in the air and return None.
+    up in the air and return NaN.
   """
 
+  assert senderId in VALID_AP_IDS
+
+  distColName = senderId + "Dist"
+  deltaXColName = senderId + "DeltaX"
+  deltaYColName = senderId + "DeltaY"
+
   if systime in locDic:
-    receiverX = locDic[systime][xColName]
-    receiverY = locDic[systime][yColName]
+    receiverDist = locDic[systime][distColName]
+    receiverX = locDic[systime][deltaXColName]
+    receiverY = locDic[systime][deltaYColName]
     receiverAlt = locDic[systime]['alt']
     receiverSpeed = locDic[systime]['speed']
+
   elif systime >= min(locDic) and systime <= max(locDic): # within bounds
     
-    prevSystime, nextSystime = math.inf*-1, math.inf
+    prevSystime, nextSystime = numpy.NINF, numpy.inf
     for t in locDic:
       if t > prevSystime and t < systime:
         prevSystime = t
       if t < nextSystime and t > systime:
         nextSystime = t
 
-    assert prevSystime != None
-    assert nextSystime != None
+    assert prevSystime != numpy.NINF
+    assert nextSystime != numpy.inf
     assert nextSystime - prevSystime > 1 # otherwise systime would exist
+
+    prevEntry = locDic[prevSystime]
+    nextEntry = locDic[nextSystime]
 
     # do the weighted average
     prevRatio = (systime-prevSystime)/(nextSystime-prevSystime)
     nextRatio = 1-prevRatio
 
-    receiverX = locDic[prevSystime][xColName]*prevRatio + \
-              locDic[nextSystime][xColName]*nextRatio
-    receiverY = locDic[prevSystime][yColName]*prevRatio + \
-              locDic[nextSystime][yColName]*nextRatio
+    receiverDist = prevEntry[distColName]*prevRatio + \
+                   prevEntry[distColName]*nextRatio
+    receiverX = prevEntry[deltaXColName]*prevRatio + \
+                     nextEntry[deltaXColName]*nextRatio
+    receiverY = prevEntry[deltaYColName]*prevRatio + \
+                     nextEntry[deltaYColName]*nextRatio
 
-    receiverAlt = locDic[prevSystime]['alt']*prevRatio + \
-              locDic[nextSystime]['alt']*nextRatio
-    receiverSpeed = locDic[prevSystime]['speed']*prevRatio + \
-              locDic[nextSystime]['speed']*nextRatio
+    receiverAlt = prevEntry['alt']*prevRatio + nextEntry['alt']*nextRatio
+    receiverSpeed = prevEntry['speed']*prevRatio + nextEntry['speed']*nextRatio
 
-  else: receiverX, receiverY, receiverAlt, receiverSpeed = \
-        None, None, None, None # nothing we can do about this
+  else: # nothing we can do about this
+    receiverDist, receiverX, receiverY, receiverAlt, receiverSpeed = \
+        [numpy.nan] * 5
 
-  return receiverX, receiverY, receiverAlt, receiverSpeed
+  return receiverDist, receiverX, receiverY, receiverAlt, receiverSpeed
 
 
-def getChanUtil(chanUtilDic, systime, senderId):
+def getChannelUtil(chanUtilDic, systime, senderId):
   """
     Uses busyTimeDic dictionary to extract busy time infor for sender senderId
     at system time systime.
@@ -100,7 +112,7 @@ def getChanUtil(chanUtilDic, systime, senderId):
   assert senderId in VALID_AP_IDS
 
   if systime in chanUtilDic[senderId]:
-    chanUtil = chanUtilDic[senderId][systime]
+    channelUtil = chanUtilDic[senderId][systime]
   
   elif systime >= min(chanUtilDic[senderId]) and \
        systime <= max(chanUtilDic[senderId]): # within bounds
@@ -120,12 +132,12 @@ def getChanUtil(chanUtilDic, systime, senderId):
     prevRatio = (systime-prevSystime)/(nextSystime-prevSystime)
     nextRatio = 1-prevRatio
 
-    chanUtil = chanUtilDic[senderId][prevSystime]*prevRatio + \
+    channelUtil = chanUtilDic[senderId][prevSystime]*prevRatio + \
     chanUtilDic[senderId][nextSystime]*nextRatio
 
-  else: chanUtil = None
+  else: channelUtil = numpy.nan
 
-  return chanUtil
+  return channelUtil
 
 
 def isTimeInLap(lapTimesSet, systime):
@@ -173,18 +185,22 @@ if __name__ == "__main__":
   #             ap2DeltaX, ap2DeltaY, ap3DeltaX, ap3DeltaY, ap1DeltaX, ap4DeltaY
   for index, row in locDframe.iterrows():
     gpstime = int(row["gpstime"])
-    locDic[gpstime] = { 'lat': row["lat"], \
-                        'lon': row["lon"], \
-                        'speed': row["speed"], \
-                        'alt': row["alt"], \
-                        'ap1DeltaX': row["ap1DeltaX"], \
-                        'ap1DeltaY': row["ap1DeltaY"], \
-                        'ap2DeltaX': row["ap2DeltaX"], \
-                        'ap2DeltaY': row["ap2DeltaY"], \
-                        'ap3DeltaX': row["ap3DeltaX"], \
-                        'ap3DeltaY': row["ap3DeltaY"], \
-                        'ap4DeltaX': row["ap4DeltaX"], \
-                        'ap4DeltaY': row["ap4DeltaY"]}
+    locDic[gpstime] = {'lat': row["lat"], \
+                       'lon': row["lon"], \
+                       'speed': row["speed"], \
+                       'alt': row["alt"], \
+                       'ap1Dist': row["ap1Dist"], \
+                       'ap1DeltaX': row["ap1DeltaX"], \
+                       'ap1DeltaY': row["ap1DeltaY"], \
+                       'ap2Dist': row["ap2Dist"], \
+                       'ap2DeltaX': row["ap2DeltaX"], \
+                       'ap2DeltaY': row["ap2DeltaY"], \
+                       'ap3Dist': row["ap3Dist"], \
+                       'ap3DeltaX': row["ap3DeltaX"], \
+                       'ap3DeltaY': row["ap3DeltaY"], \
+                       'ap4Dist': row["ap4Dist"], \
+                       'ap4DeltaX': row["ap4DeltaX"], \
+                       'ap4DeltaY': row["ap4DeltaY"]}
   del locDframe # no longer needed
 
   # read busy time info
@@ -231,69 +247,57 @@ if __name__ == "__main__":
   
   # go through throughput log and modify it to create final data frame
   # prepare receiverX, receiverY, and isInLap lists to add to data frame
-  receiverXList, receiverYList, receiverAltList, receiverSpeedList, \
-      chanUtilList, isInLapList, isIperfOnList = [], [], [], [], [], [], []
+
   finalDframe = pandas.read_csv(THROUGHPUT_LOG_FNAME)
-  
   # line format: systime, senderId, receiverId, channelFreq, channelBw, \
   #              isDataReceived, rssiMean, dataRateMean, nBytesReceived
-  idxToDropList = []
+
+  # add relevant columns
+  finalDframe["receiverDist"] = numpy.nan
+  finalDframe["receiverX"] = numpy.nan
+  finalDframe["receiverY"] = numpy.nan
+  finalDframe["receiverAlt"] = numpy.nan
+  finalDframe["receiverSpeed"] = numpy.nan
+  finalDframe["channelUtil"] = numpy.nan
+  finalDframe["isInLap"] = numpy.nan
+  finalDframe["isIperfOn"] = numpy.nan
+
   for index, row in finalDframe.iterrows():
     systime = row["systime"]
 
     # figure out client's position relative to the sender
     senderId = row["senderId"]
     assert senderId in VALID_AP_IDS
-    xColName = senderId + "DeltaX"
-    yColName = senderId + "DeltaY"
     
-    receiverX, receiverY, receiverAlt, receiverSpeed = \
-        getLoc(locDic, systime, xColName, yColName)
-    
-    if receiverX == None: # can not find location, skip
-      idxToDropList.append(index)
-      continue
+    receiverDist, receiverX, receiverY, receiverAlt, receiverSpeed = \
+        getLoc(locDic, systime, senderId)
+    finalDframe.at[index,"receiverDist"] = receiverDist
+    finalDframe.at[index,"receiverX"] = receiverX
+    finalDframe.at[index,"receiverY"] = receiverY
+    finalDframe.at[index,"receiverAlt"] = receiverAlt
+    finalDframe.at[index,"receiverSpeed"] = receiverSpeed
 
     # add channel utilization information
-    chanUtil = getChanUtil(chanUtilDic, systime, senderId)
-    if chanUtil == None:
-      idxToDropList.append(index)
-      continue
-
-    # now that we know we have a good row, add all relevant information
-    receiverXList.append(receiverX)
-    receiverYList.append(receiverY)
-    receiverAltList.append(receiverAlt)
-    receiverSpeedList.append(receiverSpeed)
-    chanUtilList.append(chanUtil)
+    channelUtil = getChannelUtil(chanUtilDic, systime, senderId)
+    finalDframe.at[index,"channelUtil"] = channelUtil
 
     isInLap = isTimeInLap(lapTimesSet, systime) # are we in a lap or not?
-    isInLapList.append(isInLap)
+    finalDframe.at[index,"isInLap"] = isInLap
 
-   # is iperf on on the receiver side or not?
+    # is iperf on on the receiver side or not?
     receiverId = row["receiverId"]
     isIperfOn = IsTimeInIperfOn(iperfTimesDicSet, systime, receiverId)
-    isIperfOnList.append(isIperfOn)
+    finalDframe.at[index,"isIperfOn"] = isIperfOn
 
-  # delete all the rows we could find a location for
-  finalDframe.drop(index=idxToDropList, inplace=True)
-  
-  # add new columns to data frame
-  finalDframe["receiverX"] = pandas.Series(receiverXList, name="receiverX")
-  finalDframe["receiverY"] = pandas.Series(receiverYList, name="receiverY")
-  finalDframe["receiverAlt"] = pandas.Series(receiverAltList, \
-                               name="receiverAlt")
-  finalDframe["receiverSpeed"] = pandas.Series(receiverSpeedList, \
-                               name="receiverSpeed")
-  finalDframe["chanUtil"] = pandas.Series(chanUtilList, name="chanUtil")
-  finalDframe["isInLap"] = pandas.Series(isInLapList, name="isInLap")
-  finalDframe["isIperfOn"] = pandas.Series(isIperfOnList, name="isIperfOn")
-
+  # erase rows we don't have data for
+  badIndexNames = finalDframe[finalDframe['receiverDist'] == numpy.nan].index
+  finalDframe.drop(badIndexNames, inplace=True)
+ 
   # reorder colums
-  colTitles = ['senderId', 'receiverId', 'systime', 'receiverX', 'receiverY', \
-               'receiverAlt', 'receiverSpeed', 'channelFreq', 'channelBw', \
-               'chanUtil', 'isInLap', 'isIperfOn', 'isDataReceived', \
-               'rssiMean', 'dataRateMean', 'nBytesReceived']
+  colTitles = ['senderId', 'receiverId', 'systime', 'receiverDist', \
+               'receiverX', 'receiverY', 'receiverAlt', 'receiverSpeed', \
+               'channelFreq', 'channelBw', 'channelUtil', 'isInLap', \
+               'isIperfOn', 'rssiMean', 'dataRateMean', 'nBytesReceived']
   finalDframe = finalDframe.reindex(columns=colTitles)
   
   # sort by senderId, receiverId, systime (in that order)

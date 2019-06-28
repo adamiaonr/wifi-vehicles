@@ -11,11 +11,10 @@
    ap4 -> w1 (78:8a:20:58:25:74 -> 24:05:0f:9e:2c:b1), chan 40, 40 MHz @ 5230
 
   Output line format:
-    systime, senderId, receiverId, channelFreq, channelBw, isDataReceived, \
-        rssiMean, dataRateMean, nBytesReceived
+    systime, senderId, receiverId, channelFreq, channelBw, rssiMean, \
+    dataRateMean, nBytesReceived
         
   Rui Meireles 2019.06.25
-
 """
 
 import pandas, math
@@ -27,7 +26,8 @@ IN_FNAMES = ["../trace-082/m1/monitor.1548778990.csv.zip", \
              "../trace-083/m1/monitor.1548781266.csv.zip", \
              "../trace-083/w1/monitor.1548781295.csv.zip", \
              "../trace-083/w2/monitor.1548781277.csv.zip", \
-             "../trace-083/w3/monitor.1548781305.csv.zip"]
+             "../trace-083/w3/monitor.1548781305.csv.zip"
+             ]
 
 OUT_FNAME = "../summary/reception-log.csv"
 
@@ -65,7 +65,6 @@ def addTimeEntryIfNeeded(timeDic, systime):
     timeDic[systime] = {}
     for cp in COMM_PAIRS:
       timeDic[systime][cp] = {'nBytesReceived': 0, \
-                              'isDataReceived': 0, \
                               'rssiList': [], \
                               'dataRateList': []}
 
@@ -87,6 +86,10 @@ if __name__ == "__main__":
 
   timeDic = {} # will save time-indexed throughput stats
   
+  # stats counters
+  nUdpFrames, nQosFrames, nUdpNotQosFrames, nQosNotUdpFrames, \
+      nUdpNoRssiFrames = [0] * 5
+  
   chunksize = 10 ** 5
   nlines = 0
   for infname in IN_FNAMES:
@@ -97,6 +100,18 @@ if __name__ == "__main__":
             "...")
       nlines += chunksize
     
+      # line format: "no","epoch time","frame len","ip hdr length","ip proto", \
+      #              "ip src","ip dst","ip id","ip frag offset", \
+      #              "ip more frags", "ip reassembled in","udp src port", \
+      #              "udp dst port","wlan tsf time","wlan phy", \
+      #              "wlan hdr length","wlan src addr","wlan dst addr", \
+      #              "wlan type-subtype","wlan rssi","wlan noise", \
+      #              "wlan data rate","wlan mcs index","wlan duration", \
+      #              "wlan preamble","wlan seq number","wlan frag number", \
+      #              "wlan block ack bitmap","wlan block ack starting seq nr", \
+      #              "wlan retry","wlan qbss client qty", \
+      #              "wlan qbss channel util", \
+      #              "wlan mimo vht mu exclusive bf report"
       for index, row in dframeChunk.iterrows():
         systime = int(round(row["epoch time"]))
         
@@ -109,25 +124,42 @@ if __name__ == "__main__":
         
           # add info to dictionary if needed
           addTimeEntryIfNeeded(timeDic, systime)
+      
+      
+          # update frame type-related stats
+          if row["ip proto"] == "UDP":
+            nUdpFrames += 1
+            if row["wlan type-subtype"] != "QoS Data":
+              nUdpNotQosFrames += 1
+        
+          if row["wlan type-subtype"] == "QoS Data":
+            nQosFrames += 1
+            if row["ip proto"] != "UDP":
+              nQosNotUdpFrames += 1
+        
+          # done with stats update
+        
+          # is this a frame we care about?
+          if row["ip proto"] != "UDP":
+            continue
         
           # record data
-          
           # add frame length to throughput
           frameLen = int(row["frame len"])
           timeDic[systime][commPair]['nBytesReceived'] += frameLen
-          
-          # data was received on systime if at least one Qos Data frame present
-          if row["wlan type-subtype"] == "QoS Data" and \
-            timeDic[systime][commPair]['isDataReceived'] == 0:
-            timeDic[systime][commPair]['isDataReceived'] = 1
-          
-          # record rssi and data rate only if rssi info is present
+
+          # record rssi only it is present
           rssi = row["wlan rssi"]
           if type(rssi) != float:
             rssi = int(rssi.split("dBm")[0])
-            dataRate = float(row["wlan data rate"])
             timeDic[systime][commPair]['rssiList'].append(rssi)
-            timeDic[systime][commPair]['dataRateList'].append(dataRate)
+          else: # update missing rssi stats
+            if not math.isnan(rssi): print (rssi)
+            nUdpNoRssiFrames += 1
+          
+          # record data rate info (I assume it's always present)
+          dataRate = float(row["wlan data rate"])
+          timeDic[systime][commPair]['dataRateList'].append(dataRate)
 
 
   # fill in any missing timestamps with zeros
@@ -137,6 +169,7 @@ if __name__ == "__main__":
     addTimeEntryIfNeeded(timeDic, systime)
 
   # compute mean rssi for each systime, communication pair combo
+  maxdr, maxstime, maxpair = -99999, 0, None # delete
   for systime, commPairDic in timeDic.items():
     for commPair, commInfo in commPairDic.items():
       rssiMean = getListMean(commInfo['rssiList'], default=-100)
@@ -146,10 +179,14 @@ if __name__ == "__main__":
       commInfo['dataRateMean'] = dataRateMean
       del commInfo['dataRateList'] # no longer needed
 
+      if dataRateMean > maxdr:
+        maxdr = dataRateMean
+        maxstime = systime
+        maxpair = commPair
 
   # write out the results
   outfile = open(OUT_FNAME, 'w')
-  headerStr = "systime,senderId,receiverId,channelFreq,channelBw,isDataReceived,rssiMean,dataRateMean,nBytesReceived"
+  headerStr = "systime,senderId,receiverId,channelFreq,channelBw,rssiMean,dataRateMean,nBytesReceived"
   print(headerStr, file=outfile)
 
   # print out all the rows, in systime order
@@ -166,16 +203,21 @@ if __name__ == "__main__":
 
       assert commPair in commPairDic
       commInfo = commPairDic[commPair]
-      isDataReceived = commInfo['isDataReceived']
       rssiMean = commInfo['rssiMean']
       dataRateMean = commInfo['dataRateMean']
       nBytesReceived = commInfo['nBytesReceived']
 
-      outStr = "%d,%s,%s,%d,%d,%d,%f,%f,%d" % \
+      outStr = "%d,%s,%s,%d,%d,%f,%f,%d" % \
                (systime, senderId, receiverId, channelFreq, channelBw, \
-              isDataReceived, rssiMean, dataRateMean, nBytesReceived)
+              rssiMean, dataRateMean, nBytesReceived)
       print(outStr, file=outfile)
 
   outfile.close()
 
-  print("Done with throughput log!")
+  pUdpNotQos = float(nUdpNotQosFrames) / nUdpFrames * 100;
+  pQosNotUdp = float(nQosNotUdpFrames) / nQosFrames * 100;
+  pUdpNoRssi = float(nUdpNoRssiFrames) / nUdpFrames * 100;
+
+  byeStr = "Done with reception log! Stats: %.2f%% of frames are UDP but not QoS Data, %.2f%% QoS Data but not UDP, %.2f%% of UDP frames are missing RSSI info." % \
+      (pUdpNotQos, pQosNotUdp, pUdpNoRssi)
+  print(byeStr)
