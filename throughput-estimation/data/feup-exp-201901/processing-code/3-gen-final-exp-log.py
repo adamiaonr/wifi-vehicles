@@ -17,7 +17,7 @@
   Rui Meireles 2019.06.25
 """
 
-import pandas, math, numpy
+import pandas, numpy
 
 LOCATION_LOG_FNAME = "../summary/location-log.csv"
 THROUGHPUT_LOG_FNAME = "../summary/reception-log.csv"
@@ -117,15 +117,15 @@ def getChannelUtil(chanUtilDic, systime, senderId):
   elif systime >= min(chanUtilDic[senderId]) and \
        systime <= max(chanUtilDic[senderId]): # within bounds
     
-    prevSystime, nextSystime = math.inf*-1, math.inf
+    prevSystime, nextSystime = numpy.NINF, numpy.inf
     for t in chanUtilDic[senderId]:
       if t > prevSystime and t < systime:
         prevSystime = t
       if t < nextSystime and t > systime:
         nextSystime = t
 
-    assert prevSystime != None
-    assert nextSystime != None
+    assert prevSystime != numpy.NINF
+    assert nextSystime != numpy.inf
     assert nextSystime - prevSystime > 1 # otherwise systime would exist
 
     # do the weighted average
@@ -135,7 +135,7 @@ def getChannelUtil(chanUtilDic, systime, senderId):
     channelUtil = chanUtilDic[senderId][prevSystime]*prevRatio + \
     chanUtilDic[senderId][nextSystime]*nextRatio
 
-  else: channelUtil = numpy.nan
+  else: channelUtil = 0 # should be numpy.nan if we cared about channel util
 
   return channelUtil
 
@@ -290,9 +290,12 @@ if __name__ == "__main__":
     finalDframe.at[index,"isIperfOn"] = isIperfOn
 
   # erase rows we don't have data for
-  badIndexNames = finalDframe[finalDframe['receiverDist'] == numpy.nan].index
-  finalDframe.drop(badIndexNames, inplace=True)
+  badIdx = finalDframe[numpy.isnan(finalDframe['receiverDist'])].index
+  noChanUtilIdx = finalDframe[numpy.isnan(finalDframe['channelUtil'])].index
+  badIdx = badIdx.union(noChanUtilIdx) # merge both indices
+  finalDframe.drop(badIdx, inplace=True)
  
+
   # reorder colums
   colTitles = ['senderId', 'receiverId', 'systime', 'receiverDist', \
                'receiverX', 'receiverY', 'receiverAlt', 'receiverSpeed', \
