@@ -16,7 +16,7 @@ AP info:
 
 
 
-Column explanation:
+### Column explanation:
 
 * senderId: id of the node sending data (one of {ap1, ap2, ap3, ap4}).
 
