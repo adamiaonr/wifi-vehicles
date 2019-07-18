@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]
+then
+	echo "usage : $0 <encryption> <channel> <bandwidth>"
+	echo "options : "
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
+	echo "    <channel>: 1, 11, 36 or 40"
+	exit 1
+fi
+
+# symlink to correct hostapd.conf file
+ln -sfv $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/etc/hostapd/hostapd.conf.$1.$2.$3 /etc/hostapd/hostapd.conf
+# restart hostapd (and everything else...)
+/etc/init.d/networking restart
+
+# change channel on the monitoring iface to that of the ap
+bw=$3
+if [ $3 -gt 20 ]
+then
+
+    if [ $2 -gt 36 ]
+    then
+        bw=$bw-
+    else
+        bw=$bw+
+    fi
+fi
+echo "$2:HT$bw"
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-txrx --set-monitor-mode "$2:HT$bw"
+
+exit 0

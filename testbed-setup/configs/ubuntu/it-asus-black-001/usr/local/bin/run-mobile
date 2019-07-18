@@ -1,0 +1,58 @@
+#!/bin/bash
+
+if [ $# -lt 4 ]
+then
+	echo "usage : $0 <usb-dev-file> <channel> <bandwidth> <trace-nr>"
+	echo "options : "
+	echo "    <usb-dev-file> : e.g., '/dev/ttyACM0'"
+	echo "    <channel> : 1, 11, 36 or 40"
+	echo "    <bandwidth> : 20 or 40 (note: channels in the 2.4 GHz band only accept 20)"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	exit 1
+fi
+
+# kill outstanding scritps
+pkill -f mobile-ap
+pkill -f get-ntp-accuracy
+
+# restart dnsmasq, just in case
+/usr/local/bin/restart-dnsmasq 15 &
+
+# kill and restart iperf3 servers
+# pkill -f iperf3
+/usr/local/bin/restart-iperf-servers &
+# stdbuf -oL -eL iperf3 -s -V -p 5202 &> /var/run/iperf3.5202.out &
+# stdbuf -oL -eL iperf3 -s -V -p 5203 &> /var/run/iperf3.5203.out &
+# stdbuf -oL -eL iperf3 -s -V -p 5204 &> /var/run/iperf3.5204.out &
+
+# change channel on the monitoring iface to that of the ap
+bw=$3
+if [ $3 -gt 20 ]
+then
+
+    if [ $2 -gt 36 ]
+    then
+        bw=$bw-
+    else
+        bw=$bw+
+    fi
+fi
+
+# set wlan short and long retry options to 10 and 7, respectively...
+wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
+iw phy $wiphy set retry short 10 long 7
+
+# first set iface wlan-cntrl to monitor mode, on the right channel and bw
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-cntrl --set-monitor-mode "$2:HT$bw"
+# create dirs (if not available already)
+output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$4/$(iw wlan-txrx info | awk '/channel/ {print $2}')
+mkdir -p "$output_dir"
+# print the channel and bw set on the monitor mode iface, for a quick check
+echo "$2:HT$bw"
+echo $(iw wlan-cntrl info)
+
+# run scripts
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/mobile-ap.py --restart-ntp --dev-file $1 --ap-iface wlan-txrx --monitor-iface wlan-cntrl --output-dir "$output_dir" &
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+
+exit 0

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <encryption>"
+	echo "options : "
+	echo "    <encryption> : 'open' or 'wpa' (note: 'wpa' means 'WPA2-PSK')"
+	exit 1
+fi
+
+# symlink to correct wpa_supplicant.conf file
+ln -sfv $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/etc/wpa_supplicant/wpa_supplicant.$1.conf /etc/wpa_supplicant/wpa_supplicant.conf
+# restart wpa_supplicant (and everything else...)
+pkill -f wpa_supplicant
+/etc/init.d/networking restart
+
+exit 0
