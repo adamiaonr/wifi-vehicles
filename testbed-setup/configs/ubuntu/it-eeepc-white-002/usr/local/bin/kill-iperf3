@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# pkill -f --signal 2 iperf3-to-mobile
 ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
 pkill -f --signal 2 get-ntp-accuracy
 pkill -f --signal 2 bitrate-adapt-stats
 pkill -f tcpdump
 kill -9 "$(cat /var/run/get-cpu.pid)"
-/usr/local/bin/kill-server "it@10.10.13.130"
+/usr/local/bin/kill-server "it@10.10.12.1"
+/usr/local/bin/kill-server "it@10.10.11.1"
 pkill -f iperf3
 
 exit 0

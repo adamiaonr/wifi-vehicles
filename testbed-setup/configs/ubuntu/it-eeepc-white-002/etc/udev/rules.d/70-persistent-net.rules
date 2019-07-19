@@ -1,11 +1,8 @@
-# USB device 0x: 0x (ath9k_htc)
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="c4:6e:1f:26:9f:c0", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-monitor"
-
-# USB device 0x: 0x (ath9k_htc)
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="f8:d1:11:08:a7:4e", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-cntrl"
-
-# USB device 0x: 0x (ath9k_htc)
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="c4:6e:1f:26:35:7e", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-txrx"
+# USB device 0x: 0x (ralink rt2800usb)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="24:05:0f:aa:ab:5d", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-bckgrnd-001"
 
 # USB device 0x: 0x (ralink rt2800usb)
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="24:05:0f:6d:ae:36", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-txrx"
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="24:05:0f:61:52:99", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-bckgrnd-002"
+
+# USB device 0x: 0x (ath9k_htc)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="c4:6e:1f:26:35:7e", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlan-cntrl"
