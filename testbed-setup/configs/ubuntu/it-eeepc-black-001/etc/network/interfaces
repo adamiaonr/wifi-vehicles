@@ -2,20 +2,13 @@
 auto lo
 iface lo inet loopback
 
-auto enp6s0
+allow-hotplug enp6s0
 iface enp6s0 inet static
 address 10.10.12.1
 netmask 255.255.255.0
 dns-nameservers 1.1.1.1 8.8.8.8
 
-#auto wlan-cntrl
-#iface wlan-cntrl inet static
-#hostapd /etc/hostapd/hostapd.conf
-#address 10.10.13.1
-#netmask 255.255.255.0
-#dns-nameservers 1.1.1.1 8.8.8.8
-
-auto wlan-cntrl
+allow-hotplug wlan-cntrl
 iface wlan-cntrl inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
 dns-nameservers 1.1.1.1 8.8.8.8
