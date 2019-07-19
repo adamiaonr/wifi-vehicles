@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -lt 3 ]
 then
@@ -24,8 +24,10 @@ then
 fi
 
 if [ "$type" == "server" ]
-
+then
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/dnsmasq.conf /etc/dnsmasq.conf
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/exports /etc/exports
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/fstab /etc/fstab	
-then
+fi
+
+exit 0
