@@ -10,7 +10,7 @@ then
 	exit 1
 fi
 
-if [ "$os" == "ubuntu" ]
+if [ "$1" == "ubuntu" ]
 then
 
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/network/interfaces.client /etc/network/interfaces
@@ -23,7 +23,7 @@ then
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/rc.local /etc/rc.local
 fi
 
-if [ "$type" == "server" ]
+if [ "$2" == "server" ]
 then
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/dnsmasq.conf /etc/dnsmasq.conf
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/exports /etc/exports
