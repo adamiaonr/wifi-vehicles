@@ -30,15 +30,16 @@ output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
 mkdir -p "$output_dir"
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
-# set wlan short and long retry options to 10 and 7
-# FIXME : at this point, i only do this to be consistent among client nodes. however, i don't know why these specific values...
-wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
-iw phy $wiphy set retry short 10 long 7
 
 c=0
 while [ $c -lt $nc ] 
 do
 	ifconfig "wlan-bckgrnd-00$(($c + 1))" up
+	# set wlan short and long retry options to 10 and 7
+	# FIXME : at this point, i only do this to be consistent among client nodes. however, i don't know why these specific values...
+	wiphy="phy"$(iw dev wlan-bck-0$(( $c + 1 )) info | awk '/wiphy/ {print $2}')
+	iw phy $wiphy set retry short 10 long 7
+
 	# FIXME : login username in remote nodes is assumed to be 'it'
 	/usr/local/bin/restart-client "$trace_nr" "it@$ip_srvr" "$ip_srvr" $(( 5205 + $c )) "$proto" $bitrate &
 	c=$(( $c + 1 ))

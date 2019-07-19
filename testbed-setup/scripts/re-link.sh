@@ -2,7 +2,7 @@
 
 if [ $# -lt 3 ]
 then
-	echo "usage : $0 <os> <hostname>"
+	echo "usage : $0 <os> <type> <hostname>"
 	echo "options : "
 	echo "    <os> : OS used by node : 'openwrt' or 'ubuntu'"
 	echo "    <type> : ap, client or server"
