@@ -16,6 +16,13 @@ then
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/network/interfaces.client /etc/network/interfaces
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.open.conf /etc/wpa_supplicant/wpa_supplicant.conf
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.timesynch.conf /etc/wpa_supplicant/
+
+	if [ "$3" == "it-eeepc-white-002" ]
+	then
+		ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.n.conf /etc/wpa_supplicant/wpa_supplicant.n.conf
+		ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.ac.conf /etc/wpa_supplicant/wpa_supplicant.ac.conf
+	fi
+
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/udev/rules.d/70-persistent-net.rules /etc/udev/rules.d/70-persistent-net.rules
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/usr/local/bin/* /usr/local/bin/
 

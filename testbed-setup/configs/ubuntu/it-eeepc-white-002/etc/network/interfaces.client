@@ -2,14 +2,14 @@
 auto lo
 iface lo inet loopback
 
-allow-hotplug wlan-bckgrnd-001
-iface wlan-bckgrnd-001 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+allow-hotplug wlan-bck-n
+iface wlan-bck-n inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.n.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
-allow-hotplug wlan-bckgrnd-002
-iface wlan-bckgrnd-002 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+allow-hotplug wlan-bck-ac
+iface wlan-bck-ac inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.ac.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 
 allow-hotplug wlan-cntrl
