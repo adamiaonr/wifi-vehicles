@@ -4,7 +4,7 @@ if [ $# -lt 3 ]
 then
 	echo "usage : $0 <num-clients> <protocol> <trace-nr>"
 	echo "options : "
-	echo "    <num-clients> : 'tcp' or 'udp'"
+	echo "    <nr-clients> : <type>:<nr>,<type>:<nr> e.g.: 'ac:2,n:1'"
 	echo "    <protocol> : 'tcp' or 'udp'"
 	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
 	echo "    <server-ip> : ip addr of iperf3 server"
@@ -15,13 +15,6 @@ nc=$1
 proto=$2
 trace_nr=$3
 ip_srvr=$4
-bitrate='X'
-
-if [ "$proto" == "udp" ]
-then
-	# FIXME : if udp is chosen for the background clients, 10 Mbps bitrate by default
-	bitrate='10M'
-fi
 
 # kill outstanding scritps
 pkill -f get-ntp-accuracy
@@ -31,13 +24,14 @@ mkdir -p "$output_dir"
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
+
 c=0
 while [ $c -lt $nc ] 
 do
 	ifconfig "wlan-bckgrnd-00$(($c + 1))" up
 	# set wlan short and long retry options to 10 and 7
 	# FIXME : at this point, i only do this to be consistent among client nodes. however, i don't know why these specific values...
-	wiphy="phy"$(iw dev wlan-bck-0$(( $c + 1 )) info | awk '/wiphy/ {print $2}')
+	wiphy="phy"$(iw dev wlan-bck-$(( $c + 1 )) info | awk '/wiphy/ {print $2}')
 	iw phy $wiphy set retry short 10 long 7
 
 	# FIXME : login username in remote nodes is assumed to be 'it'
@@ -51,6 +45,8 @@ do
 	ifconfig "wlan-bckgrnd-00$(($c + 1))" down
 done
 
+# start background clients as specified in nc
+python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/run-bckgrnd-client.py --nr-clients "$nc" --proto "$proto" --ip-srvr "$ip_srvr" &
 # extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract bitrate adaptation algorithm stats
