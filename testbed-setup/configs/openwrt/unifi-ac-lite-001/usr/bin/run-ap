@@ -33,7 +33,8 @@ wiphy="phy"$(iw dev $wiface info | awk '/wiphy/ {print $2}')
 iw phy $wiphy set retry short 10 long 7
 
 # log channel utilization
-/root/workbench/get-cbt.sh $1 "$output_dir" &
+/root/workbench/get-cbt.sh $1 "$output_dir" "wlan0" &
+/root/workbench/get-cbt.sh $1 "$output_dir" "wlan1" &
 # extract cpu stats
 /root/workbench/get-cpu.sh $1 "$output_dir" &
 

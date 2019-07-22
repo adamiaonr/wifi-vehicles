@@ -30,7 +30,7 @@ signal_handler() {
 # fi
 
 # create cbt.csv file
-output_file="$output_dir"/"cbt.$(date +"%s").csv"
+output_file="$output_dir"/"cbt.$wiface.$(date +"%s").csv"
 touch $output_file
 # add header
 # echo "timestamp,freq,noise,cat,cbt,crt,ctt" > $output_file
