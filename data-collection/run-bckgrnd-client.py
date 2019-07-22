@@ -10,10 +10,10 @@ from collections import defaultdict
 # FIXME : hardcoded for now
 # FIXME : we assume the login username is 'it'
 iface_addr_map = {
-    'wlan-bk-n0'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.3', 'port' : '5203', 'route-ip' : '10.10.13.1'},
-    'wlan-bk-n1'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'port' : '5204', 'route-ip' : '10.10.13.1'},
-    'wlan-bk-ac0' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'port' : '5205', 'route-ip' : '10.10.14.1'},
-    'wlan-bk-ac1' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'port' : '5206', 'route-ip' : '10.10.14.1'},
+    'wlan-bk-n0'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.3', 'server-port' : '5203', 'route-ip' : '10.10.13.1'},
+    'wlan-bk-n1'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'server-port' : '5204', 'route-ip' : '10.10.13.1'},
+    'wlan-bk-ac0' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'server-port' : '5205', 'route-ip' : '10.10.14.1'},
+    'wlan-bk-ac1' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'server-port' : '5206', 'route-ip' : '10.10.14.1'},
 }
 
 def run_client(iface_name, trace_nr, proto, bitrate, iperf3_info):
