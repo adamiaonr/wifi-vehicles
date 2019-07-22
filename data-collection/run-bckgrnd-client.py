@@ -39,7 +39,7 @@ if __name__ == "__main__":
          help = """tcp or udp""")
 
     parser.add_argument(
-        "--trace_nr", 
+        "--trace-nr", 
          help = """trace nr""")
 
     args = parser.parse_args()
