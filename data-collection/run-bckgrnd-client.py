@@ -10,10 +10,14 @@ from collections import defaultdict
 # FIXME : hardcoded for now
 # FIXME : we assume the login username is 'it'
 iface_addr_map = {
-    'wlan-bk-n0'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.3', 'server-port' : '5203', 'route-ip' : '10.10.13.1'},
-    'wlan-bk-ac0' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'server-port' : '5204', 'route-ip' : '10.10.14.1'},
-    'wlan-bk-n1'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'server-port' : '5205', 'route-ip' : '10.10.13.1'},
-    'wlan-bk-ac1' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'server-port' : '5206', 'route-ip' : '10.10.14.1'},
+    'it-eeepc-white-002' : {
+        'n'  : [{'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.3', 'server-port' : '5203', 'route-ip' : '10.10.13.1'}],
+        'ac' : [{'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'server-port' : '5204', 'route-ip' : '10.10.14.1'}],
+    },
+    'it-eeepc-white-003' : {
+        'n'  : [{'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'server-port' : '5205', 'route-ip' : '10.10.13.1'}],
+        'ac' : [{'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'server-port' : '5206', 'route-ip' : '10.10.14.1'}],
+    }
 }
 
 def run_client(iface_name, trace_nr, proto, bitrate, iperf3_info):
@@ -31,7 +35,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--nr-clients", 
-         help = """nr. of background clients, per type.
+         help = """nr. of background clients, per 802.11 std.
          format : <802.11-type>:<nr>,<802.11-type>:<nr>,... e.g.: --nr-clients 'ac:2,n:1'""")
 
     parser.add_argument(
@@ -57,14 +61,22 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
 
+    hostname = socket.gethostname()
     clients = args.nr_clients.split(',')
     for c in clients:
         client_type = c.split(':')[0]
+        if client_type not in ['n', 'ac']:
+            continue
+
         # FIXME : we don't support more than 1 additional ifaces per 802.11 std
         client_nr = min(int(c.split(':')[-1]), 1)
+
+        if client_nr < 1:
+            continue
+
         for i in range(client_nr):
             iface_name = ('wlan-bk-%s%d' % (client_type, i))
-            add_route(iface_name, iface_addr_map[iface_name])
-            run_client(iface_name, args.trace_nr, args.proto, bitrate, iface_addr_map[iface_name])
+            add_route(iface_name, iface_addr_map[hostname][client_type][i])
+            run_client(iface_name, args.trace_nr, args.proto, bitrate, iface_addr_map[hostname][client_type][i])
             
     sys.exit(0)
