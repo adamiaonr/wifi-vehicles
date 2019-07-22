@@ -6,7 +6,7 @@ then
 	echo "options : "
 	echo "    <nr-clients> : <type>:<nr>,<type>:<nr> e.g.: 'ac:2,n:1'"
 	echo "    <protocol> : 'tcp' or 'udp'"
-	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"	
 	exit 1
 fi
 
@@ -24,14 +24,14 @@ mkdir -p "$output_dir"
 echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
 # start background clients as, specified
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/run-bckgrnd-client.py --nr-clients "$nc" --proto "$proto" --trace-nr "$trace_nr" &
+python $HOME/workbench/wifi-vehicles/data-collection/run-bckgrnd-client.py --nr-clients "$nc" --proto "$proto" --trace-nr "$trace_nr" &
 # extract accuracy of time synch via ntp w/ local server
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract bitrate adaptation algorithm stats
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
+python $HOME/workbench/wifi-vehicles/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
 # extract cpu stats
-$HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/get-cpu.sh $2 "$output_dir" &
+$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $2 "$output_dir" &
 # # report status to webserver
-# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.10.114 --port 8081 --output-dir "$output_dir" --mode "client" &
+# python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip 10.10.10.114 --port 8081 --output-dir "$output_dir" --mode "client" &
 
 exit 0

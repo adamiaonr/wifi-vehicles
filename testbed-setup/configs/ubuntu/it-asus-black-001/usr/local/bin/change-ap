@@ -10,7 +10,7 @@ then
 fi
 
 # symlink to correct hostapd.conf file
-ln -sfv $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/etc/hostapd/hostapd.conf.$1.$2.$3 /etc/hostapd/hostapd.conf
+ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/ubuntu/$HOSTNAME/etc/hostapd/hostapd.conf.$1.$2.$3 /etc/hostapd/hostapd.conf
 # restart hostapd (and everything else...)
 /etc/init.d/networking restart
 
@@ -27,6 +27,6 @@ then
     fi
 fi
 echo "$2:HT$bw"
-python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/cbt.py --iface wlan-txrx --set-monitor-mode "$2:HT$bw"
+python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-txrx --set-monitor-mode "$2:HT$bw"
 
 exit 0

@@ -6,7 +6,7 @@ pkill -f --signal 2 get-ntp-accuracy
 pkill -f --signal 2 bitrate-adapt-stats
 pkill -f tcpdump
 kill -9 "$(cat /var/run/get-cpu.pid)"
-/usr/local/bin/kill-server "it@10.10.13.130"
+/usr/local/bin/kill-server "it@10.10.10.113"
 pkill -f iperf3
 
 exit 0

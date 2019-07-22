@@ -9,7 +9,7 @@ then
 fi
 
 # symlink to correct wpa_supplicant.conf file
-ln -sfv $HOME/workbench/wifi-vehicles/aps/configs/ubuntu/$HOSTNAME/etc/wpa_supplicant/wpa_supplicant.$1.conf /etc/wpa_supplicant/wpa_supplicant.conf
+ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/ubuntu/$HOSTNAME/etc/wpa_supplicant/wpa_supplicant.$1.conf /etc/wpa_supplicant/wpa_supplicant.conf
 # restart wpa_supplicant (and everything else...)
 pkill -f wpa_supplicant
 /etc/init.d/networking restart
