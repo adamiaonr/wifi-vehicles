@@ -10,9 +10,4 @@
 # bits.
 #
 # By default this script does nothing.
-
-# force default gw to be the unifi ac lite ap (and not the control network 10.10.13.0/24)
-sudo route delete default gw 10.10.13.1 wlan-cntrl
-sudo route add default gw 10.10.16.1 wlan-txrx
-# python $HOME/workbench/wifi-vehicles/wifi-assist/src/data-collection/report-status.py --ip 10.10.13.130 --port 8081 --mode "client" --output-dir $HOME/workbench/range-tests/vehicular-traces
 exit 0

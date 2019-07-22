@@ -4,6 +4,6 @@ config system
 	option ttylogin	0
 
 config timeserver ntp
-	list server	10.10.13.130
+	list server	10.10.10.113
 	option enabled 1
 	option enable_server 0
