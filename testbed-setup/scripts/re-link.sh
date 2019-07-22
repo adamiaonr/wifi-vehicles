@@ -5,7 +5,7 @@ then
 	echo "usage : $0 <os> <type> <hostname>"
 	echo "options : "
 	echo "    <os> : OS used by node : 'openwrt' or 'ubuntu'"
-	echo "    <type> : ap, client or server"
+	echo "    <type> : 'ap', 'main-client', 'bck-client' or 'server'"
 	echo "    <hostname> : hostname, e.g.: 'it-eeepc-maroon-001'"
 	exit 1
 fi
@@ -17,7 +17,7 @@ then
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.open.conf /etc/wpa_supplicant/wpa_supplicant.conf
 	ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.timesynch.conf /etc/wpa_supplicant/
 
-	if [ "$3" == "it-eeepc-white-002" ]
+	if [ "$2" == "bck-client" ]
 	then
 		ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.n.conf /etc/wpa_supplicant/wpa_supplicant.n.conf
 		ln -sfv $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/wpa_supplicant/wpa_supplicant.ac.conf /etc/wpa_supplicant/wpa_supplicant.ac.conf
