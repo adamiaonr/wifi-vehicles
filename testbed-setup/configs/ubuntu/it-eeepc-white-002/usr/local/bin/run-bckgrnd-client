@@ -7,7 +7,6 @@ then
 	echo "    <nr-clients> : <type>:<nr>,<type>:<nr> e.g.: 'ac:2,n:1'"
 	echo "    <protocol> : 'tcp' or 'udp'"
 	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
-	echo "    <server-ip> : ip addr of iperf3 server"
 	exit 1
 fi
 
