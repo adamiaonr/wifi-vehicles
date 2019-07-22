@@ -1,17 +1,16 @@
 #!/bin/sh
 
-if [ $# -lt 1 ]
+if [ $# -lt 2 ]
 then
-    echo "usage : $0 <remote-login>"
+    echo "usage : $0 <iface-name> <remote-login>"
     exit 1
 fi
 
-# re-directing io streams to /dev/null, so that ssh returns
 # iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$1" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
-ssh -i $HOME/.ssh/it "$1" "kill-servers"
+ssh -i $HOME/.ssh/it "$2" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
+ssh -i $HOME/.ssh/it "$2" "kill-servers"
 # ap scripts
-ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+ip=$(ifconfig $1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap"
 
 exit

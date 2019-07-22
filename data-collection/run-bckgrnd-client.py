@@ -16,7 +16,7 @@ iface_addr_map = {
     'wlan-bk-ac1' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'port' : '5206', 'route-ip' : '10.10.14.1'},
 }
 
-def run_client(trace_nr, proto, bitrate, iperf3_info):
+def run_client(iface_name, trace_nr, proto, bitrate, iperf3_info):
     cmd = ["/usr/local/bin/restart-client", trace_nr, iperf3_info['login'], iperf3_info['server-ip'], iperf3_info['server-port'], proto, '10M']
     # FIXME : this starts the process on the background (i.e., equivalent to using '&')
     subprocess.Popen(cmd)
@@ -65,6 +65,6 @@ if __name__ == "__main__":
         for i in range(client_nr):
             iface_name = ('wlan-bk-%s%d' % (client_type, i))
             add_route(iface_name, iface_addr_map[iface_name])
-            run_client(args.trace_nr, args.proto, bitrate, iface_addr_map[iface_name])
+            run_client(iface_name, args.trace_nr, args.proto, bitrate, iface_addr_map[iface_name])
             
     sys.exit(0)
