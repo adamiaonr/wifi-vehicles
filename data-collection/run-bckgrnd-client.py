@@ -8,16 +8,16 @@ import signal
 from collections import defaultdict
 
 # FIXME : hardcoded for now
+# FIXME : we assume the login username is 'it'
 iface_addr_map = {
-    'wlan-bk-n0'  : {'server-ip' : '10.10.12.3', 'port' : '5203'},
-    'wlan-bk-n1'  : {'server-ip' : '10.10.12.4', 'port' : '5204'},
-    'wlan-bk-ac0' : {'server-ip' : '10.10.12.5', 'port' : '5205'},
-    'wlan-bk-ac1' : {'server-ip' : '10.10.12.6', 'port' : '5206'},
+    'wlan-bk-n0'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.3', 'port' : '5203'},
+    'wlan-bk-n1'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'port' : '5204'},
+    'wlan-bk-ac0' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'port' : '5205'},
+    'wlan-bk-ac1' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'port' : '5206'},
 }
 
 def run_client(trace_nr, proto, bitrate, iperf3_info):
-    # FIXME : we assume the login username is 'it'
-    cmd = ["/usr/local/bin/restart-client", trace_nr, ('it@%s' % (iperf3_info['server-ip'])), iperf3_info['server-ip'], iperf3_info['server-port'], proto, '10M']
+    cmd = ["/usr/local/bin/restart-client", trace_nr, iperf3_info['login'], iperf3_info['server-ip'], iperf3_info['server-port'], proto, '10M']
     # FIXME : this starts the process on the background (i.e., equivalent to using '&')
     subprocess.Popen(cmd)
 

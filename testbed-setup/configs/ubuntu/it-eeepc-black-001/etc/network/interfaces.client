@@ -7,11 +7,11 @@ iface enp6s0 inet static
 address 10.10.12.1
 netmask 255.255.255.0
 dns-nameservers 1.1.1.1 8.8.8.8
-up ip address add 10.10.12.2/24 dev enp6s0
-up ip address add 10.10.12.3/24 dev enp6s0
-up ip address add 10.10.12.4/24 dev enp6s0
-up ip address add 10.10.12.5/24 dev enp6s0
-up ip address add 10.10.12.6/24 dev enp6s0
+post-up ip address add 10.10.12.2/24 dev enp6s0
+post-up ip address add 10.10.12.3/24 dev enp6s0
+post-up ip address add 10.10.12.4/24 dev enp6s0
+post-up ip address add 10.10.12.5/24 dev enp6s0
+post-up ip address add 10.10.12.6/24 dev enp6s0
 
 allow-hotplug wlan-cntrl
 iface wlan-cntrl inet dhcp
