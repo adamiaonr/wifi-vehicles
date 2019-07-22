@@ -4,6 +4,7 @@ import subprocess
 import sys
 import time
 import signal
+import socket
 
 from collections import defaultdict
 
