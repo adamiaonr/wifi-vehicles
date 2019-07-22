@@ -11,8 +11,8 @@ from collections import defaultdict
 # FIXME : we assume the login username is 'it'
 iface_addr_map = {
     'wlan-bk-n0'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.3', 'server-port' : '5203', 'route-ip' : '10.10.13.1'},
-    'wlan-bk-n1'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'server-port' : '5204', 'route-ip' : '10.10.13.1'},
-    'wlan-bk-ac0' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'server-port' : '5205', 'route-ip' : '10.10.14.1'},
+    'wlan-bk-ac0' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.4', 'server-port' : '5204', 'route-ip' : '10.10.14.1'},
+    'wlan-bk-n1'  : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.5', 'server-port' : '5205', 'route-ip' : '10.10.13.1'},
     'wlan-bk-ac1' : {'login' : 'it@10.10.10.113', 'server-ip' : '10.10.12.6', 'server-port' : '5206', 'route-ip' : '10.10.14.1'},
 }
 
@@ -60,8 +60,8 @@ if __name__ == "__main__":
     clients = args.nr_clients.split(',')
     for c in clients:
         client_type = c.split(':')[0]
-        # FIXME : we don't support more than 2 additional ifaces per 802.11 std
-        client_nr = max(int(c.split(':')[-1]), 2)
+        # FIXME : we don't support more than 1 additional ifaces per 802.11 std
+        client_nr = min(int(c.split(':')[-1]), 1)
         for i in range(client_nr):
             iface_name = ('wlan-bk-%s%d' % (client_type, i))
             add_route(iface_name, iface_addr_map[iface_name])

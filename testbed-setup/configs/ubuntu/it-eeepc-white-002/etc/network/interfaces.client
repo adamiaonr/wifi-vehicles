@@ -8,10 +8,10 @@ wpa-conf /etc/wpa_supplicant/wpa_supplicant.n.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 #post-up route add 10.10.12.3/32 via 10.10.13.1 dev wlan-bk-n0
 
-allow-hotplug wlan-bk-n1
-iface wlan-bk-n1 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.n.conf
-dns-nameservers 1.1.1.1 8.8.8.8
+#allow-hotplug wlan-bk-n1
+#iface wlan-bk-n1 inet dhcp
+#wpa-conf /etc/wpa_supplicant/wpa_supplicant.n.conf
+#dns-nameservers 1.1.1.1 8.8.8.8
 #post-up route add 10.10.12.4/32 via 10.10.13.1 dev wlan-bk-n1
 
 allow-hotplug wlan-bk-ac0
@@ -20,10 +20,10 @@ wpa-conf /etc/wpa_supplicant/wpa_supplicant.ac.conf
 dns-nameservers 1.1.1.1 8.8.8.8
 #post-up route add 10.10.12.5/32 via 10.10.14.1 dev wlan-bk-ac0
 
-allow-hotplug wlan-bk-ac1
-iface wlan-bk-ac1 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.ac.conf
-dns-nameservers 1.1.1.1 8.8.8.8
+#allow-hotplug wlan-bk-ac1
+#iface wlan-bk-ac1 inet dhcp
+#wpa-conf /etc/wpa_supplicant/wpa_supplicant.ac.conf
+#dns-nameservers 1.1.1.1 8.8.8.8
 #post-up route add 10.10.12.6/32 via 10.10.14.1 dev wlan-bk-ac1
 
 allow-hotplug wlan-cntrl

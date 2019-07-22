@@ -32,7 +32,7 @@ pkill -f iperf3
 
 # create .out files if not ready yet
 i=1
-filename="$output_dir/iperf3.$i.out"
+filename="$output_dir/iperf3.$port.$i.out"
 if [ ! -f "$filename" ]
 then
 	touch "$filename"
@@ -82,7 +82,7 @@ while [ "$stop_loop" = false ]; do
 		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
 		# update filename
 		i=$((i+1))
-		filename="$output_dir/iperf3.$i.out"
+		filename="$output_dir/iperf3.$port.$i.out"
 		if [ ! -f "$filename" ]
 		then
 			touch "$filename"
