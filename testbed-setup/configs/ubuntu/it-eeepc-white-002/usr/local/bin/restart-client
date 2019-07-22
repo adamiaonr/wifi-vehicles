@@ -53,7 +53,7 @@ then
 		exit 1
 	fi
 
-	bitrate=$6
+	bitrate=$7
 
 	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
 else

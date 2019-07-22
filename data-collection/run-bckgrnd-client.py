@@ -17,7 +17,7 @@ iface_addr_map = {
 }
 
 def run_client(iface_name, trace_nr, proto, bitrate, iperf3_info):
-    cmd = ["/usr/local/bin/restart-client", trace_nr, iperf3_info['login'], iperf3_info['server-ip'], iperf3_info['server-port'], proto, '10M']
+    cmd = ["/usr/local/bin/restart-client", iface_name, trace_nr, iperf3_info['login'], iperf3_info['server-ip'], iperf3_info['server-port'], proto, '10M']
     # FIXME : this starts the process on the background (i.e., equivalent to using '&')
     subprocess.Popen(cmd)
 
