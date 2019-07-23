@@ -17,6 +17,7 @@ ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep 
 if [ "$trace_nr" ]
 then
 	ssh -i $HOME/.ssh/it "$login" "run-servers $trace_nr &> /dev/null < /dev/null &"
+fi
 
 # FIXME : we don't need to restart ap scripts over and over
 # ap scripts
