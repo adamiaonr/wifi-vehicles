@@ -15,8 +15,8 @@ kill -9 "$(cat /var/run/get-cpu.pid)"
 /usr/local/bin/kill-server "it@10.10.10.113"
 ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
 # 	- monitoring sessions & iperf3 clients running on tp-link routers
-ssh -i $HOME/.ssh/it "root@10.10.11.110" "kill-monitor"
-ssh -i $HOME/.ssh/it "root@10.10.11.113" "kill-client"
+ssh -i $HOME/.ssh/it "root@10.10.11.102" "kill-monitor"
+ssh -i $HOME/.ssh/it "root@10.10.11.103" "kill-client"
 #	- any outstanding iperf3 sessions
 pkill -f iperf3
 
