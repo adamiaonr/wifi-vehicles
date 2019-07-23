@@ -19,7 +19,8 @@ then
 fi
 
 # iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo $xargs_cmd kill -9; iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo $xargs_cmd kill -9"
+ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
 # FIXME: do this only in ONE client
 if [ "$trace_nr" ]
 then
