@@ -1,0 +1,49 @@
+#!/bin/sh
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <trace-nr>"
+	echo "options : "
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	exit 1
+fi
+
+trace_nr=$1
+
+# check if nfs mount is necessary
+# first 3 octects of ip addr on eth* iface
+ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
+# nfs mount
+if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
+then
+	mount -t nfs "$ip_addr".1:/export/users /tmp/vehicular-traces -o nolock
+fi
+# create trace directory
+output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p $output_dir
+fi
+
+# monitor 802.11ac (wave 2)
+# FIXME : for simplicity we use hardcoded values. this should be changed in the future.
+/usr/sbin/ifconfig wlan0 down 
+/usr/sbin/iw wlan0 set monitor control
+/usr/sbin/ifconfig wlan0 up
+/usr/sbin/iw dev wlan0 set freq 5240 80 5210
+# FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option
+/usr/sbin/tcpdump -i wlan0 -y IEEE802_11_RADIO -w $output_dir/monitor.ac.$(date +"%s").pcap &
+
+# monitor 802.11ad
+/usr/sbin/ifconfig wlan2 down 
+/usr/sbin/iw wlan2 set monitor control
+/usr/sbin/ifconfig wlan2 up
+/usr/sbin/iw dev wlan2 set freq 60480
+/usr/sbin/tcpdump -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
+
+# log channel utilization
+/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
+# extract cpu stats
+/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+
+exit 0

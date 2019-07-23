@@ -10,20 +10,8 @@ then
 	exit 1
 fi
 
-# kill outstanding scritps
-pkill -f iperf3-to-mobile
-pkill -f get-ntp-accuracy
-
-# get comm. iface channel & width
-channel=$(iw dev wlan-txrx info | awk '/channel/ {print $2}')
-bw=$(iw dev wlan-txrx info | awk '/channel/ {print $6}')
-
-# create dirs (if not available already)
-output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$2
-mkdir -p "$output_dir"
-# update output-dir.txt w/ the current output_dir
-echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
-
+proto=$1
+trace_nr=$2
 # handle bitrate arg
 bitrate="X"
 if [ "$1" == "udp" ]
@@ -38,14 +26,22 @@ then
 	bitrate=$3
 fi
 
-# set wlan short and long retry options...
-wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
-iw phy $wiphy set retry short 7 long 4
+# kill outstanding scritps
+pkill -f iperf3-to-mobile
+pkill -f get-ntp-accuracy
 
+# create dirs (if not available already)
+output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
+mkdir -p "$output_dir"
+# update output-dir.txt w/ the current output_dir
+echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
+
+# get comm. iface channel & width
+channel=$(iw dev wlan-txrx info | awk '/channel/ {print $2}')
+bw=$(iw dev wlan-txrx info | awk '/channel/ {print $6}')
 # get the right signal next to HT40 or HT80 ('+' or '-')
 #	- HT40- : if center1 < freq
 #	- HT40+ : if center1 > freq
-
 if [ "$bw" == "40" ]
 then
     if [ "$channel" == "36" ]
@@ -56,21 +52,25 @@ then
     fi
 fi
 
-# change channel on the monitoring iface to that of the comm. iface
-echo "$channel:HT$bw"
-python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
+# set wlan short and long retry options...
+wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
+iw phy $wiphy set retry short 7 long 4
 
-# iperf3-to-mobile.py not used anymore, instead we use:
+# add route to server
+ip route add 10.10.12.0/24 via 10.10.13.1 dev wlan-txrx
+# change channel on the monitoring iface to that of the comm. iface
+python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 #	- call tcpdump directly in script
-#	- a restart-iperf3-client, which starts a iperf3 client in -R mode, and re-spawns server on remote side
-tcpdump -i wlan-monitor -y IEEE802_11_RADIO -s0 -w "$output_dir"/monitor.$(date +"%s").pcap &
-/usr/local/bin/restart-client "$2" "it@10.10.10.113" 10.10.12.1 5201 $1 $bitrate &
+#	- a restart-client script, which re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
+# FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option
+tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
+/usr/local/bin/restart-client "$trace_nr" "it@10.10.10.113" 10.10.12.1 5201 $proto $bitrate &
 
 # extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract bitrate adaptation algorithm stats
 python $HOME/workbench/wifi-vehicles/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
 # extract cpu stats
-$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $2 "$output_dir" &
+$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
 
 exit 0

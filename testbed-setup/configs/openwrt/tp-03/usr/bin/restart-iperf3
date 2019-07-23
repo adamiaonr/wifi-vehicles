@@ -1,0 +1,42 @@
+#!/bin/sh
+
+if [ $# -lt 5 ]
+then
+	echo "usage : $0 <trace-nr> <server-ip> <server-port> <protocol> <filename> <bitrate>"
+	exit 1
+fi
+
+trace_nr=$1
+ip=$2
+port=$3
+proto=$4
+filename=$5
+bitrate=$6
+
+# FIXME : we don't need to continuously check this
+# check if nfs mount is necessary
+# first 3 octects of ip addr on eth* iface
+ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
+# nfs mount
+if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
+then
+	mount -t nfs "$ip_addr".1:/export/users /tmp/vehicular-traces -o nolock
+fi
+# create trace directory
+output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p $output_dir
+fi
+
+# kill respective instance of iperf3 client
+ps | grep iperf3 | grep "$port" | awk '{print $1}' | xargs -r kill -9
+# restart iperf3
+if [ "$proto" == "udp" ]
+then
+	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$output_dir/$filename" &
+else
+	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$output_dir/$filename" &
+fi
+
+exit 0

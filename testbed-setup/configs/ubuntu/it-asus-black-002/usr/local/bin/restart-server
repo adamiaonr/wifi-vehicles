@@ -6,14 +6,21 @@ then
     exit 1
 fi
 
+login=$1
+port=$2
+trace_nr=$3
+
 # re-directing io streams to /dev/null, so that ssh returns
 # iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$1" "kill-servers"
-ssh -i $HOME/.ssh/it "$1" "ps -ef | grep iperf3 | grep $2 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -p $2 &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -p $port &> /dev/null < /dev/null &"
 # FIXME: do this only in ONE client
-#ssh -i $HOME/.ssh/it "$1" "run-servers $3 &> /dev/null < /dev/null &"
+if [ "$trace_nr" ]
+then
+	ssh -i $HOME/.ssh/it "$login" "run-servers $trace_nr &> /dev/null < /dev/null &"
+
+# FIXME : we don't need to restart ap scripts over and over
 # ap scripts
 #ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 #ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap; (run-ap $3 > /dev/null 2>&1)&"
 
-exit
+exit 0

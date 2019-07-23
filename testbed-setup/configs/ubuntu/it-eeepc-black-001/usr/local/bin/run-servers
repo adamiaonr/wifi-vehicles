@@ -8,17 +8,21 @@ then
 	exit 1
 fi
 
+trace_nr=$1
+
 # kill outstanding scritps
 pkill -f get-ntp-accuracy
+pkill -f get-cpu
+
 # create dirs (if not available already)
 trace_dir=$HOME/workbench/range-tests/vehicular-traces
-output_dir="$trace_dir"/trace-$1
+output_dir="$trace_dir"/trace-$trace_nr
 mkdir -p "$output_dir"
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > "$trace_dir"/output-dir.txt
 # run ntp accuracy stats
 python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract cpu stats
-$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $1 "$output_dir" &
+$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
 
 exit 0

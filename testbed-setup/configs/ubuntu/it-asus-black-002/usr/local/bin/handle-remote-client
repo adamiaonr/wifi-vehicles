@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]
+then
+	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
+	echo "options : "
+	echo "    <protocol>    : 'tcp' or 'udp'"
+	echo "    <trace-nr>    : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	echo "    <udp-bitrate> : (optional) target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
+	exit 1
+fi
+
+proto=$1
+trace_nr=$2
+bitrate=$3
+
+# FIXME : for simplicity we use hardcoded values. this should be changed in the future.
+# tp-02
+ssh -i $HOME/.ssh/it "root@10.10.11.110" "kill-monitor; (run-monitor $trace_nr > /dev/null 2>&1)&"
+
+# tp-03
+# 	- start iperf3 clients in tp-03
+# FIXME : harcoded login uses eth iface
+/usr/local/bin/restart-remote-client $trace_nr "root@10.10.11.113" 192.168.0.145 5201 $proto $bitrate &
+/usr/local/bin/restart-remote-client $trace_nr "root@10.10.11.113" 192.168.0.146 5202 $proto $bitrate &
+
+exit 0

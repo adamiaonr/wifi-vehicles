@@ -1,20 +1,18 @@
 #!/bin/bash
 
-if [ $# -lt 5 ]
+if [ $# -lt 6 ]
 then
-    echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
+    echo "usage : $0 <output-dir> <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
     exit 1
 fi
 
-trace_nr=$1
-
-output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
-mkdir -p "$output_dir"
-
-login=$2
-ip=$3
-port=$4
-protocol=$5
+output_dir=$1
+trace_nr=$2
+login=$3
+ip=$4
+port=$5
+protocol=$6
+bitrate=$7
 
 # trap ctrl-c and call signal_handler()
 stop_loop=false
@@ -38,11 +36,9 @@ then
 fi
 echo -e "$filename"
 
-# restart iperf3 server
-restart-server "$login" "$port" "$trace_nr"
-
+# restart iperf3 server (in it@it-eeepc-black-001)
+restart-server "$login" "$port"
 # start iperf3 client for 1st time
-bitrate='X'
 if [ "$protocol" == "udp" ]
 then
 
@@ -51,8 +47,6 @@ then
 		echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> <bitrate>"
 		exit 1
 	fi
-
-	bitrate=$6
 
 	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
 else
@@ -74,9 +68,8 @@ while [ "$stop_loop" = false ]; do
 	if [[ $(tail -$n $filename | awk '/nan/') != "" ]] || [[ $(tail -$n $filename | awk '/error/') != "" ]]
 	then
 
-		# restart iperf3 server
-		restart-server "$login" "$port" "$trace_nr"
-
+		# restart iperf3 server (in it@it-eeepc-black-001)
+		restart-server "$login" "$port"
 		# kill current iperf3 client
 		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
 		# update filename
@@ -97,9 +90,7 @@ while [ "$stop_loop" = false ]; do
 		echo -e "restarted iperf3 client ("$((i-1))")"
 	fi
 
-	# sleep for 3 sec before checking again
-	# this means the iperf client can be left hanging for 3 sec
-	sleep 3
+	sleep 5
 
 done
 
