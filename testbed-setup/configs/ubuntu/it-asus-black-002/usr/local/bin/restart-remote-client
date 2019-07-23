@@ -41,6 +41,7 @@ echo -e "$output_dir/$filename"
 restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
 # start iperf3 client for 1st time
 ssh -i $HOME/.ssh/it "$login" "(init-client > /dev/null 2>&1)&"
+ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print $1}' | xargs -r kill -9"
 ssh -i $HOME/.ssh/it "$login" "(restart-client $trace_nr $ip $port $proto $filename $bitrate > /dev/null 2>&1)&"
 
 # check output regularly and restart if iperf3 client is found 'hanging' 
@@ -65,6 +66,7 @@ while [ "$stop_loop" = false ]; do
 		fi
 
 		# restart remote iperf3 client
+		ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print $1}' | xargs -r kill -9"
 		ssh -i $HOME/.ssh/it "$login" "(restart-client $trace_nr $ip $port $proto $filename $bitrate > /dev/null 2>&1)&"
 
 		echo -e "restarted iperf3 client ("$((i-1))")"

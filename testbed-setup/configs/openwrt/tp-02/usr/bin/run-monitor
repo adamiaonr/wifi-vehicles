@@ -27,17 +27,17 @@ fi
 
 # monitor 802.11ac (wave 2)
 # FIXME : for simplicity we use hardcoded values. this should be changed in the future.
-/usr/sbin/ifconfig wlan0 down 
+/sbin/ifconfig wlan0 down 
 /usr/sbin/iw wlan0 set monitor control
-/usr/sbin/ifconfig wlan0 up
+/sbin/ifconfig wlan0 up
 /usr/sbin/iw dev wlan0 set freq 5240 80 5210
 # FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option
 /usr/sbin/tcpdump -i wlan0 -y IEEE802_11_RADIO -w $output_dir/monitor.ac.$(date +"%s").pcap &
 
 # monitor 802.11ad
-/usr/sbin/ifconfig wlan2 down 
+/sbin/ifconfig wlan2 down 
 /usr/sbin/iw wlan2 set monitor control
-/usr/sbin/ifconfig wlan2 up
+/sbin/ifconfig wlan2 up
 /usr/sbin/iw dev wlan2 set freq 60480
 /usr/sbin/tcpdump -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
 

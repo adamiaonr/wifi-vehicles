@@ -29,8 +29,6 @@ then
 	mkdir -p $output_dir
 fi
 
-# kill respective instance of iperf3 client
-ps | grep iperf3 | grep "$port" | awk '{print $1}' | xargs -r kill -9
 # restart iperf3
 if [ "$proto" == "udp" ]
 then
