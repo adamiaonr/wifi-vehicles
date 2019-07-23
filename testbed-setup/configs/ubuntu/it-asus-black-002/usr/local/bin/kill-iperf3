@@ -1,12 +1,23 @@
 #!/bin/bash
 
-# pkill -f --signal 2 iperf3-to-mobile
+# kills active scripts:
+#	- restart-client
 ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
+#	- restart-remote-client
+ps -ef | grep restart-remote-client | awk '{print $2}' | sudo xargs -r kill -9
+#	- any outstanding tcpdumps
+pkill -f tcpdump
+#	- general var collection scripts
 pkill -f --signal 2 get-ntp-accuracy
 pkill -f --signal 2 bitrate-adapt-stats
-pkill -f tcpdump
 kill -9 "$(cat /var/run/get-cpu.pid)"
+#	- iperf3 servers (on it@it-eeepc-black-001 and adamiaonr@adamiaonr~mac)
 /usr/local/bin/kill-server "it@10.10.10.113"
+ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
+# 	- monitoring sessions & iperf3 clients running on tp-link routers
+ssh -i $HOME/.ssh/it "root@10.10.11.110" "kill-monitor"
+ssh -i $HOME/.ssh/it "root@10.10.11.113" "kill-client"
+#	- any outstanding iperf3 sessions
 pkill -f iperf3
 
 exit 0
