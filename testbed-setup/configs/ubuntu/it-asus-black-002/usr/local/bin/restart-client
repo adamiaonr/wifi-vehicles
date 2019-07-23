@@ -37,7 +37,7 @@ fi
 echo -e "$filename"
 
 # restart iperf3 server (in it@it-eeepc-black-001)
-restart-server "$login" "$port"
+restart-server "$login" "$ip" "$port"
 # start iperf3 client for 1st time
 if [ "$protocol" == "udp" ]
 then
@@ -69,7 +69,7 @@ while [ "$stop_loop" = false ]; do
 	then
 
 		# restart iperf3 server (in it@it-eeepc-black-001)
-		restart-server "$login" "$port"
+		restart-server "$login" "$ip" "$port"
 		# kill current iperf3 client
 		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
 		# update filename

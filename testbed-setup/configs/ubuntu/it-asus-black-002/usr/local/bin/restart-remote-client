@@ -38,7 +38,7 @@ echo -e "$output_dir/$filename"
 
 # FIXME : hardcoded values. this must be changed in the future.
 # restart iperf3 server
-restart-server "adamiaonr@10.10.10.141" "$port"
+restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
 # start iperf3 client for 1st time
 ssh -i $HOME/.ssh/it "$login" "(init-client > /dev/null 2>&1)&"
 ssh -i $HOME/.ssh/it "$login" "(restart-client $trace_nr $ip $port $proto $filename $bitrate > /dev/null 2>&1)&"
@@ -55,7 +55,7 @@ while [ "$stop_loop" = false ]; do
 	then
 
 		# restart iperf3 server
-		restart-server "adamiaonr@10.10.10.141" "$port"
+		restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
 		# update filename
 		i=$((i+1))
 		filename="iperf3.$port.$i.out"

@@ -1,18 +1,19 @@
 #!/bin/sh
 
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-    echo "usage : $0 <remote-login> <server-port> <trace-nr>"
+    echo "usage : $0 <remote-login> <server-ip> <server-port> <trace-nr>"
     exit 1
 fi
 
 login=$1
-port=$2
-trace_nr=$3
+ip=$2
+port=$3
+trace_nr=$4
 
 # re-directing io streams to /dev/null, so that ssh returns
 # iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -p $port &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
 # FIXME: do this only in ONE client
 if [ "$trace_nr" ]
 then
