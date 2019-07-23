@@ -34,7 +34,7 @@ if [ "$2" == "server" ]
 then
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/dnsmasq.conf /etc/dnsmasq.conf
 	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/exports /etc/exports
-	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/fstab /etc/fstab	
+	cp $HOME/workbench/wifi-vehicles/testbed-setup/configs/$1/$3/etc/fstab /etc/fstab
 fi
 
 exit 0
