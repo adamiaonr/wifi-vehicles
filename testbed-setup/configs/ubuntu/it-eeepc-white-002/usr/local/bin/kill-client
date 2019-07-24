@@ -4,8 +4,8 @@ ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
 pkill -f --signal 2 get-ntp-accuracy
 pkill -f --signal 2 bitrate-adapt-stats
 pkill -f tcpdump
-pkill -f --signal 2 get-cpu
-pkill -f --signal 2 get-cbt
+pkill -f get-cpu
+pkill -f get-cbt
 # FIXME : this may not be necessary...
 /usr/local/bin/kill-server "wlan-bk-n0" "it@10.10.10.113"
 /usr/local/bin/kill-server "wlan-bk-ac0" "it@10.10.10.113"
