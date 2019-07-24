@@ -12,7 +12,7 @@ login=$1
 # FIXME : we do some of these commands twice (e.g., 'kill-servers' also kills iperf3 processes)
 ssh -i $HOME/.ssh/it "$login" "kill-servers"
 # 	- kills scripts running in ap
-ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+ip=$(ifconfig wlan-txrx | awk -F ' ' '/inet/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 if [ -z "$ip" ]
 then
 	ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap"
