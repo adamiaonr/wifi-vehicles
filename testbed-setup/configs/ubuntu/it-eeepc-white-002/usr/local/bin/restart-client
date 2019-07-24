@@ -42,8 +42,8 @@ fi
 # start iperf3 server
 restart-server "$login" "$ip" "$port" "$trace_nr"
 # start ap scripts
-ip=$(ifconfig $iface_name | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
-ssh -i $HOME/.ssh/it root@$ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
+ap_ip=$(ifconfig $iface_name | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+ssh -i $HOME/.ssh/it root@$ap_ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
 
 # start iperf3 client for 1st time
 if [ "$protocol" == "udp" ]
