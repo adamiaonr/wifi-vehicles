@@ -8,10 +8,10 @@ ps -ef | grep restart-remote-client | awk '{print $2}' | sudo xargs -r kill -9
 #	- any outstanding tcpdumps
 pkill -f tcpdump
 #	- general var collection scripts
-pkill -f --signal 2 get-ntp-accuracy
-pkill -f --signal 2 bitrate-adapt-stats
-pkill -f --signal 2 get-cpu
-pkill -f --signal 2 get-cbt
+pkill -f get-ntp-accuracy
+pkill -f bitrate-adapt-stats
+pkill -f get-cpu
+pkill -f get-cbt
 #	- server-side scripts (on it@it-eeepc-black-001 and adamiaonr@adamiaonr~mac)
 /usr/local/bin/kill-server "it@10.10.10.113"
 ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
