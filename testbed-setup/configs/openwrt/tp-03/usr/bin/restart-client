@@ -13,11 +13,8 @@ proto=$4
 filename=$5
 bitrate=$6
 
-# create trace directory
+# trace directory
 output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
-
-touch $output_dir/testemony.txt
-echo "restart" >> $output_dir/testemony.txt
 
 # restart iperf3
 if [ "$proto" == "udp" ]

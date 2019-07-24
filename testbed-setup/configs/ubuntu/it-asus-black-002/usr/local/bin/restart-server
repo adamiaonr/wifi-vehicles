@@ -18,18 +18,14 @@ then
 	xargs_cmd="xargs"
 fi
 
-# iperf3 server on backbone
+# restart iperf3 servers
 ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v grep | grep $port | awk '{print \$2}' | sudo $xargs_cmd kill -9"
 ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
-# FIXME: do this only in ONE client
+# restart server-side scripts
 if [ "$trace_nr" ]
 then
+	#ssh -i $HOME/.ssh/it "$login" "kill-servers"
 	ssh -i $HOME/.ssh/it "$login" "run-servers $trace_nr &> /dev/null < /dev/null &"
 fi
-
-# FIXME : we don't need to restart ap scripts over and over
-# ap scripts
-#ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
-#ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap; (run-ap $3 > /dev/null 2>&1)&"
 
 exit 0

@@ -1,16 +1,17 @@
 #!/bin/sh
 
-if [ $# -lt 3 ]
+if [ $# -lt 4 ]
 then
-    echo "usage : $0 <iface-name> <remote-login> <server-port> <trace-nr>"
+    echo "usage : $0 <remote-login> <server-ip> <server-port> <trace-nr>"
     exit 1
 fi
 
-# re-directing io streams to /dev/null, so that ssh returns
-# iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$2" "ps -ef | grep iperf3 | grep $3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -p $3 &> /dev/null < /dev/null &"
-# ap scripts
-#ip=$(ifconfig $1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
-#ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap; (run-ap $4 > /dev/null 2>&1)&"
+login=$1
+ip=$2
+port=$3
+trace_nr=$4
 
-exit
+# FIXME : do we really need a separate script to run this command?
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+
+exit 0

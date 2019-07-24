@@ -13,9 +13,9 @@ login=$1
 ssh -i $HOME/.ssh/it "$login" "kill-servers"
 # 	- kills scripts running in ap
 ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
-if [ "$ip" ]
+if [ -z "$ip" ]
 then
 	ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap"
 fi
 
-exit
+exit 0

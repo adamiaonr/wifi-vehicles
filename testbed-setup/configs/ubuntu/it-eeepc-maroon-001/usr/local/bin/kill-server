@@ -6,12 +6,14 @@ then
     exit 1
 fi
 
-# re-directing io streams to /dev/null, so that ssh returns
-# iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$1" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
-ssh -i $HOME/.ssh/it "$1" "kill-servers"
-# ap scripts
+login=$1
+
+# kill server-side scripts
+# FIXME : we do some of these commands twice (e.g., 'kill-servers' also kills iperf3 processes)
+# ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
+ssh -i $HOME/.ssh/it "$login" "kill-servers"
+# kill ap-side scripts
 ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap"
 
-exit
+exit 0

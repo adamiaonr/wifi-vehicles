@@ -14,14 +14,12 @@ proto=$1
 trace_nr=$2
 bitrate=$3
 
-# kill outstanding scritps
-pkill -f get-ntp-accuracy
-pkill -f get-cpu
-pkill -f bitrate-adapt-stats
-
 # create dirs (if not available already)
 output_dir=$HOME/workbench/vehicular-experiments/trace-$trace_nr
-mkdir -p "$output_dir"
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p "$output_dir"
+fi
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > $HOME/workbench/vehicular-experiments/output-dir.txt
 
@@ -37,5 +35,6 @@ python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --outpu
 python $HOME/workbench/wifi-vehicles/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
 # extract cpu stats
 $HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
+$HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh "$output_dir" "wlan-monitor" &
 
 exit 0

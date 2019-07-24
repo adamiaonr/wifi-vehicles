@@ -1,6 +1,6 @@
 #!/bin/sh
 
-kill -9 "$(cat /var/run/get-cbt.pid)"
-kill -9 "$(cat /var/run/get-cpu.pid)"
+pkill -f get-cbt
+pkill -f get-cpu
 
 exit 0

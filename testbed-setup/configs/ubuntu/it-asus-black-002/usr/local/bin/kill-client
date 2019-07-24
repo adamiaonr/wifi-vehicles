@@ -10,11 +10,12 @@ pkill -f tcpdump
 #	- general var collection scripts
 pkill -f --signal 2 get-ntp-accuracy
 pkill -f --signal 2 bitrate-adapt-stats
-kill -9 "$(cat /var/run/get-cpu.pid)"
-#	- iperf3 servers (on it@it-eeepc-black-001 and adamiaonr@adamiaonr~mac)
+pkill -f --signal 2 get-cpu
+pkill -f --signal 2 get-cbt
+#	- server-side scripts (on it@it-eeepc-black-001 and adamiaonr@adamiaonr~mac)
 /usr/local/bin/kill-server "it@10.10.10.113"
 ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
-# 	- monitoring sessions & iperf3 clients running on tp-link routers
+# 	- monitoring sessions & iperf3 clients running on talon ad7200 routers
 ssh -i $HOME/.ssh/it "root@10.10.11.102" "kill-monitor"
 ssh -i $HOME/.ssh/it "root@10.10.11.103" "kill-client"
 #	- any outstanding iperf3 sessions

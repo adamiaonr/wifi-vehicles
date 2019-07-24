@@ -25,16 +25,19 @@ then
 	mkdir -p $output_dir
 fi
 
-touch $output_dir/testemony-init.txt
-echo "init" >> $output_dir/testemony-init.txt
-
 # add specific routes to divide traffic between 802.11ac and 802.11ad interfaces
 ip route add 192.168.0.145/32 via 192.168.0.1 dev wlan0
 ip route add 192.168.0.146/32 via 192.168.0.1 dev wlan2
 
-# log channel utilization
-/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
-# extract cpu stats
-/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+# log channel utilization & cpu usage
+if [ -z "$(ps | grep get-cbt | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
+fi
+
+if [ -z "$(ps | grep get-cpu | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+fi
 
 exit 0

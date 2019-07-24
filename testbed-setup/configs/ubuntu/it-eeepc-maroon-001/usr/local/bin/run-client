@@ -13,7 +13,7 @@ fi
 proto=$1
 trace_nr=$2
 # handle bitrate arg
-bitrate="X"
+bitrate=$3
 if [ "$1" == "udp" ]
 then
 
@@ -22,17 +22,14 @@ then
 		echo "usage : $0 <protocol> <trace-nr> <udp-bitrate>"
 		exit 1
 	fi
-
-	bitrate=$3
 fi
-
-# kill outstanding scritps
-pkill -f iperf3-to-mobile
-pkill -f get-ntp-accuracy
 
 # create dirs (if not available already)
 output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
-mkdir -p "$output_dir"
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p "$output_dir"
+fi
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
@@ -70,7 +67,9 @@ tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s
 python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract bitrate adaptation algorithm stats
 python $HOME/workbench/wifi-vehicles/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
-# extract cpu stats
+# extract cbt and cpu stats
+$HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh "$output_dir" "wlan-txrx" &
+$HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh "$output_dir" "wlan-monitor" &
 $HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
 
 exit 0

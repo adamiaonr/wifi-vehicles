@@ -6,11 +6,14 @@ then
     exit 1
 fi
 
-# iperf3 server on backbone
-ssh -i $HOME/.ssh/it "$2" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
-ssh -i $HOME/.ssh/it "$2" "kill-servers"
-# ap scripts
-ip=$(ifconfig $1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+iface=$1
+login=$2
+
+# kill server-side scripts
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
+ssh -i $HOME/.ssh/it "$login" "kill-servers"
+# kill ap-side scripts
+ip=$(ifconfig $iface | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap"
 
-exit
+exit 0

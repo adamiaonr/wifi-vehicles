@@ -1,10 +1,9 @@
 #!/bin/bash
 
 pkill -f --signal 2 get-ntp-accuracy
-pkill -f get-cpu.sh
-# ps -ef | grep restart-iperf-servers | awk '{print $2}' | sudo xargs -r kill -9
-# pkill -f --signal 2 report-status
+pkill -f --signal 2 get-cpu.sh
 pkill -f iperf3
+# pkill -f --signal 2 report-status
 # pkill -f webserver
 
 exit 0
