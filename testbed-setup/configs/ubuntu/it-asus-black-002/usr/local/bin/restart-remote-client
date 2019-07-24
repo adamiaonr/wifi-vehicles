@@ -15,7 +15,7 @@ bitrate=$6
 
 # FIXME : hardcoded values. this must be changed in the future.
 output_dir=$HOME/workbench/vehicular-experiments/tp-03/trace-$trace_nr
-mkdir -p "$output_dir"
+#mkdir -p "$output_dir"
 
 # trap ctrl-c and call signal_handler()
 stop_loop=false
@@ -30,19 +30,25 @@ signal_handler() {
 # create .out files if not ready yet
 i=1
 filename="iperf3.$port.$i.out"
-if [ ! -f "$output_dir/$filename" ]
-then
-	touch "$output_dir/$filename"
-fi
+#if [ ! -f "$output_dir/$filename" ]
+#then
+#	touch "$output_dir/$filename"
+#fi
 echo -e "$output_dir/$filename"
 
 # FIXME : hardcoded values. this must be changed in the future.
 # restart iperf3 server
 restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
 # start iperf3 client for 1st time
-ssh -i $HOME/.ssh/it "$login" "(init-client $trace_nr > /dev/null 2>&1)&"
+echo -e "login" "$login"
+echo -e "trace-nr" "$trace_nr"
+echo -e "ip" "$ip"
+echo -e "port" "$port"
+echo -e "filename" "$filename"
+echo -e "bitrate" "$bitrate"
+
 ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
-ssh -i $HOME/.ssh/it "$login" "(restart-client $trace_nr $ip $port $proto $filename $bitrate > /dev/null 2>&1)&"
+ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filename $bitrate"
 
 # check output regularly and restart if iperf3 client is found 'hanging' 
 # 'hanging' results in the iperf3 client producing output like: 
@@ -67,7 +73,7 @@ while [ "$stop_loop" = false ]; do
 
 		# restart remote iperf3 client
 		ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
-		ssh -i $HOME/.ssh/it "$login" "(restart-client $trace_nr $ip $port $proto $filename $bitrate > /dev/null 2>&1)&"
+		ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filename $bitrate"
 
 		echo -e "restarted iperf3 client ("$((i-1))")"
 	fi
