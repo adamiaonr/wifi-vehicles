@@ -13,21 +13,11 @@ proto=$4
 filename=$5
 bitrate=$6
 
-# FIXME : we don't need to continuously check this
-# check if nfs mount is necessary
-# first 3 octects of ip addr on eth* iface
-ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
-# nfs mount
-if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
-then
-	mount -t nfs "$ip_addr".1:/export/users /tmp/vehicular-traces -o nolock
-fi
 # create trace directory
 output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
-if [ ! -d "$output_dir" ]
-then
-	mkdir -p $output_dir
-fi
+
+touch $output_dir/testemony.txt
+echo "restart" >> $output_dir/testemony.txt
 
 # restart iperf3
 if [ "$proto" == "udp" ]
