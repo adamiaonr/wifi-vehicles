@@ -72,4 +72,7 @@ $HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir"
 $HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir" "wlan-monitor" &
 $HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
 
+# run report status
+python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip 10.10.10.113 --port 8080 --mode client --output-dir $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
+
 exit 0

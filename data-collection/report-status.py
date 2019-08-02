@@ -25,6 +25,133 @@ from datetime import datetime
 from collections import defaultdict
 from collections import OrderedDict
 
+# FIXME: hardcoded instructions to build status lines to POST to server
+report_profiles = {
+    'it-eeepc-maroon-001' : {
+        'm1' : {
+            'section' : 'client-main',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.1:5201'},
+                'tcpdump' : 'monitor.*.pcap',
+                'cbt' : 'cbt.wlan-monitor.*.csv',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'gps' : 'gps-log.*.log',
+                'cpu' : 'cpu.*.csv'
+            }}},
+    'it-eeepc-black-001' : {
+        'b1' : {
+            'section' : 'server',
+            'fields' : {
+                'iperf' : '',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'cpu.*.csv'
+            },
+        },
+        'unifi-1 (n)' : {
+            'section' : 'ap',
+            'fields' : {
+                'cbt' : 'it-unifi-ac-lite-001//cbt.wlan1.*.csv',
+                'cpu' : 'cpu.*.csv'
+            },
+        },
+        'unifi-1 (ac)' : {
+            'section' : 'ap',
+            'fields' : {
+                'cbt' : 'it-unifi-ac-lite-001//cbt.wlan0.*.csv',
+                'cpu' : 'cpu.*.csv'
+            }}},
+    'it-asus-black-002' : {
+        'b2' : {
+            'section' : 'main-client',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.2:5202'},
+                'tcpdump' : 'monitor.*.pcap',
+                'cbt' : 'cbt.wlan-monitor.*.csv',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'cpu.*.csv',
+                'gps' : '',
+            }
+        },
+        'tp3 (ac)' : {
+            'section' : 'main-client',
+            'fields' : {
+                'iperf' : {'type' : 'file', 'args' : 'tp-03//iperf3.5201.*.out'},
+                'tcpdump' : 'tp-02//monitor.ac.*.pcap',
+                'cbt' : 'tp-03//cbt.wlan0.*.csv',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'tp-03//cpu.*.csv',
+                'gps' : '',
+            }
+        },
+        'tp3 (ad)' : {
+            'section' : 'main-client',
+            'fields' : {
+                'iperf' : {'type' : 'file', 'args' : 'tp-03//iperf3.5202.*.out'},
+                'tcpdump' : 'tp-02//monitor.ad.*.pcap',
+                'cbt' : '',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'tp-02//cpu.*.csv',
+                'gps' : '',
+            }}},
+    'it-eeepc-white-002' : {
+        'w2 (n)' : {
+            'section' : 'bck-client',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.3:5203'},
+                'cbt' : '',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'cpu.*.csv',
+            }
+        },
+        'w2 (ac)' : {
+            'section' : 'bck-client',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.4:5204'},
+                'cbt' : 'cbt.wlan-bk-ac0.*.csv',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'cpu.*.csv',
+            }
+        }},
+    'it-eeepc-white-003' : {
+        'w3 (n)' : {
+            'section' : 'bck-client',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.5:5205'},
+                'cbt' : '',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'cpu.*.csv',
+            }
+        },
+        'w3 (ac)' : {
+            'section' : 'bck-client',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.6:5206'},
+                'cbt' : 'cbt.wlan-bk-ac0.*.csv',
+                'ntp' : 'ntpstat.*.csv',
+                'battery' : '',
+                'cpu' : 'cpu.*.csv',
+            }
+        }},
+}
+
+status_funcs = {
+    'iperf' : iperf3_status,
+    'cbt' : cbt_status,
+    'gps' : gps_status,
+    'ntp' : ntp_status,
+    'battery' : batt_status,
+    'cpu' : cpu_status,
+    'tcpdump' : monitor_status
+}
+
 def get_latest_file(logdir, filename):
 
     # extract prefix and extension from filename
@@ -87,44 +214,6 @@ def cpu_status(status, logdir, timestamp):
     except Exception:
         sys.stderr.write("""%s::cpu_status() : [ERROR] exception found\n""" % sys.argv[0])
 
-def iperf3_status(status, logdir, timestamp, mode = 'client'):
-    status['iperf3'] = 'bad'
-    if mode == 'backbone':
-
-        cmd = ['ps', 'aux']
-        try:
-            output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
-        except subprocess.CalledProcessError:
-            return
-
-        output = output.splitlines()
-        lines = [s.split('-p')[-1].replace(' ', '') for s in output if (('iperf3' in s) and ('grep' not in s))]
-        if all(e in lines for e in ['5203', '5204']):
-            status['iperf3'] = 'ok'
-        else:
-            status['iperf3'] = 'bad'
-
-    else:
-        # get iperf3.*.out w/ largest index
-        # iperf3_logs = glob.glob(os.path.join(logdir, ('iperf3.*.out')))
-        # m = max([int(l.split('.')[1]) for l in iperf3_logs])
-        # filename = os.path.join(logdir, ('iperf3.%d.out' % (m)))
-        filename = get_latest_file(logdir, 'iperf3.*.out')
-
-        try:
-
-            # FIXME: the threshold size is arbitrary at 100 byte
-            if (int(os.stat(filename).st_size) < 100):
-                return
-
-            with open(filename, 'r') as f:
-                line = f.readlines()[-1]
-                if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
-                    status['iperf3'] = 'ok'
-
-        except Exception:
-            sys.stderr.write("""%s::iperf3_status() : [ERROR] exception found\n""" % sys.argv[0])
-
 def cbt_status(status, logdir, timestamp):
     status['cbt'] = 'n/a'
     trace = logdir.split('/')[-1]
@@ -171,6 +260,53 @@ def signal_handler(signal, frame):
 def report(ip, port, status):
     cmd = ['curl', '-d', ('%s' % (status)), '-X', 'POST', ('http://%s:%s/status' % (ip, port))]
     proc = subprocess.Popen(cmd)
+
+def iperf_status(status, logdir, timestamp, args):
+
+    status['iperf'] = 0
+
+    check_type = args['type']
+    check_args = args['args']
+
+    if check_type == 'ps':
+
+        server_ip = check_args.split(':')[0]
+        server_port = check_args.split(':')[-1]
+
+        cmd = ['ps', 'aux']
+        try:
+            output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
+        except subprocess.CalledProcessError:
+            return
+
+        output = output.splitlines()
+        lines = [s.split('-p')[-1].replace(' ', '') for s in output if (('iperf' in s) and ('grep' not in s))]
+        if all(e in lines for e in [server_port]):
+            status['iperf'] = 'ok'
+        else:
+            status['iperf'] = 'bad'
+
+    elif check_type == 'file':
+
+        filename = check_args.split('/')
+        filename[1] = logdir.split('/')[-1]
+        trace_nr = logdir.split('/')[-1]
+        filename = '/'.join(filename)
+        filename = get_latest_file(logdir[:-1], 'iperf.*.out')
+
+        try:
+
+            # FIXME: the threshold size is arbitrary at 100 byte
+            if (int(os.stat(filename).st_size) < 100):
+                return
+
+            with open(filename, 'r') as f:
+                line = f.readlines()[-1]
+                if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
+                    status['iperf'] = 'ok'
+
+    else:
+        sys.stderr.write("""%s::iperf_status() : [ERROR] unknown check type\n""" % sys.argv[0])
 
 if __name__ == "__main__":
 
@@ -234,14 +370,22 @@ if __name__ == "__main__":
             continue
 
         timestamp = int(time.time())
-        status = defaultdict(str)
 
-        # src, time, mode
-        status['src'] = platform.uname()[1]
-        status['time'] = str(timestamp)
-        status['mode'] = args.mode
+        hostname = platform.uname()[1]
+        profile = report_profiles[hostname]
 
-        if args.mode == 'backbone':
+        for node in profile:
+            
+            status = defaultdict(str)
+            
+            status['node'] = node
+            status['section'] = node['section']
+            status['time'] = time(str(timestamp))
+
+            for f in node['fields']:
+                status_funcs[f](status, output_dir, timestamp, args = node['fields'][f])
+
+        if args.mode == 'server':
 
             # check:
             #   - export of unifi aps stats
@@ -266,6 +410,7 @@ if __name__ == "__main__":
             gps_status(status, output_dir, timestamp)
             cpu_status(status, output_dir, timestamp)
             ntp_status(status, output_dir, timestamp)
+            cbt_status(status, output_dir, timestamp)
             monitor_status(status, output_dir, timestamp)
             iperf3_status(status, output_dir, timestamp, args.mode)
             batt_status(status)
