@@ -6,6 +6,7 @@ pkill -f --signal 2 bitrate-adapt-stats
 pkill -f tcpdump
 pkill -f get-cpu
 pkill -f get-cbt
+pkill -f get-gps
 /usr/local/bin/kill-server "it@10.10.10.113"
 pkill -f iperf3
 
