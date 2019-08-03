@@ -24,38 +24,6 @@ def generate_updated(timestamp):
     line += str(datetime.utcfromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S')) + '</td></tr></table>'
     return line
 
-    # # 2) which wifi network is giving us internet?
-    # output = ''
-    # essid = ''
-    # cmd = ['iwconfig', 'wlan-internet']
-    # try:
-    # output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
-    # except subprocess.CalledProcessError:
-    # essid = 'n/a'
-
-    # if output != 'n/a':
-    # output = output.splitlines()
-    # essid = output[output.index([s for s in output if 'ESSID' in s][0])].split(':')[-1].replace('"', '').rstrip()
-
-    # line += essid + '</td><td>'
-
-    # # 3) which ip address in the wlan-internet iface?
-    # output = ''
-    # ip_addr = ''
-    # cmd = ['ifconfig', 'wlan-internet']
-    # try:
-    # output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
-    # except subprocess.CalledProcessError:
-    # ip_addr = 'n/a'
-
-    # if output != 'n/a':
-    # output = output.splitlines()
-    # ip_addr = output[output.index([s for s in output if 'inet addr' in s][0])].split('inet addr:')[1].split(' ')[0].rstrip()
-
-    # line += ip_addr + '</td></tr></table>'
-
-    # return line
-
 def update_index(statuses):
 
     # open & update the index.html file
@@ -64,42 +32,43 @@ def update_index(statuses):
 
     print(statuses)
 
+    rewrite = []
     for status in statuses:
-        
         node = str(status['node'])
         cols = columns[status['section']]
+        for line in lines:
 
-        with open(HTML_FILE, 'w') as f:
+            if 'SYSTEM INFO' in line:
+                continue
 
-    		for line in lines:
+            elif ('<th>%s</th>' % (node)) in line:
 
-    			if 'SYSTEM INFO' in line:
-    				continue
+                # create a new line 
+                tr = ("<tr><td>%s</td>" % (node))
 
-    			elif ('<th>%s</th>' % (node)) in line:
+                for c in cols:
+                    if c not in status:
+                        tr += """<td><font color="orange">n/a</td>"""
+                    elif status[c] == 'n/a':
+                        tr += """<td><font color="orange">n/a</td>"""
+                    elif status[c] == 'bad':
+                        tr += """<td><font color="red">bad</td>"""
+                    elif status[c] == 'ok':
+                        tr += """<td><font color="green">ok</td>"""
+                    else:
+                        tr += ("""<td><font color="black">%s</td>""" % (status[cat]))
 
-                    # create a new line 
-    				tr = ("<tr><td>%s</td>" % (node))
+                tr += '</tr>\n'
+                line = tr
+            
+            rewrite.append(line)
 
-                    for c in cols:
-                        if c not in status:
-                            tr += """<td><font color="orange">n/a</td>"""
-                        elif status[c] == 'n/a':
-                            tr += """<td><font color="orange">n/a</td>"""
-                        elif status[c] == 'bad':
-                            tr += """<td><font color="red">bad</td>"""
-                        elif status[c] == 'ok':
-                            tr += """<td><font color="green">ok</td>"""
-                        else:
-                            tr += ("""<td><font color="black">%s</td>""" % (status[cat]))
-
-    				tr += '</tr>\n'
-    				line = tr
-
-    			f.write(line)
-    		# system info line at the end
-    		# BEWARE : this was a last minute fix
-    		f.write(generate_updated(str(status['time'])))
+    # re-write .html file w/ updated lines
+    with open(HTML_FILE, 'w') as f:
+        for line in rewrite:
+            f.write(line)
+        # add system info line at the end
+        f.write(generate_updated(str(status['time'])))
 
 class myHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 

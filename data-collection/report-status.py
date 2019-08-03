@@ -43,24 +43,24 @@ report_profiles = {
         'b1' : {
             'section' : 'server',
             'fields' : {
-                'iperf' : '',
-                'ntp' : 'ntpstat.*.csv',
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.1:5201,10.10.12.2:5202,10.10.12.3:5203,10.10.12.4:5204,10.10.12.5:5205,10.10.12.6:5206'},
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'cpu.*.csv'
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
             },
         },
         'unifi-1 (n)' : {
             'section' : 'ap',
             'fields' : {
-                'cbt' : 'it-unifi-ac-lite-001//cbt.wlan1.*.csv',
-                'cpu' : 'cpu.*.csv'
+                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cbt.wlan1.*.csv'},
+                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
             },
         },
         'unifi-1 (ac)' : {
             'section' : 'ap',
             'fields' : {
-                'cbt' : 'it-unifi-ac-lite-001//cbt.wlan0.*.csv',
-                'cpu' : 'cpu.*.csv'
+                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cbt.wlan0.*.csv'},
+                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
             }}},
     'it-asus-black-002' : {
         'b2' : {
@@ -180,8 +180,12 @@ def iperf_status(status, logdir, timestamp, args):
 
     if args['type'] == 'ps':
 
-        server_ip = args['args'].split(':')[0]
-        server_port = args['args'].split(':')[-1]
+        iperf_tuples = args['args'].split(',')
+        ips = []
+        ports = []
+        for it in iperf_tuples:
+            ips.append(it.split(':'))[0]
+            ports.append(it.split(':'))[-1]
 
         cmd = ['ps', 'aux']
         try:
@@ -191,7 +195,7 @@ def iperf_status(status, logdir, timestamp, args):
 
         output = output.splitlines()
         lines = [s.split('-p')[-1].replace(' ', '') for s in output if (('iperf' in s) and ('grep' not in s))]
-        if all(e in lines for e in [server_port]):
+        if all(e in lines for e in ports):
             status['iperf'] = 'ok'
         else:
             status['iperf'] = 'bad'
