@@ -67,35 +67,35 @@ report_profiles = {
             'section' : 'main-client',
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.2:5202'},
-                'tcpdump' : 'monitor.*.pcap',
-                'cbt' : 'cbt.wlan-monitor.*.csv',
-                'ntp' : 'ntpstat.*.csv',
+                'tcpdump' : {'type' : 'file', 'args' : 'monitor.*.pcap'},
+                'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'cpu.*.csv',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
                 'gps' : '',
             }
         },
         'tp3 (ac)' : {
             'section' : 'main-client',
             'fields' : {
-                'iperf' : {'type' : 'file', 'args' : 'tp-03//iperf3.5201.*.out'},
-                'tcpdump' : 'tp-02//monitor.ac.*.pcap',
-                'cbt' : 'tp-03//cbt.wlan0.*.csv',
-                'ntp' : 'ntpstat.*.csv',
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'iperf3.5201.*.out'},
+                'tcpdump' : {'type' : 'file', 'subdir' : 'tp-02', 'args' : 'monitor.ac.*.pcap'},
+                'cbt' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'cbt.wlan0.*.csv'},
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'tp-03//cpu.*.csv',
+                'cpu' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'cpu.*.csv'},
                 'gps' : '',
             }
         },
         'tp3 (ad)' : {
             'section' : 'main-client',
             'fields' : {
-                'iperf' : {'type' : 'file', 'args' : 'tp-03//iperf3.5202.*.out'},
-                'tcpdump' : 'tp-02//monitor.ad.*.pcap',
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'iperf3.5202.*.out'},
+                'tcpdump' : {'type' : 'file', 'subdir' : 'tp-02', 'args' : 'monitor.ad.*.pcap'},
                 'cbt' : '',
-                'ntp' : 'ntpstat.*.csv',
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'tp-02//cpu.*.csv',
+                'cpu' : {'type' : 'file', 'subdir' : 'tp-02', 'args' : 'cpu.*.csv'},
                 'gps' : '',
             }}},
     'it-eeepc-white-002' : {
@@ -161,97 +161,10 @@ def get_latest_file(logdir, filename):
     # get <prefix>.*.<ext> file w/ largest index
     logs = glob.glob(os.path.join(logdir, ('%s.*.%s' % (prefix, ext))))
     if not logs:
-        return
+        return ''
 
     m = max([int(l.split('.')[1]) for l in logs])
     return os.path.join(logdir, ('%s.%d.%s' % (prefix, m, ext)))
-
-def gps_status(status, logdir, timestamp):
-    status['gps'] = 'n/a'
-    filename = get_latest_file(logdir, 'gps-log.*.csv')
-
-    try:
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            if len(lines) < 2:
-                return
-
-            line = lines[-1]
-            if timestamp - int(float(line.split(',')[0])) < 5:
-                status['gps'] = 'ok'
-            else:
-                status['gps'] = 'bad'
-    except Exception:
-        sys.stderr.write("""%s::gps_status() : [ERROR] exception found\n""" % sys.argv[0])
-
-def ntp_status(status, logdir, timestamp):
-    status['ntp'] = 'n/a'
-    filename = get_latest_file(logdir, 'ntpstat.*.csv')
-
-    try:
-        with open(filename, 'r') as f:
-            line = f.readlines()[-1]
-            if (timestamp - int(float(line.split(',')[0]))) < 15:
-                if int(line.split(',')[3]) > 20:
-                    status['ntp'] = 'unsync'
-                else:
-                    status['ntp'] = 'ok'
-    except Exception:
-        sys.stderr.write("""%s::ntp_status() : [ERROR] exception found\n""" % sys.argv[0])
-
-def cpu_status(status, logdir, timestamp):
-    status['cpu'] = 'n/a'
-    filename = get_latest_file(logdir, 'cpu.*.csv')
-
-    try:
-        with open(filename, 'r') as f:
-            line = f.readlines()[-1]
-            if timestamp - int(float(line.split(',')[0])) < 15:
-                status['cpu'] = 'ok'
-            else:
-                status['cpu'] = 'bad'
-
-    except Exception:
-        sys.stderr.write("""%s::cpu_status() : [ERROR] exception found\n""" % sys.argv[0])
-
-def cbt_status(status, logdir, timestamp):
-    status['cbt'] = 'n/a'
-    trace = logdir.split('/')[-1]
-    for _logdir in glob.glob(os.path.join(logdir.rstrip(trace), ('it-unifi-ac-lite-*/%s' % (trace)))):
-        filename = get_latest_file(_logdir, 'cbt.*.csv')
-
-        try:
-            with open(filename, 'r') as f:
-                line = f.readlines()[-1]
-                if timestamp - int(float(line.split(',')[0])) < 5:
-                    status['cbt'] = 'ok'
-                else:
-                    status['cbt'] = 'bad'
-
-        except Exception:
-            sys.stderr.write("""%s::cbt_status() : [ERROR] exception found\n""" % sys.argv[0])
-
-def batt_status(status):
-    status['batt'] = 'n/a'
-    cmd = ['upower', '-i', '/org/freedesktop/UPower/devices/battery_BAT0']
-    try:
-        output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
-    except subprocess.CalledProcessError:
-        status['batt'] = 'bad'
-        return
-
-    output = output.splitlines()
-    status['batt'] = output[output.index([s for s in output if 'percentage' in s][0])].split(' ')[-1]
-
-def monitor_status(status, logdir, timestamp):
-    status['monitor'] = 'bad'
-    filename = get_latest_file(logdir, 'monitor.*.pcap')
-    try:
-        # FIXME: the threshold size is arbitrary at 100 byte
-        if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 5):
-            status['monitor'] = 'ok'
-    except Exception:
-        sys.stderr.write("""%s::monitor_status() : [ERROR] exception found\n""" % sys.argv[0])
 
 def signal_handler(signal, frame):
     global stop_loop
@@ -263,15 +176,12 @@ def report(ip, port, status):
 
 def iperf_status(status, logdir, timestamp, args):
 
-    status['iperf'] = 0
+    status['iperf'] = 'bad'
 
-    check_type = args['type']
-    check_args = args['args']
+    if args['type'] == 'ps':
 
-    if check_type == 'ps':
-
-        server_ip = check_args.split(':')[0]
-        server_port = check_args.split(':')[-1]
+        server_ip = args['args'].split(':')[0]
+        server_port = args['args'].split(':')[-1]
 
         cmd = ['ps', 'aux']
         try:
@@ -286,27 +196,218 @@ def iperf_status(status, logdir, timestamp, args):
         else:
             status['iperf'] = 'bad'
 
-    elif check_type == 'file':
+    elif args['type'] == 'file':
 
-        filename = check_args.split('/')
-        filename[1] = logdir.split('/')[-1]
-        trace_nr = logdir.split('/')[-1]
-        filename = '/'.join(filename)
-        filename = get_latest_file(logdir[:-1], 'iperf.*.out')
+        # FIXME : workaround for subdir argument (nfs mounting)
+        base_dir = logdir
+        if 'subdir' in args:
+            base_dir = logdir.split('/')
+            base_dir = base_dir[:-1] + [args['subdir'], base_dir[-1]]
+            base_dir = '/'.join(base_dir)
+
+        filename = get_latest_file(base_dir, args['args'])
+        if not filename:
+            status['iperf'] = 'bad'
+            return
 
         try:
-
             # FIXME: the threshold size is arbitrary at 100 byte
             if (int(os.stat(filename).st_size) < 100):
+                status['iperf'] = 'bad'
                 return
 
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
-                if (timestamp - int(float(os.path.getmtime(filename))) < 5) and ('/sec' in line):
+                if (timestamp - int(float(os.path.getmtime(filename))) < 10) and ('/sec' in line):
                     status['iperf'] = 'ok'
 
     else:
-        sys.stderr.write("""%s::iperf_status() : [ERROR] unknown check type\n""" % sys.argv[0])
+        sys.stderr.write("""%s::iperf_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
+
+def cbt_status(status, logdir, timestamp, args):
+    
+    # by default cbt is 'n/a'
+    status['cbt'] = 'n/a'
+
+    if not args:
+        return
+
+    if args['type'] == 'file':
+
+        # FIXME : workaround for subdir argument (nfs mounting)
+        base_dir = logdir
+        if 'subdir' in args:
+            base_dir = logdir.split('/')
+            base_dir = base_dir[:-1] + [args['subdir'], base_dir[-1]]
+            base_dir = '/'.join(base_dir)
+
+        filename = get_latest_file(base_dir, args['args'])
+        if not filename:
+            status['cbt'] = 'bad'
+            return
+
+        try:
+            with open(filename, 'r') as f:
+                line = f.readlines()[-1]
+                if timestamp - int(float(line.split(',')[0])) < 5:
+                    status['cbt'] = 'ok'
+                else:
+                    status['cbt'] = 'bad'
+
+        except Exception:
+            sys.stderr.write("""%s::cbt_status() : [ERROR] exception found\n""" % sys.argv[0])
+
+    else:
+        sys.stderr.write("""%s::cbt_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
+
+def gps_status(status, logdir, timestamp, args):
+
+    status['gps'] = 'n/a'
+
+    if not args:
+        return
+
+    if args['type'] == 'file':
+
+        base_dir = logdir
+        if 'subdir' in args:
+            base_dir = logdir.split('/')
+            base_dir = base_dir[:-1] + [args['subdir'], base_dir[-1]]
+            base_dir = '/'.join(base_dir)
+
+        filename = get_latest_file(base_dir, args['args'])
+        if not filename:
+            status['gps'] = 'bad'
+            return
+
+        try:
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+                if len(lines) < 2:
+                    return
+
+                line = lines[-1]
+                if timestamp - int(float(line.split(',')[0])) < 5:
+                    status['gps'] = 'ok'
+                else:
+                    status['gps'] = 'bad'
+        except Exception:
+            sys.stderr.write("""%s::gps_status() : [ERROR] exception found\n""" % sys.argv[0])
+
+    else:
+        sys.stderr.write("""%s::gps_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
+
+def ntp_status(status, logdir, timestamp, args):
+
+    status['ntp'] = 'n/a'
+    if not args:
+        return
+
+    if args['type'] == 'file':
+
+        base_dir = logdir
+        if 'subdir' in args:
+            base_dir = logdir.split('/')
+            base_dir = base_dir[:-1] + [args['subdir'], base_dir[-1]]
+            base_dir = '/'.join(base_dir)
+
+        filename = get_latest_file(base_dir, args['args'])
+        if not filename:
+            status['ntp'] = 'bad'
+            return
+
+        try:
+            with open(filename, 'r') as f:
+                line = f.readlines()[-1]
+                if (timestamp - int(float(line.split(',')[0]))) < 15:
+                    if int(line.split(',')[3]) > 20:
+                        status['ntp'] = 'unsync'
+                    else:
+                        status['ntp'] = 'ok'
+
+        except Exception:
+            sys.stderr.write("""%s::ntp_status() : [ERROR] exception found\n""" % sys.argv[0])
+
+    else:
+        sys.stderr.write("""%s::ntp_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
+
+def cpu_status(status, logdir, timestamp, args):
+    
+    status['cpu'] = 'n/a'
+    if not args:
+        return
+
+    if args['type'] == 'file':
+
+        base_dir = logdir
+        if 'subdir' in args:
+            base_dir = logdir.split('/')
+            base_dir = base_dir[:-1] + [args['subdir'], base_dir[-1]]
+            base_dir = '/'.join(base_dir)
+
+        filename = get_latest_file(base_dir, args['args'])
+        if not filename:
+            status['cpu'] = 'bad'
+            return
+
+        try:
+            with open(filename, 'r') as f:
+                line = f.readlines()[-1]
+                if timestamp - int(float(line.split(',')[0])) < 15:
+                    status['cpu'] = 'ok'
+                else:
+                    status['cpu'] = 'bad'
+
+        except Exception:
+            sys.stderr.write("""%s::cpu_status() : [ERROR] exception found\n""" % sys.argv[0])
+
+    else:
+        sys.stderr.write("""%s::cpu_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
+
+def batt_status(status, logdir, timestamp, args):
+    status['batt'] = 'n/a'
+    cmd = ['upower', '-i', '/org/freedesktop/UPower/devices/battery_BAT0']
+    try:
+        output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
+    except subprocess.CalledProcessError:
+        status['batt'] = 'bad'
+        return
+
+    output = output.splitlines()
+    status['batt'] = output[output.index([s for s in output if 'percentage' in s][0])].split(' ')[-1]
+
+def monitor_status(status, logdir, timestamp, args):
+
+    status['tcpdump'] = 'n/a'
+
+    if not args:
+        return
+
+    if args['type'] == 'file':
+
+        base_dir = logdir
+        if 'subdir' in args:
+            base_dir = logdir.split('/')
+            base_dir = base_dir[:-1] + [args['subdir'], base_dir[-1]]
+            base_dir = '/'.join(base_dir)
+
+        filename = get_latest_file(base_dir, args['args'])
+        if not filename:
+            status['tcpdump'] = 'bad'
+            return
+
+        try:
+            # FIXME: the threshold size is arbitrary at 100 byte
+            if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 5):
+                status['tcpdump'] = 'ok'
+            else:
+                status['tcpdump'] = 'bad'
+
+        except Exception:
+            sys.stderr.write("""%s::monitor_status() : [ERROR] exception found\n""" % sys.argv[0])
+
+    else:
+        sys.stderr.write("""%s::monitor_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
 
 if __name__ == "__main__":
 
@@ -374,6 +475,7 @@ if __name__ == "__main__":
         hostname = platform.uname()[1]
         profile = report_profiles[hostname]
 
+        statuses = []
         for node in profile:
             
             status = defaultdict(str)
@@ -385,38 +487,10 @@ if __name__ == "__main__":
             for f in node['fields']:
                 status_funcs[f](status, output_dir, timestamp, args = node['fields'][f])
 
-        if args.mode == 'server':
+            statuses.append(status)
 
-            # check:
-            #   - export of unifi aps stats
-            #   - ntp synch status
-            #   - export of cpu usage stats
-            #   - iperf3 servers running
-            #   - batt %
-            cbt_status(status, output_dir, timestamp)
-            cpu_status(status, output_dir, timestamp)
-            ntp_status(status, output_dir, timestamp)
-            iperf3_status(status, output_dir, timestamp, args.mode)
-            batt_status(status)
-
-        else:
-
-            # check:
-            #   - export of gps stats (if applicable)
-            #   - ntp synch status
-            #   - export of cpu usage stats
-            #   - export of iperf3 stats
-            #   - batt %
-            gps_status(status, output_dir, timestamp)
-            cpu_status(status, output_dir, timestamp)
-            ntp_status(status, output_dir, timestamp)
-            cbt_status(status, output_dir, timestamp)
-            monitor_status(status, output_dir, timestamp)
-            iperf3_status(status, output_dir, timestamp, args.mode)
-            batt_status(status)
-
-        # print(json.dumps(status))
-        report(args.ip, args.port, json.dumps(status))
+        print(json.dumps(statuses))
+        report(args.ip, args.port, json.dumps(statuses))
 
         time.sleep(10)
 
