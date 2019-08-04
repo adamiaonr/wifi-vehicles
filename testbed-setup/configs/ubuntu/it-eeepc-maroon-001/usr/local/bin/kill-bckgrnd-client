@@ -1,0 +1,6 @@
+#!/bin/bash
+ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
+# 	- monitoring sessions & iperf3 clients running on talon ad7200 routers
+ssh -i $HOME/.ssh/it "root@10.10.10.115" "kill-client"
+
+exit 0

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# start main clients:
+#	- n (local)
+kill-client
+#	- ac 1, ac 2 & ad
+ssh -i ~/.ssh/it it@10.10.10.111 "kill-client"
+
+# start background clients (if applicable)
+#	- n & ac 1
+if [ $bckgrnd -gt 0 ]
+then
+
+	if [ $bckgrnd -lt 2 ]
+	then
+		ssh -i ~/.ssh/it it@10.10.10.122 "kill-client"
+	elif [ $bckgrnd -lt 3 ]
+		ssh -i ~/.ssh/it it@10.10.10.114 "kill-client"
+	fi
+#	- ac 2 & ad
+	kill-bckgrnd-client
+fi
+
+exit 0
