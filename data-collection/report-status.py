@@ -29,15 +29,15 @@ from collections import OrderedDict
 report_profiles = {
     'it-eeepc-maroon-001' : {
         'm1' : {
-            'section' : 'client-main',
+            'section' : 'main-client',
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.1:5201'},
-                'tcpdump' : 'monitor.*.pcap',
-                'cbt' : 'cbt.wlan-monitor.*.csv',
-                'ntp' : 'ntpstat.*.csv',
+                'tcpdump' : {'type' : 'file', 'args' : 'monitor.*.pcap'},
+                'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'gps' : 'gps-log.*.log',
-                'cpu' : 'cpu.*.csv'
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
+                'gps' : {'type' : 'file', 'args' : 'gps-log.*.csv'},
             }}},
     'it-eeepc-black-001' : {
         'b1' : {
@@ -53,17 +53,17 @@ report_profiles = {
             'section' : 'ap',
             'fields' : {
                 'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cbt.wlan1.*.csv'},
-                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
+                'cpu' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
             },
         },
         'unifi-1 (ac)' : {
             'section' : 'ap',
             'fields' : {
                 'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cbt.wlan0.*.csv'},
-                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
+                'cpu' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
             }}},
     'it-eeepc-white-004' : {
-        'b2' : {
+        'w4' : {
             'section' : 'main-client',
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.2:5202'},
@@ -104,9 +104,9 @@ report_profiles = {
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.3:5203'},
                 'cbt' : '',
-                'ntp' : 'ntpstat.*.csv',
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'cpu.*.csv',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
             }
         },
         'w2 (ac)' : {
@@ -114,9 +114,9 @@ report_profiles = {
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.4:5204'},
                 'cbt' : 'cbt.wlan-bk-ac0.*.csv',
-                'ntp' : 'ntpstat.*.csv',
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'cpu.*.csv',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
             }
         }},
     'it-eeepc-white-003' : {
@@ -125,9 +125,9 @@ report_profiles = {
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.5:5205'},
                 'cbt' : '',
-                'ntp' : 'ntpstat.*.csv',
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'cpu.*.csv',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
             }
         },
         'w3 (ac)' : {
@@ -135,9 +135,9 @@ report_profiles = {
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.6:5206'},
                 'cbt' : 'cbt.wlan-bk-ac0.*.csv',
-                'ntp' : 'ntpstat.*.csv',
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : 'cpu.*.csv',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
             }
         }},
 }
