@@ -8,7 +8,7 @@ import subprocess
 from datetime import datetime
 
 PORT = 8081
-HTML_FILE=('%s/workbench/wifi-vehicles/aps/configs/ubuntu/it-eeepc-black-001/workbench/index.html' % (os.environ['HOME']))
+HTML_FILE=('%s/workbench/wifi-vehicles/testbed-setup/configs/ubuntu/it-eeepc-black-001/workbench/index.html' % (os.environ['HOME']))
 
 columns = {
     'main-client' : ['iperf', 'tcpdump', 'cbt', 'ntp', 'batt', 'cpu', 'gps'],
@@ -30,18 +30,18 @@ def update_index(statuses):
     with open(HTML_FILE, 'r') as f:
         lines = f.readlines()
 
-    print(statuses)
-
-    rewrite = []
     for status in statuses:
+
         node = str(status['node'])
         cols = columns[status['section']]
-        for line in lines:
+        print(('<td>%s</td>' % (node)))
+        
+        for i, line in enumerate(lines):
 
             if 'SYSTEM INFO' in line:
-                continue
+                lines.remove(line)
 
-            elif ('<th>%s</th>' % (node)) in line:
+            elif ('<td>%s</td>' % (node)) in line:
 
                 # create a new line 
                 tr = ("<tr><td>%s</td>" % (node))
@@ -56,16 +56,18 @@ def update_index(statuses):
                     elif status[c] == 'ok':
                         tr += """<td><font color="green">ok</td>"""
                     else:
-                        tr += ("""<td><font color="black">%s</td>""" % (status[cat]))
+                        tr += ("""<td><font color="black">%s</td>""" % (status[c]))
 
                 tr += '</tr>\n'
-                line = tr
-            
-            rewrite.append(line)
+                lines[i] = tr
+
+    print('will write:')
+    for line in lines:
+        print line.strip()
 
     # re-write .html file w/ updated lines
-    with open(HTML_FILE, 'w') as f:
-        for line in rewrite:
+    with open(HTML_FILE, 'w+') as f:
+        for line in lines:
             f.write(line)
         # add system info line at the end
         f.write(generate_updated(str(status['time'])))
@@ -81,7 +83,7 @@ class myHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.getheader('content-length', 0))
         post_data = self.rfile.read(content_length)
-        print("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n" % (str(self.path), str(self.headers), post_data))
+        # print("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n" % (str(self.path), str(self.headers), post_data))
         # update .html status file
         update_index(json.loads(post_data))
 

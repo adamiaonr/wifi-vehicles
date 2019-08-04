@@ -1,6 +1,0 @@
-#!/bin/bash
-
-pkill -f --signal 2 iperf3-to-mobile
-pkill -f --signal 2 get-ntp-accuracy
-
-exit 0

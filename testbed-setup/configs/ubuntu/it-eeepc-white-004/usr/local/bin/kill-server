@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+    echo "usage : $0 <remote-login>"
+    exit 1
+fi
+
+login=$1
+
+# 	- kills iperf3 server(s) on backbone
+# FIXME : we do some of these commands twice (e.g., 'kill-servers' also kills iperf3 processes)
+ssh -i $HOME/.ssh/it "$login" "kill-servers"
+# 	- kills scripts running in ap
+ip=$(ifconfig wlan-txrx | awk -F ' ' '/inet/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+if [ ! -z "$ip" ]
+then
+	ssh -i $HOME/.ssh/it root@$ip.1 "kill-ap"
+fi
+
+exit 0

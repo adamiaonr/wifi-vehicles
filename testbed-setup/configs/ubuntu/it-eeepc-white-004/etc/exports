@@ -7,6 +7,6 @@
 # Example for NFSv4:
 # /srv/nfs4        gss/krb5i(rw,sync,fsid=0,crossmnt,no_subtree_check)
 # /srv/nfs4/homes  gss/krb5i(rw,sync,no_subtree_check)
-/exports	10.10.11.0/24(rw,fsid=0,insecure,no_subtree_check,async)
-/exports/users	10.10.11.0/24(rw,nohide,insecure,no_subtree_check,async)
-
+#
+/export	10.10.11.0/24(rw,fsid=0,insecure,no_subtree_check,async)
+/export/users	10.10.11.0/24(rw,nohide,insecure,no_subtree_check,async)

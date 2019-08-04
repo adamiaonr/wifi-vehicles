@@ -1,0 +1,103 @@
+#!/bin/bash
+
+if [ $# -lt 5 ]
+then
+    echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
+    exit 1
+fi
+
+trace_nr=$1
+
+output_dir=$HOME/workbench/vehicular-experiments/trace-$trace_nr
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p "$output_dir"
+fi
+
+login=$2
+ip=$3
+port=$4
+protocol=$5
+bitrate=$6
+
+# trap ctrl-c and call signal_handler()
+stop_loop=false
+trap signal_handler INT
+
+# set stop_loop to true after catching CTRL-C signal
+signal_handler() {
+    echo "** received CTRL-C : quitting $0 script"
+    stop_loop=true
+}
+
+# create .out files if not ready yet
+i=1
+filename="$output_dir/iperf3.$i.out"
+if [ ! -f "$filename" ]
+then
+	touch "$filename"
+fi
+
+# start iperf3 server
+restart-server "$login" "$ip" "$port" "$trace_nr"
+# start ap scripts
+ap_ip=$(ifconfig wlan-txrx | awk -F ' ' '/inet/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
+ssh -i $HOME/.ssh/it root@"$ap_ip".1 "(run-ap $trace_nr > /dev/null 2>&1)&"
+
+# start iperf3 client for 1st time
+if [ "$protocol" == "udp" ]
+then
+
+	if [ $# -lt 6 ]
+	then
+		echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> <bitrate>"
+		exit 1
+	fi
+
+	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
+else
+	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
+fi
+
+# iperf3", "-V", "-J", "-t", str(time), "-c", str(ip_server), "-p", str(port), ("-u" if proto == 'udp' else ''), "-b", str(bitrate) + 'M'
+
+# check output regularly and restart if iperf3 client is found 'hanging' 
+# 'hanging' results in the iperf3 client (in this case, a server, since we use the '-R' option) output like: 
+# '[  5]   0.00-1.00   sec  0.00 Bytes  0.00 bits/sec  0.000 ms  0/0 (-nan%)'
+# as such, we look for the 'nan' pattern in the last n lines of iperf's output
+# FIXME: for now, n is fixed to 3
+n=3
+while [ "$stop_loop" = false ]; do
+
+	# output=$(tail -$n $filename | awk '/nan/')
+
+	if [[ $(tail -$n $filename | awk '/nan/') != "" ]] || [[ $(tail -$n $filename | awk '/error/') != "" ]]
+	then
+
+		# restart iperf3 server
+		restart-server "$login" "$ip" "$port" "$trace_nr"
+		# kill current iperf3 client
+		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
+		# update filename
+		i=$((i+1))
+		filename="$output_dir/iperf3.$i.out"
+		if [ ! -f "$filename" ]
+		then
+			touch "$filename"
+		fi
+		# restart iperf3 client
+		if [ "$protocol" == "udp" ]
+		then
+			stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
+		else
+			stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
+		fi
+
+		echo -e "restarted iperf3 client ("$((i-1))")"
+	fi
+
+	sleep 5
+
+done
+
+exit 0

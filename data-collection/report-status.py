@@ -142,28 +142,18 @@ report_profiles = {
         }},
 }
 
-status_funcs = {
-    'iperf' : iperf3_status,
-    'cbt' : cbt_status,
-    'gps' : gps_status,
-    'ntp' : ntp_status,
-    'battery' : batt_status,
-    'cpu' : cpu_status,
-    'tcpdump' : monitor_status
-}
-
 def get_latest_file(logdir, filename):
 
     # extract prefix and extension from filename
-    prefix = filename.split('.')[0]
     ext = filename.split('.')[-1]
-
-    # get <prefix>.*.<ext> file w/ largest index
+    # the prefix is everything before the last 2 filename elements separated by '.'
+    prefix = '.'.join(filename.split('.')[:-2])
+    # get all log files which match <prefix>.*.<ext>
     logs = glob.glob(os.path.join(logdir, ('%s.*.%s' % (prefix, ext))))
     if not logs:
         return ''
 
-    m = max([int(l.split('.')[1]) for l in logs])
+    m = max([int(l.split('.')[-2]) for l in logs])
     return os.path.join(logdir, ('%s.%d.%s' % (prefix, m, ext)))
 
 def signal_handler(signal, frame):
@@ -181,24 +171,31 @@ def iperf_status(status, logdir, timestamp, args):
     if args['type'] == 'ps':
 
         iperf_tuples = args['args'].split(',')
-        ips = []
+        # ips = []
         ports = []
         for it in iperf_tuples:
-            ips.append(it.split(':'))[0]
-            ports.append(it.split(':'))[-1]
+            # ips.append(it.split(':')[0])
+            ports.append(('-p %s' % (it.split(':')[-1])))
+        # print(ips)
+        print(ports)
 
         cmd = ['ps', 'aux']
         try:
             output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
         except subprocess.CalledProcessError:
+            status['iperf'] = 'bad'
             return
 
         output = output.splitlines()
-        lines = [s.split('-p')[-1].replace(' ', '') for s in output if (('iperf' in s) and ('grep' not in s))]
-        if all(e in lines for e in ports):
-            status['iperf'] = 'ok'
-        else:
-            status['iperf'] = 'bad'
+        lines = [s for s in output if (('iperf3' in s) and ('grep' not in s))]
+        print(lines)
+
+        for line in lines:
+            if any(ss in line for ss in ports):
+                status['iperf'] = 'ok'
+                return
+
+        status['iperf'] = 'bad'
 
     elif args['type'] == 'file':
 
@@ -225,10 +222,15 @@ def iperf_status(status, logdir, timestamp, args):
                 if (timestamp - int(float(os.path.getmtime(filename))) < 10) and ('/sec' in line):
                     status['iperf'] = 'ok'
 
+        except Exception:
+            sys.stderr.write("""%s::iperf_status() : [ERROR] exception found\n""" % sys.argv[0])
+
     else:
         sys.stderr.write("""%s::iperf_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
 
 def cbt_status(status, logdir, timestamp, args):
+
+    print('cbt : %s' % (logdir))
     
     # by default cbt is 'n/a'
     status['cbt'] = 'n/a'
@@ -246,6 +248,7 @@ def cbt_status(status, logdir, timestamp, args):
             base_dir = '/'.join(base_dir)
 
         filename = get_latest_file(base_dir, args['args'])
+        print(filename)
         if not filename:
             status['cbt'] = 'bad'
             return
@@ -253,7 +256,8 @@ def cbt_status(status, logdir, timestamp, args):
         try:
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
-                if timestamp - int(float(line.split(',')[0])) < 5:
+                print(line)
+                if timestamp - int(float(line.split(',')[0])) < 10:
                     status['cbt'] = 'ok'
                 else:
                     status['cbt'] = 'bad'
@@ -324,13 +328,13 @@ def ntp_status(status, logdir, timestamp, args):
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
                 if (timestamp - int(float(line.split(',')[0]))) < 15:
-                    if int(line.split(',')[3]) > 20:
+                    if int(line.split(',')[3]) > 50:
                         status['ntp'] = 'unsync'
                     else:
                         status['ntp'] = 'ok'
 
         except Exception:
-            sys.stderr.write("""%s::ntp_status() : [ERROR] exception found\n""" % sys.argv[0])
+            sys.stderr.write(("""%s::ntp_status() : [ERROR] exception found (%s, %s)\n""" % (sys.argv[0], filename, args)))
 
     else:
         sys.stderr.write("""%s::ntp_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
@@ -402,7 +406,7 @@ def monitor_status(status, logdir, timestamp, args):
 
         try:
             # FIXME: the threshold size is arbitrary at 100 byte
-            if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 5):
+            if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 30):
                 status['tcpdump'] = 'ok'
             else:
                 status['tcpdump'] = 'bad'
@@ -412,6 +416,16 @@ def monitor_status(status, logdir, timestamp, args):
 
     else:
         sys.stderr.write("""%s::monitor_status() : [ERROR] unknown arg type\n""" % sys.argv[0])
+
+status_funcs = {
+    'iperf' : iperf_status,
+    'cbt' : cbt_status,
+    'gps' : gps_status,
+    'ntp' : ntp_status,
+    'battery' : batt_status,
+    'cpu' : cpu_status,
+    'tcpdump' : monitor_status
+}
 
 if __name__ == "__main__":
 
@@ -453,6 +467,10 @@ if __name__ == "__main__":
     # register CTRL+C catcher
     signal.signal(signal.SIGINT, signal_handler)
 
+    # for the first n iterations, use shorter updates
+    short_sleep_cntr = 13
+    sleep_time = 10
+
     # keep iperfing till a CTRL+C is caught...
     stop_loop = False
     while (stop_loop == False):
@@ -476,18 +494,24 @@ if __name__ == "__main__":
             status = defaultdict(str)
             
             status['node'] = node
-            status['section'] = node['section']
-            status['time'] = time(str(timestamp))
+            status['section'] = profile[node]['section']
+            status['time'] = str(timestamp)
 
-            for f in node['fields']:
-                status_funcs[f](status, output_dir, timestamp, args = node['fields'][f])
+            for f in profile[node]['fields']:
+                status_funcs[f](status, output_dir, timestamp, args = profile[node]['fields'][f])
 
             statuses.append(status)
 
-        print(json.dumps(statuses))
+        # print(json.dumps(statuses))
         report(args.ip, args.port, json.dumps(statuses))
 
-        time.sleep(10)
+        if (short_sleep_cntr > 0):
+            short_sleep_cntr -= 1
+            sleep_time = 10
+        else:
+            sleep_time = 30
+
+        time.sleep(sleep_time)
 
     sys.exit(0)
 

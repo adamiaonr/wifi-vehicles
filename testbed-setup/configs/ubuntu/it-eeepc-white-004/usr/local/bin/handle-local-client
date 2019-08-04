@@ -1,0 +1,60 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]
+then
+	echo "usage : $0 <output-dir> <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
+	echo "options : "
+	echo "    <output-dir>  : dir where to save log files"
+	echo "    <protocol>    : 'tcp' or 'udp'"
+	echo "    <trace-nr>    : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	echo "    <udp-bitrate> : (optional) target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
+	exit 1
+fi
+
+output_dir=$1
+proto=$2
+
+if [ "$proto" == "udp" ]
+then
+	if [ $# -lt 4 ]
+	then
+		echo "usage : $0 <output-dir> <protocol> <trace-nr> <udp-bitrate>"
+		exit 1
+	fi
+fi
+
+trace_nr=$3
+bitrate=$4
+
+# get comm. iface channel & width
+channel=$(iw dev wlan-txrx info | awk '/channel/ {print $2}')
+bw=$(iw dev wlan-txrx info | awk '/channel/ {print $6}')
+# get the right signal next to HT40 or HT80 ('+' or '-')
+#	- HT40- : if center1 < freq
+#	- HT40+ : if center1 > freq
+if [ "$bw" == "40" ]
+then
+    if [ "$channel" == "36" ]
+    then
+        bw=$bw+
+    else
+        bw=$bw-
+    fi
+fi
+
+# set wlan short and long retry
+wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
+iw phy $wiphy set retry short 7 long 4
+
+# FIXME : for simplicity we use hardcoded values. this should be changed in the future.
+# add route to server
+ip route add 10.10.12.0/24 via 10.10.14.1 dev wlan-txrx
+# change channel on the monitoring iface to that of the comm. iface
+python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
+#	- call tcpdump directly in script
+#	- a restart-client script, which re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
+# FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option to only capture headers
+tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
+/usr/local/bin/restart-client "$trace_nr" "it@10.10.10.113" 10.10.12.2 5202 $proto $bitrate &
+
+exit 0
