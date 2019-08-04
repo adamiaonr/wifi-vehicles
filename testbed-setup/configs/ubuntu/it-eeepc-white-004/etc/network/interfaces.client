@@ -17,7 +17,7 @@ iface wlan-monitor inet manual
 wireless-mode monitor
 
 auto enp1s0
-iface enp4s0f1 inet static
+iface enp1s0 inet static
 address 10.10.11.1
 netmask 255.255.255.0
 dns-nameservers 1.1.1.1 8.8.8.8

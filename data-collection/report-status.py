@@ -62,7 +62,7 @@ report_profiles = {
                 'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cbt.wlan0.*.csv'},
                 'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
             }}},
-    'it-asus-black-002' : {
+    'it-eeepc-white-004' : {
         'b2' : {
             'section' : 'main-client',
             'fields' : {
