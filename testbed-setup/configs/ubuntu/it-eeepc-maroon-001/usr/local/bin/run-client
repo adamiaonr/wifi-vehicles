@@ -73,8 +73,7 @@ $HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir"
 $HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
 # extract gps script
 python $HOME/workbench/wifi-vehicles/data-collection/get-gps.py --output-dir "$output_dir" &
-
 # run report status
-python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip 10.10.10.113 --port 8080 --mode client --output-dir $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
+python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip 10.10.10.113 --port 8080 --output-dir $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
 exit 0

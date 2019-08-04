@@ -8,7 +8,7 @@ fi
 
 trace_nr=$1
 
-output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
+output_dir=$HOME/workbench/vehicular-experiments/trace-$trace_nr
 if [ ! -d "$output_dir" ]
 then
 	mkdir -p "$output_dir"

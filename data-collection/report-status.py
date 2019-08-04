@@ -427,10 +427,6 @@ if __name__ == "__main__":
         "--port", 
          help = """port used by status server""")
 
-    parser.add_argument(
-        "--mode", 
-         help = """either 'backbone' or 'client'""")
-
     # FIXME : if the report status daemon is to be kept running at all times,
     # the output dir must be read from a static location now.
     parser.add_argument(
@@ -446,11 +442,6 @@ if __name__ == "__main__":
 
     if not args.port:
         sys.stderr.write("""%s: [ERROR] please supply an status server port\n""" % sys.argv[0]) 
-        parser.print_help()
-        sys.exit(1)
-
-    if not args.mode:
-        sys.stderr.write("""%s: [ERROR] please supply a mode\n""" % sys.argv[0]) 
         parser.print_help()
         sys.exit(1)
 
