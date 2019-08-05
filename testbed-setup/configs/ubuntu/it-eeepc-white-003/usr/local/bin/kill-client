@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
-pkill -f --signal 2 get-ntp-accuracy
-pkill -f --signal 2 bitrate-adapt-stats
+pkill -f get-ntp-accuracy
+pkill -f bitrate-adapt-stats
 pkill -f tcpdump
 pkill -f get-cpu
 pkill -f get-cbt

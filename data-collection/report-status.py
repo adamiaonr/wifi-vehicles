@@ -113,7 +113,7 @@ report_profiles = {
             'section' : 'bck-client',
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.4:5204'},
-                'cbt' : 'cbt.wlan-bk-ac0.*.csv',
+                'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-bk-ac0.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
                 'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
@@ -134,7 +134,7 @@ report_profiles = {
             'section' : 'bck-client',
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.12.6:5206'},
-                'cbt' : 'cbt.wlan-bk-ac0.*.csv',
+                'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-bk-ac0.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
                 'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},

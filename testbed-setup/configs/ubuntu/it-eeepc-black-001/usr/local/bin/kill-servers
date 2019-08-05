@@ -1,9 +1,9 @@
 #!/bin/bash
 
-pkill -f --signal 2 get-ntp-accuracy
-pkill -f --signal 2 get-cpu.sh
+pkill -f get-ntp-accuracy
+pkill -f get-cpu
 pkill -f iperf3
-# pkill -f --signal 2 report-status
+pkill -f report-status
 # pkill -f webserver
 
 exit 0
