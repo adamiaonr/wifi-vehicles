@@ -1,0 +1,46 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]
+then
+	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
+	echo "options : "
+	echo "    <protocol> : 'tcp' or 'udp'"
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	echo "    <udp-bitrate> : (optional) target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
+	exit 1
+fi
+
+proto=$1
+trace_nr=$2
+bitrate=$3
+
+# create dirs (if not available already)
+output_dir=$HOME/workbench/vehicular-experiments/trace-$trace_nr
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p "$output_dir"
+fi
+# update output-dir.txt w/ the current output_dir
+echo "$output_dir" > $HOME/workbench/vehicular-experiments/output-dir.txt
+
+# this run-iperf3 script handles 3 main clients :
+#	- 802.11ac (wave 1) : using local wlan radio & csl dongle for monitoring
+#	- 802.11ac (wave 2) & 802.11ad : via a talon ad7200, accessible via the eth iface
+/usr/local/bin/handle-local-client $output_dir $proto $trace_nr $bitrate &
+# FIXME : 100 Mbps remote bitrate if proto is udp
+remote_bitrate=$bitrate
+if [ "$proto" == "udp" ]
+then
+	remote_bitrate=100
+fi
+/usr/local/bin/handle-remote-client $proto $trace_nr $remote_bitrate &
+
+# extract accuracy of time synch via ntp w/ local server
+python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
+# extract bitrate adaptation algorithm stats
+#python $HOME/workbench/wifi-vehicles/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
+# extract cpu stats
+$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
+$HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir" "wlan-monitor" &
+
+exit 0

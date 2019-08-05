@@ -16,7 +16,8 @@ ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".
 # nfs mount
 if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
 then
-	mount -t nfs "$ip_addr".1:/export/users /tmp/vehicular-traces -o nolock
+	mkdir -p /tmp/vehicular-traces/$HOSTNAME
+	mount -t nfs "$ip_addr".1:/export/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock,sync
 fi
 # create trace directory
 output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"

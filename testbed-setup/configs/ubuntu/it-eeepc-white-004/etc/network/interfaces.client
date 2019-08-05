@@ -2,15 +2,19 @@
 auto lo
 iface lo inet loopback
 
-#auto wlxc46e1f25d74a
-#iface wlxc46e1f25d74a inet dhcp
-#wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
-#dns-nameservers 1.1.1.1 8.8.8.8
-
-auto wlan-cntrl
+allow-hotplug wlan-cntrl
 iface wlan-cntrl inet dhcp
 wpa-conf /etc/wpa_supplicant/wpa_supplicant.timesynch.conf
 dns-nameservers 1.1.1.1 8.8.8.8
+
+allow-hotplug wlan-txrx
+iface wlan-txrx inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+dns-nameservers 1.1.1.1 8.8.8.8
+
+allow-hotplug wlan-monitor
+iface wlan-monitor inet manual
+wireless-mode monitor
 
 auto enp1s0
 iface enp1s0 inet static

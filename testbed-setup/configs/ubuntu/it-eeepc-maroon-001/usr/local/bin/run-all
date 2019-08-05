@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]
+then
+    echo "usage : $0 <trace-nr> <protocol> <num-background>"
+    exit 1
+fi
+
+trace_nr=$1
+proto=$2
+bckgrnd=$3
+
+# start main clients:
+#	- n (local)
+run-client $proto $trace_nr 50
+#	- ac 1, ac 2 & ad
+ssh -i ~/.ssh/it it@10.10.10.111 "run-client $proto $trace_nr 50"
+
+# start background clients (if applicable)
+#	- n & ac 1
+if [ $bckgrnd -gt 0 ]
+then
+
+	if [ $bckgrnd -lt 2 ]
+	then
+		ssh -i ~/.ssh/it it@10.10.10.122 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr"
+	elif [ $bckgrnd -lt 3 ]
+		ssh -i ~/.ssh/it it@10.10.10.114 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr"
+	fi
+#	- ac 2 & ad
+	run-bckgrnd-client 192.168.0.147 5203 $proto 40
+	run-bckgrnd-client 192.168.0.148 5204 $proto 40
+fi
+
+exit 0
