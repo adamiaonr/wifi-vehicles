@@ -12,9 +12,9 @@ port=$3
 trace_nr=$4
 
 # restart iperf3 servers
-ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
 # restart server-side scripts
-#ssh -i $HOME/.ssh/it "$login" "kill-servers"
-ssh -i $HOME/.ssh/it "$login" "run-servers $trace_nr &> /dev/null < /dev/null &"
+# ssh -i $HOME/.ssh/it "$login" "kill-servers"
+# ssh -i $HOME/.ssh/it "$login" "run-servers $trace_nr &> /dev/null < /dev/null &"
 
 exit 0

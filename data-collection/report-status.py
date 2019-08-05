@@ -43,7 +43,7 @@ report_profiles = {
         'b1' : {
             'section' : 'server',
             'fields' : {
-                'iperf' : {'type' : 'ps', 'args' : '10.10.12.1:5201,10.10.12.2:5202,10.10.12.3:5203,10.10.12.4:5204,10.10.12.5:5205,10.10.12.6:5206'},
+                'iperf' : {'type' : 'ps', 'args' : '10.10.12.3:5203,10.10.12.4:5204,10.10.12.5:5205,10.10.12.6:5206'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
                 'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
@@ -170,15 +170,6 @@ def iperf_status(status, logdir, timestamp, args):
 
     if args['type'] == 'ps':
 
-        iperf_tuples = args['args'].split(',')
-        # ips = []
-        ports = []
-        for it in iperf_tuples:
-            # ips.append(it.split(':')[0])
-            ports.append(('-p %s' % (it.split(':')[-1])))
-        # print(ips)
-        print(ports)
-
         cmd = ['ps', 'aux']
         try:
             output = subprocess.check_output(cmd, stdin = None, stderr = None, shell = False, universal_newlines = False)
@@ -188,14 +179,12 @@ def iperf_status(status, logdir, timestamp, args):
 
         output = output.splitlines()
         lines = [s for s in output if (('iperf3' in s) and ('grep' not in s))]
-        print(lines)
+        if not lines:
+            status['iperf'] = 'none'
 
-        for line in lines:
-            if any(ss in line for ss in ports):
-                status['iperf'] = 'ok'
-                return
-
-        status['iperf'] = 'bad'
+        # list last digits of all active port numbers as status
+        ports = [l.replace(' ', '').split('-p')[-1][3] for l in lines]
+        status['iperf'] = str(ports)
 
     elif args['type'] == 'file':
 

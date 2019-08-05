@@ -48,13 +48,13 @@ iw phy $wiphy set retry short 7 long 4
 
 # FIXME : for simplicity we use hardcoded values. this should be changed in the future.
 # add route to server
-ip route add 10.10.12.0/24 via 10.10.14.1 dev wlan-txrx
+# ip route add 10.10.12.0/24 via 10.10.14.1 dev wlan-txrx
 # change channel on the monitoring iface to that of the comm. iface
 python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 #	- call tcpdump directly in script
 #	- a restart-client script, which re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
 # FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option to only capture headers
 tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
-/usr/local/bin/restart-client "$trace_nr" "it@10.10.10.113" 10.10.12.2 5202 $proto $bitrate &
+/usr/local/bin/restart-client "$trace_nr" "root@10.10.14.1" 10.10.14.1 5202 $proto $bitrate &
 
 exit 0
