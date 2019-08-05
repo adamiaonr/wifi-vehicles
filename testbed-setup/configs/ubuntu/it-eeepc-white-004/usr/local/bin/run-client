@@ -43,4 +43,8 @@ python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --outpu
 $HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
 $HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir" "wlan-monitor" &
 
+# report status to webserver
+pkill -f report-status
+python $HOME/workbench/wifi-vehicles/data-collection/rort-status.py --ip 10.10.10.113 --port 8081 --output-dir $HOME/workbench/vehicular-experiments
+
 exit 0

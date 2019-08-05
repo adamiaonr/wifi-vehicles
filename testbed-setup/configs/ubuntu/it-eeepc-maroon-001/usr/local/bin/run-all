@@ -37,11 +37,11 @@ then
 
 	if [ $bckgrnd -lt 2 ]
 	then
-		ssh -i ~/.ssh/it it@10.10.10.122 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
+		ssh -i ~/.ssh/it it@10.10.10.122 "sudo run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
 	elif [ $bckgrnd -lt 3 ]
 	then
-		ssh -i ~/.ssh/it it@10.10.10.122 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
-		ssh -i ~/.ssh/it it@10.10.10.114 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
+		ssh -i ~/.ssh/it it@10.10.10.122 "sudo run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
+		ssh -i ~/.ssh/it it@10.10.10.114 "sudo run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
 	fi
 #	- ac 2 & ad : FIXME : default 50 Mbps
 	ssh -i ~/.ssh/it it@10.10.10.113 "sudo run-client $proto $trace_nr 50 &> /dev/null &"
