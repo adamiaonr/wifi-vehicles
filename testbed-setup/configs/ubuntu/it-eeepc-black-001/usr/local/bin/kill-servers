@@ -3,7 +3,7 @@
 pkill -f get-ntp-accuracy
 pkill -f get-cpu
 pkill -f iperf3
-pkill -f report-status
+# pkill -f report-status
 # pkill -f webserver
 
 exit 0
