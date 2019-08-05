@@ -10,7 +10,7 @@ login=$1
 
 # 	- kills iperf3 server(s) on backbone
 # FIXME : we do some of these commands twice (e.g., 'kill-servers' also kills iperf3 processes)
-ssh -i $HOME/.ssh/it "$login" "kill-servers"
+ssh -i $HOME/.ssh/it "$login" "sudo kill-servers"
 # 	- kills scripts running in ap
 #ip=$(ifconfig wlan-txrx | awk -F ' ' '/inet/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
