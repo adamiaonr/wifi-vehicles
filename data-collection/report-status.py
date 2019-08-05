@@ -49,6 +49,26 @@ report_profiles = {
                 'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
             },
         },
+        'tp1 (ac)' : {
+            'section' : 'bck-client',
+            'fields' : {
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'iperf3.5203.*.out'},
+                'cbt' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'cbt.wlan0.*.csv'},
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
+                'battery' : '',
+                'cpu' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'cpu.*.csv'},
+            }
+        },
+        'tp1 (ad)' : {
+            'section' : 'bck-client',
+            'fields' : {
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'iperf3.5204.*.out'},
+                'cbt' : '',
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
+                'battery' : '',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
+            }
+        },
         'unifi-1 (n)' : {
             'section' : 'ap',
             'fields' : {
@@ -199,7 +219,7 @@ def iperf_status(status, logdir, timestamp, args):
 
         filename = get_latest_file(base_dir, args['args'])
         if not filename:
-            status['iperf'] = 'bad'
+            status['iperf'] = 'none'
             return
 
         try:
@@ -211,7 +231,7 @@ def iperf_status(status, logdir, timestamp, args):
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
                 if (timestamp - int(float(os.path.getmtime(filename))) < 10) and ('/sec' in line):
-                    status['iperf'] = 'ok'
+                    status['iperf'] = str([filename.split('/').split('.')[1][3]])
 
         except Exception:
             sys.stderr.write("""%s::iperf_status() : [ERROR] exception found\n""" % sys.argv[0])
