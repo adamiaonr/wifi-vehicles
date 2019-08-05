@@ -56,7 +56,7 @@ report_profiles = {
                 'cbt' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'cbt.wlan0.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'cpu.*.csv'},
+                'cpu' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'cpu.*.csv'},
             }
         },
         'tp1 (ad)' : {
@@ -66,7 +66,7 @@ report_profiles = {
                 'cbt' : '',
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
-                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
+                'cpu' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'cpu.*.csv'},
             }
         },
         'unifi-1 (n)' : {
