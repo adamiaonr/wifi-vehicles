@@ -38,6 +38,6 @@ fi
 
 # run report status
 pkill -f report-status
-python $HOME/workbench/wifi-vehicles/data-collection/rort-status.py --ip 10.10.10.113 --port 8081 --output-dir $HOME/workbench/range-tests/vehicular-traces &> /dev/null &
+python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip 10.10.10.113 --port 8081 --output-dir $HOME/workbench/range-tests/vehicular-traces &> /dev/null &
 
 exit 0
