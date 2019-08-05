@@ -20,7 +20,7 @@ then
 elif [ "$login" == "root@10.10.14.1" ]
 then
 	# restart iperf3 servers
-	ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep -v grep | grep $port | awk '{print \$2}' | sudo xargs -r kill -9"
+	ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep -v grep | grep $port | awk '{print \$2}' | xargs -r kill -9"
 	ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
 fi
 
