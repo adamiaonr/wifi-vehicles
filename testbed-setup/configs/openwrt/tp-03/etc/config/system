@@ -1,0 +1,57 @@
+
+config system
+	option timezone 'UTC'
+	option ttylogin '0'
+	option log_size '64'
+	option urandom_seed '0'
+#	option hostname 'T3c5318'
+	option hostname 'tp-03'
+
+config timeserver 'ntp'
+	option enabled '1'
+	option enable_server '0'
+	list server 10.10.10.113
+
+config led 'led_usb1'
+	option name 'USB 1'
+	option sysfs 'ad7200:blue:usb_1'
+	option trigger 'usbport'
+	list port 'usb1-port1'
+	list port 'usb2-port1'
+
+config led 'led_usb2'
+	option name 'USB 2'
+	option sysfs 'ad7200:blue:usb_3'
+	option trigger 'usbport'
+	list port 'usb3-port1'
+	list port 'usb4-port1'
+
+config led 'led_wan'
+	option name 'WAN'
+	option sysfs 'ad7200:blue:wan'
+	option trigger 'switch0'
+	option port_mask '0x02'
+
+config led 'led_lan'
+	option name 'LAN'
+	option sysfs 'ad7200:blue:lan'
+	option trigger 'switch0'
+	option port_mask '0x3C'
+
+config led 'led_wlan2g'
+	option name 'WLAN2G'
+	option sysfs 'ad7200:blue:wlan2g'
+	option trigger 'phy1tpt'
+
+config led 'led_wlan5g'
+	option name 'WLAN5G'
+	option sysfs 'ad7200:blue:wlan5g'
+	option trigger 'phy0tpt'
+
+config led 'led_wlan60g'
+	option name 'WLAN60G'
+	option sysfs 'ad7200:blue:wlan60g'
+	option trigger 'netdev'
+	option mode 'link tx rx'
+	option dev 'wlan2'
+
