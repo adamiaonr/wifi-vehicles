@@ -231,7 +231,7 @@ def iperf_status(status, logdir, timestamp, args):
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
                 if (timestamp - int(float(os.path.getmtime(filename))) < 10) and ('/sec' in line):
-                    status['iperf'] = str([filename.split('/').split('.')[1][3]])
+                    status['iperf'] = str([filename.split('/')[-1].split('.')[1][3]])
 
         except Exception:
             sys.stderr.write("""%s::iperf_status() : [ERROR] exception found\n""" % sys.argv[0])
