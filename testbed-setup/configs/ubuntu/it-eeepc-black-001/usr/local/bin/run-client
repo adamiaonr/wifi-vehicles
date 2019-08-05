@@ -21,7 +21,7 @@ then
 	mkdir -p "$output_dir"
 fi
 # update output-dir.txt w/ the current output_dir
-echo "$output_dir" > $HOME/workbench/vehicular-experiments/output-dir.txt
+echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
 # # FIXME : 300 Mbps remote bitrate if proto is udp
 # remote_bitrate=$bitrate

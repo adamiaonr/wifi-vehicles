@@ -14,7 +14,7 @@ proto=$5
 bitrate=$6
 
 # FIXME : hardcoded values. this must be changed in the future.
-output_dir=$HOME/workbench/vehicular-experiments/tp-01/trace-$trace_nr
+output_dir=$HOME/workbench/range-tests/vehicular-traces/tp-01/trace-$trace_nr
 
 # trap ctrl-c and call signal_handler()
 stop_loop=false
