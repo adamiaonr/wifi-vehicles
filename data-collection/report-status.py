@@ -31,7 +31,7 @@ report_profiles = {
         'm1' : {
             'section' : 'main-client',
             'fields' : {
-                'iperf' : {'type' : 'ps', 'args' : '10.10.12.1:5201'},
+                'iperf' : {'type' : 'ps', 'args' : '10.10.13.1:5201'},
                 'tcpdump' : {'type' : 'file', 'args' : 'monitor.*.pcap'},
                 'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
@@ -66,7 +66,7 @@ report_profiles = {
         'w4' : {
             'section' : 'main-client',
             'fields' : {
-                'iperf' : {'type' : 'ps', 'args' : '10.10.12.2:5202'},
+                'iperf' : {'type' : 'ps', 'args' : '10.10.14.1:5202'},
                 'tcpdump' : {'type' : 'file', 'args' : 'monitor.*.pcap'},
                 'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
@@ -179,8 +179,10 @@ def iperf_status(status, logdir, timestamp, args):
 
         output = output.splitlines()
         lines = [s for s in output if (('iperf3' in s) and ('grep' not in s))]
+        print(lines)
         if not lines:
             status['iperf'] = 'none'
+            return
 
         # list last digits of all active port numbers as status
         ports = [l.replace(' ', '').split('-p')[-1][3] for l in lines]
