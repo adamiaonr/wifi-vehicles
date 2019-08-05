@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]
+then
+    echo "usage : $0 <remote-login> <server-ip> <server-port> <trace-nr>"
+    exit 1
+fi
+
+login=$1
+ip=$2
+port=$3
+trace_nr=$4
+
+# restart iperf3 servers
+if [ "$login" == "adamiaonr@10.10.10.141" ]
+then
+	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v grep | grep $port | awk '{print \$2}' | sudo xargs kill -9"
+	ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+fi
+
+exit 0

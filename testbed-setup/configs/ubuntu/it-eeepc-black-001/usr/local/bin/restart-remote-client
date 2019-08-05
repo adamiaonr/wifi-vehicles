@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if [ $# -lt 5 ]
+then
+    echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
+    exit 1
+fi
+
+trace_nr=$1
+login=$2
+ip=$3
+port=$4
+proto=$5
+bitrate=$6
+
+# FIXME : hardcoded values. this must be changed in the future.
+output_dir=$HOME/workbench/vehicular-experiments/tp-01/trace-$trace_nr
+
+# trap ctrl-c and call signal_handler()
+stop_loop=false
+trap signal_handler INT
+
+# set stop_loop to true after catching CTRL-C signal
+signal_handler() {
+    echo "** received CTRL-C : quitting $0 script"
+    stop_loop=true
+}
+
+# create .out files if not ready yet
+i=1
+filename="iperf3.$port.$i.out"
+
+# FIXME : hardcoded values. this must be changed in the future.
+# start iperf3 server
+restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
+# start iperf3 client for 1st time
+#ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
+ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filename $bitrate"
+
+# check output regularly and restart if iperf3 client is found 'hanging' 
+# 'hanging' results in the iperf3 client producing output like: 
+# 	'[  5]   0.00-1.00   sec  0.00 Bytes  0.00 bits/sec  0.000 ms  0/0 (-nan%)'
+# as such, we look for the 'nan' pattern in all of the last n lines of iperf's output
+# FIXME: for now, n is fixed to 3
+n=3
+while [ "$stop_loop" = false ]; do
+
+	if [[ $(tail -$n $output_dir/$filename | awk '/nan/') != "" ]] || [[ $(tail -$n $output_dir/$filename | awk '/error/') != "" ]]
+	then
+
+		# restart iperf3 server
+		restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
+		# update filename
+		i=$((i+1))
+		filename="iperf3.$port.$i.out"
+		if [ ! -f "$output_dir/$filename" ]
+		then
+			touch "$output_dir/$filename"
+		fi
+
+		# restart remote iperf3 client
+		ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
+		ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filename $bitrate"
+
+		echo -e "restarted iperf3 client ("$((i-1))")"
+	fi
+
+	sleep 5
+
+done
+
+exit 0

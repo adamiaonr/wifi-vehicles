@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# kills active scripts:
+#	- restart-remote-client
+ps -ef | grep restart-remote-client | awk '{print $2}' | sudo xargs -r kill -9
+#	- kill iperf3 servers
+ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
+# 	- monitoring sessions & iperf3 clients running on talon ad7200 routers
+ssh -i $HOME/.ssh/it "root@10.10.12.101" "kill-client"
+
+exit 0

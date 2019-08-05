@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ $# -lt 5 ]
+then
+	echo "usage : $0 <trace-nr> <server-ip> <server-port> <protocol> <filename> <bitrate>"
+	exit 1
+fi
+
+trace_nr=$1
+ip=$2
+port=$3
+proto=$4
+filename=$5
+bitrate=$6
+
+# trace directory
+output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
+
+# restart iperf3
+if [ "$proto" == "udp" ]
+then
+	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$output_dir/$filename" &
+else
+	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$output_dir/$filename" &
+fi
+
+exit 0

@@ -3,16 +3,16 @@
 # kill server on b1
 ssh -i $HOME/.ssh/it it@10.10.10.113 "sudo kill-servers &> /dev/null &"
 # kill main clients:
-#	- n (local)
-kill-client &> /dev/null &
 #	- ac 1, ac 2 & ad
 ssh -i ~/.ssh/it it@10.10.10.111 "sudo kill-client &> /dev/null &"
+#	- n (local)
+kill-client &> /dev/null &
 
 # kill background clients (if applicable)
 #	- n & ac 1
-ssh -i ~/.ssh/it it@10.10.10.122 "sudo kill-client  &> /dev/null &"
-ssh -i ~/.ssh/it it@10.10.10.114 "sudo kill-client  &> /dev/null &"
+ssh -i ~/.ssh/it it@10.10.10.122 "sudo kill-client &> /dev/null &"
+ssh -i ~/.ssh/it it@10.10.10.114 "sudo kill-client &> /dev/null &"
 #	- ac 2 & ad
-kill-bckgrnd-client &> /dev/null &
+ssh -i ~/.ssh/it it@10.10.10.113 "sudo kill-client &> /dev/null &"
 
 exit 0

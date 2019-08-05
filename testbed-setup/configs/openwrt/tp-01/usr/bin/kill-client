@@ -1,5 +1,7 @@
 #!/bin/sh
 
 pkill -f iperf3
+pkill -f get-cbt
+pkill -f get-cpu
 
 exit 0

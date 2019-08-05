@@ -1,0 +1,44 @@
+#!/bin/sh
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <trace-nr>"
+	echo "options : "
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	exit 1
+fi
+
+trace_nr=$1
+
+# check if nfs mount is necessary
+# first 3 octects of ip addr on eth* iface
+ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
+# nfs mount
+if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
+then
+	mkdir -p /tmp/vehicular-traces/$HOSTNAME
+	mount -t nfs "$ip_addr".1:/exports/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock,sync
+fi
+# create trace directory
+output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p $output_dir
+fi
+
+# add specific routes to divide traffic between 802.11ac and 802.11ad interfaces
+ip route add 192.168.0.147/32 via 192.168.0.1 dev wlan0
+ip route add 192.168.0.148/32 via 192.168.0.1 dev wlan2
+
+# log channel utilization & cpu usage
+if [ -z "$(ps | grep get-cbt | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
+fi
+
+if [ -z "$(ps | grep get-cpu | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+fi
+
+exit 0

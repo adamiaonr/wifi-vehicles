@@ -11,9 +11,17 @@ proto=$2
 bckgrnd=$3
 
 # start server on b1
-ssh -i $HOME/.ssh/it it@10.10.10.113 "run-servers $trace_nr &> /dev/null < /dev/null &"
+ssh -i ~/.ssh/it it@10.10.10.113 "sudo run-servers $trace_nr &> /dev/null < /dev/null &"
 
 # start main clients:
+#	- ac 1, ac 2 & ad
+bitrate_ac_ad=""
+if [ "$proto" == "udp" ]
+then
+	bitrate_ac_ad=300
+fi
+ssh -i ~/.ssh/it it@10.10.10.111 "sudo run-client $proto $trace_nr $bitrate_ac_ad &> /dev/null &"
+
 #	- n (local)
 bitrate_n=""
 if [ "$proto" == "udp" ]
@@ -21,14 +29,6 @@ then
 	bitrate_n=100
 fi
 run-client $proto $trace_nr $bitrate_n &> /dev/null &
-
-#	- ac 1, ac 2 & ad
-bitrate_ac_ad=""
-if [ "$proto" == "udp" ]
-then
-	bitrate_ac_ad=300
-fi
-ssh -i ~/.ssh/it it@10.10.10.111 "run-client $proto $trace_nr $bitrate_ac_ad &> /dev/null &"
 
 # start background clients (if applicable)
 #	- n & ac 1
@@ -40,11 +40,13 @@ then
 		ssh -i ~/.ssh/it it@10.10.10.122 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
 	elif [ $bckgrnd -lt 3 ]
 	then
+		ssh -i ~/.ssh/it it@10.10.10.122 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
 		ssh -i ~/.ssh/it it@10.10.10.114 "run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
 	fi
-#	- ac 2 & ad
-	run-bckgrnd-client 192.168.0.147 5203 $proto 50 &> /dev/null &
-	run-bckgrnd-client 192.168.0.148 5204 $proto 50 &> /dev/null &
+#	- ac 2 & ad : FIXME : default 50 Mbps
+	ssh -i ~/.ssh/it it@10.10.10.113 "sudo run-client $proto $trace_nr 50 &> /dev/null &"
+	# run-bckgrnd-client $trace_nr 192.168.0.147 5203 $proto 50 &> /dev/null &
+	# run-bckgrnd-client $trace_nr 192.168.0.148 5204 $proto 50 &> /dev/null &
 fi
 
 exit 0
