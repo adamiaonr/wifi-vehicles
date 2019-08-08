@@ -338,7 +338,7 @@ def ntp_status(status, logdir, timestamp, args):
         try:
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
-                if (timestamp - int(float(line.split(',')[0]))) < 15:
+                if (timestamp - int(float(line.split(',')[0]))) < 10:
                     if int(line.split(',')[3]) > 50:
                         status['ntp'] = 'unsync'
                     else:
@@ -372,7 +372,7 @@ def cpu_status(status, logdir, timestamp, args):
         try:
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
-                if timestamp - int(float(line.split(',')[0])) < 15:
+                if timestamp - int(float(line.split(',')[0])) < 10:
                     status['cpu'] = 'ok'
                 else:
                     status['cpu'] = 'bad'
@@ -417,7 +417,7 @@ def monitor_status(status, logdir, timestamp, args):
 
         try:
             # FIXME: the threshold size is arbitrary at 100 byte
-            if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 30):
+            if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 10):
                 status['tcpdump'] = 'ok'
             else:
                 status['tcpdump'] = 'bad'
@@ -520,7 +520,7 @@ if __name__ == "__main__":
             short_sleep_cntr -= 1
             sleep_time = 10
         else:
-            sleep_time = 30
+            sleep_time = 20
 
         time.sleep(sleep_time)
 
