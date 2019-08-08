@@ -12,6 +12,6 @@ port=$3
 trace_nr=$4
 
 # FIXME : do we really need a separate script to run this command?
-ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9; iperf3-tweaked -s -B $ip -p $port &> /dev/null < /dev/null &"
 
 exit 0

@@ -15,7 +15,7 @@ trace_nr=$4
 if [ "$login" == "adamiaonr@10.10.10.141" ]
 then
 	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs kill -9"
-	ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+	ssh -i $HOME/.ssh/it "$login" "iperf3-tweaked -s -B $ip -p $port &> /dev/null < /dev/null &"
 
 elif [ "$login" == "root@10.10.14.1" ]
 then
