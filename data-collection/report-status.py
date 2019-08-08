@@ -198,7 +198,7 @@ def iperf_status(status, logdir, timestamp, args):
             return
 
         output = output.splitlines()
-        lines = [s for s in output if (('iperf3' in s) and ('grep' not in s))]
+        lines = [s for s in output if (('iperf3' in s) and ('grep' not in s) and ('ssh' not in s))]
         print(lines)
         if not lines:
             status['iperf'] = 'none'
