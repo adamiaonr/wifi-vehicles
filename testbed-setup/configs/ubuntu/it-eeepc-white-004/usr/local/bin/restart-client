@@ -64,7 +64,7 @@ fi
 while [ "$stop_loop" = false ]; do
 
 	server=$(ssh -i $HOME/.ssh/it root@10.10.14.1 "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
-	client=$(ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print $2}')
+	client=$(ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print $2}')
 
 	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $filename | awk '/error/') ]]
 	then

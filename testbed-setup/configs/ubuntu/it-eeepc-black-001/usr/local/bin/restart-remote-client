@@ -37,15 +37,12 @@ restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
 #ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
 ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filename $bitrate"
 
-# check output regularly and restart if iperf3 client is found 'hanging' 
-# 'hanging' results in the iperf3 client producing output like: 
-# 	'[  5]   0.00-1.00   sec  0.00 Bytes  0.00 bits/sec  0.000 ms  0/0 (-nan%)'
-# as such, we look for the 'nan' pattern in all of the last n lines of iperf's output
-# FIXME: for now, n is fixed to 3
-n=3
 while [ "$stop_loop" = false ]; do
 
-	if [[ $(tail -$n $output_dir/$filename | awk '/nan/') != "" ]] || [[ $(tail -$n $output_dir/$filename | awk '/error/') != "" ]]
+	server=$(ssh -i $HOME/.ssh/it adamiaonr@10.10.10.141 "ps -ef | grep iperf3 | grep -v ssh | grep -v grep | grep $port | awk '{print \$2}'")
+	client=$(ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
+
+	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $filename | awk '/error/') ]]
 	then
 
 		# restart iperf3 server

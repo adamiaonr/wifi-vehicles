@@ -45,7 +45,10 @@ ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filena
 n=3
 while [ "$stop_loop" = false ]; do
 
-	if [[ $(tail -$n $output_dir/$filename | awk '/nan/') != "" ]] || [[ $(tail -$n $output_dir/$filename | awk '/error/') != "" ]]
+	server=$(ssh -i $HOME/.ssh/it adamiaonr@10.10.10.141 "ps -ef | grep iperf3 | grep -v ssh | grep -v grep | grep $port | awk '{print \$2}'")
+	client=$(ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
+
+	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $filename | awk '/error/') ]]
 	then
 
 		# restart iperf3 server
@@ -59,7 +62,7 @@ while [ "$stop_loop" = false ]; do
 		fi
 
 		# restart remote iperf3 client
-		ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
+		ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9"
 		ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $ip $port $proto $filename $bitrate"
 
 		echo -e "restarted iperf3 client ("$((i-1))")"
