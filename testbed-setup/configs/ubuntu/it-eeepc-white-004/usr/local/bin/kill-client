@@ -17,6 +17,7 @@ ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
 # 	- monitoring sessions & iperf3 clients running on talon ad7200 routers
 ssh -i $HOME/.ssh/it "root@10.10.11.102" "kill-monitor"
 ssh -i $HOME/.ssh/it "root@10.10.11.103" "kill-client"
+/usr/local/bin/kill-server "it@10.10.10.113"
 #	- any outstanding iperf3 sessions
 pkill -f iperf3
 

@@ -14,21 +14,14 @@ trace_nr=$4
 # restart iperf3 servers
 if [ "$login" == "adamiaonr@10.10.10.141" ]
 then
-	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v grep | grep $port | awk '{print \$2}' | sudo xargs kill -9"
+	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v ssh | grep -v grep | grep $port | awk '{print \$2}' | sudo xargs kill -9"
 	ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
 
 elif [ "$login" == "root@10.10.14.1" ]
 then
 	# restart iperf3 servers
-	ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep -v grep | grep $port | awk '{print \$1}' | xargs -r kill -9"
-	ssh -i $HOME/.ssh/it "$login" "iperf3 -s -B $ip -p $port &> /dev/null < /dev/null &"
+	ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep -v ssh | grep -v grep | grep $port | awk '{print \$1}' | xargs -r kill -9"
+	ssh -i $HOME/.ssh/it "$login" "iperf3-tweaked -s -B $ip -p $port &> /dev/null < /dev/null &"
 fi
-
-# # restart server-side scripts
-# if [ "$trace_nr" ]
-# then
-# 	#ssh -i $HOME/.ssh/it "$login" "kill-servers"
-# 	ssh -i $HOME/.ssh/it "$login" "run-servers $trace_nr &> /dev/null < /dev/null &"
-# fi
 
 exit 0
