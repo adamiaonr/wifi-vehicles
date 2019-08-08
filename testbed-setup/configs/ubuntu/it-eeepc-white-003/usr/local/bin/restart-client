@@ -60,17 +60,12 @@ else
 	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
 fi
 
-# check output regularly and restart if iperf3 client is found 'hanging' 
-# 'hanging' results in the iperf3 client producing output like: 
-# 	'[  5]   0.00-1.00   sec  0.00 Bytes  0.00 bits/sec  0.000 ms  0/0 (-nan%)'
-# as such, we look for the 'nan' pattern in all of the last n lines of iperf's output
-# FIXME: for now, n is fixed to 3
-n=3
 while [ "$stop_loop" = false ]; do
 
-	# output=$(tail -$n $filename | awk '/nan/')
+	server=$(ssh -i $HOME/.ssh/it $login "ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}'")
+	client=$(ps -ef | grep iperf3 | grep $port | grep -v grep | awk '{print $2}')
 
-	if [[ $(tail -$n $filename | awk '/nan/') != "" ]] || [[ $(tail -$n $filename | awk '/error/') != "" ]]
+	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $filename | awk '/error/') ]]
 	then
 
 		# restart iperf3 server
