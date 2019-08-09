@@ -176,9 +176,9 @@ report_profiles = {
 
 def to_human_readable(size):
 
-    if size > 1000 * 1000 * 1000 :
-        return ('%s GB' % (size / (1000 * 1000 * 1000)))
-    elif size > 1000 * 1000:
+    # if size > 1000 * 1000 * 1000 :
+    #     return ('%s GB' % (size / (1000 * 1000 * 1000)))
+    if size > 1000 * 1000:
         return ('%s MB' % (size / (1000 * 1000)))
     elif size > 1000:
         return ('%s KB' % (size / (1000)))
@@ -292,7 +292,7 @@ def cbt_status(status, logdir, timestamp, args):
                 line = f.readlines()[-1]
                 print(line)
                 if timestamp - int(float(line.split(',')[0])) < 10:
-                    status['cbt'] = 'ok'
+                    status['cbt'] = to_human_readable(int(os.stat(filename).st_size))
                 else:
                     status['cbt'] = 'bad'
 
@@ -330,7 +330,7 @@ def gps_status(status, logdir, timestamp, args):
 
                 line = lines[-1]
                 if timestamp - int(float(line.split(',')[0])) < 5:
-                    status['gps'] = 'ok'
+                    status['gps'] = to_human_readable(int(os.stat(filename).st_size))
                 else:
                     status['gps'] = 'bad'
         except Exception:
