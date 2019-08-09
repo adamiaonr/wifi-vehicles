@@ -29,7 +29,7 @@ bitrate=$4
 # FIXME : the tp-link archer t4uh doesn't provide channel & bw info so we have to hardcode it
 # channel=$(iw dev wlan-txrx info | awk '/channel/ {print $2}')
 # bw=$(iw dev wlan-txrx info | awk '/channel/ {print $6}')
-channel="40"
+channel="36"
 bw="40"
 # get the right signal next to HT40 or HT80 ('+' or '-')
 #	- HT40- : if center1 < freq
