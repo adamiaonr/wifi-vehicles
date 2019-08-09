@@ -42,7 +42,7 @@ while [ "$stop_loop" = false ]; do
 	server=$(ssh -i $HOME/.ssh/it adamiaonr@10.10.10.141 "ps -ef | grep iperf3 | grep -v ssh | grep -v grep | grep $port | awk '{print \$2}'")
 	client=$(ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
 
-	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $output_dir/$filename | awk '/error/') ]]
+	if [[ -z $server ]] || [[ -z $client ]]
 	then
 
 		# restart iperf3 server
