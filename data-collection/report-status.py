@@ -162,6 +162,17 @@ report_profiles = {
         }},
 }
 
+def to_human_readable(size):
+
+    if size > 1000 * 1000 * 1000 :
+        return ('%s GB' % (size / (1000 * 1000 * 1000)))
+    elif size > 1000 * 1000:
+        return ('%s MB' % (size / (1000 * 1000)))
+    elif size > 1000:
+        return ('%s KB' % (size / (1000)))
+    else:
+        return ('%s B' % (size))
+
 def get_latest_file(logdir, filename):
 
     # extract prefix and extension from filename
@@ -418,7 +429,7 @@ def monitor_status(status, logdir, timestamp, args):
         try:
             # FIXME: the threshold size is arbitrary at 100 byte
             if (int(os.stat(filename).st_size) > 100) and (timestamp - int(float(os.path.getmtime(filename))) < 10):
-                status['tcpdump'] = 'ok'
+                status['tcpdump'] = to_human_readable(int(os.stat(filename).st_size))
             else:
                 status['tcpdump'] = 'bad'
 
