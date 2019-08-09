@@ -53,11 +53,12 @@ iw phy $wiphy set retry short 7 long 4
 # ip route add 10.10.12.0/24 via 10.10.14.1 dev wlan-txrx
 # change channel on the monitoring iface to that of the comm. iface
 python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
-# tcpdump on monitor iface
+# tcpdump on monitor iface (and raspberry pi for ac capabilities)
 # FIXME : 
 #	- no filters for smaller .pcap files? 
 #	- removed the '-s0' option
 tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
+ssh -i ~/.ssh/id_rpi_rsa "pi@10.10.11.104" "sudo kill-monitor; (sudo run-monitor $trace_nr > /dev/null 2>&1)&"
 # re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
 /usr/local/bin/restart-client "$trace_nr" "root@10.10.14.1" 10.10.14.1 5202 $proto $bitrate &
 

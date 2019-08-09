@@ -95,6 +95,18 @@ report_profiles = {
                 'gps' : '',
             }
         },
+        'rpi' : {
+            'section' : 'main-client',
+            'fields' : {
+                'iperf' : {'type' : 'ps', 'args' : '10.10.14.1:5202'},
+                'tcpdump' : {'type' : 'file', 'subdir' : 'raspberrypi', 'args' : 'monitor.ac.*.pcap'},
+                'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
+                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
+                'battery' : '',
+                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
+                'gps' : '',
+            }
+        },
         'tp3 (ac)' : {
             'section' : 'main-client',
             'fields' : {
