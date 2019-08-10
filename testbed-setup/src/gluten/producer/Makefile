@@ -3,7 +3,7 @@ CC := g++
 # directories
 SRCDIR := .
 BUILDDIR := build
-TARGET := echo-client
+TARGET := producer
 
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
@@ -11,9 +11,9 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 # use -ggdb for GNU debugger
 # CFLAGS := -g -ggdb -gdwarf-2 -Wall -Wno-comment -std=c++11
-CFLAGS := -O3 -Wall -Wno-comment -std=c++11
+CFLAGS := -O2 -Wall -Wno-comment -std=c++11
 
-LIB := -lm
+#LIB := -lm
 INC := -Iinclude
 
 #all: $(TARGET) $(TARGET)

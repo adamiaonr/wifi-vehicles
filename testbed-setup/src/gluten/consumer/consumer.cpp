@@ -7,16 +7,18 @@
 #include <stdio.h>      /* standard C i/o facilities */
 #include <stdlib.h>     /* needed for atoi() */
 #include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
+#include <fcntl.h>      /* O_NONBLOCK */
 #include <sys/types.h>  /* system data type definitions */
 #include <sys/socket.h> /* socket specific definitions */
 #include <netinet/in.h> /* INET constants and stuff */
 #include <arpa/inet.h>  /* IP address conversion stuff */
 #include <netdb.h>      /* gethostbyname */
 #include <signal.h>
+#include <sys/time.h>
 
 /* this routine echos any messages (UDP datagrams) received */
 
-#define MAXBUF 1024*1024
+#define MAXBUF 2*1024*1024
 
 static volatile int carry_on = 1;
 
@@ -31,14 +33,37 @@ void echo(int sd) {
     struct sockaddr_in remote;
 
     len = sizeof(remote);
+    unsigned long counter = 0;
+
+    time_t init_time, curr_time;
+    init_time = time(NULL);
+
+    // int flags = fcntl(sd, F_GETFL, 0);
+    // fcntl(sd, F_SETFL, flags | O_NONBLOCK);
 
     while (carry_on) {
 
-        n = recvfrom(sd, bufin, MAXBUF, 0, (struct sockaddr *) &remote, (socklen_t *) &len);
-        
-        if (!(n < 0)) {
-            sendto(sd, bufin, n, 0, (struct sockaddr *) &remote, len);
+        curr_time = time(NULL);
+        if (curr_time > init_time) {
+
+            std::cout << "[INFO] received " << counter << " bytes in " << curr_time - init_time << "sec (" << (double) (counter * 8.0) / (double) ((curr_time - init_time) * 1000000.0) << " Mbps)" << std::endl;
+            counter = 0;
+            init_time = curr_time;
         }
+
+        n = recvfrom(sd, bufin, MAXBUF, 0, (struct sockaddr *) &remote, (socklen_t *) &len);
+        // n = read(sd, bufin, MAXBUF);
+
+        if (n > 0) {
+            counter += n;
+        } 
+        // else {
+        //     perror("[ERROR] server");
+        // }
+        // FIXME : add feedback on bit per sec        
+        // if (!(n < 0)) {
+        //     sendto(sd, bufin, n, 0, (struct sockaddr *) &remote, len);
+        // }
     }
 }
 
@@ -83,7 +108,7 @@ int main(int argc, char **argv) {
 
     // set a recv timeout on sk
     struct timeval read_timeout;
-    read_timeout.tv_sec = 1;
+    read_timeout.tv_sec = 2;
     read_timeout.tv_usec = 0;
     setsockopt(ld, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
 
