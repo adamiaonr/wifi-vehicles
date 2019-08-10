@@ -1,5 +1,6 @@
 # set the main compiler here. Options e.g.: 'gcc', 'g++'
-CC := g++
+CC := arm-openwrt-linux-uclibcgnueabi-c++
+#CC := g++
 # directories
 SRCDIR := .
 BUILDDIR := build
@@ -11,6 +12,8 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 # use -ggdb for GNU debugger
 # CFLAGS := -g -ggdb -gdwarf-2 -Wall -Wno-comment -std=c++11
+#LD := arm-openwrt-linux-muslgnueabi-ld
+#INC := -I ~/workbench/openwrt/staging_dir/target-arm_arm1176jzf-s+vfp_uClibc-0.9.33.2_eabi/usr/include ~/workbench/openwrt/staging_dir/target-arm_arm1176jzf-s+vfp_uClibc-0.9.33.2_eabi/usr/lib
 CFLAGS := -O2 -Wall -Wno-comment -std=c++11
 
 #LIB := -lm
