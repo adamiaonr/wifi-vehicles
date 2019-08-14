@@ -47,9 +47,9 @@ void echo(int sd) {
         if (curr_time > init_time) {
 
             // std::cout << "[INFO] received " << counter << " bytes in " << curr_time - init_time << "sec (" << (double) (counter * 8.0) / (double) ((curr_time - init_time) * 1000000.0) << " Mbps)" << std::endl;
-            elapsed_time = curr_time - init_time;
-            bitrate = (double) (counter * 8.0) / (double) ((curr_time - init_time) * 1000000.0);
-            fprintf(stdout, "[INFO] received %d bytes in %d sec (%f Mbps)\n", counter, curr_time - init_time, );
+            time_t elapsed_time = curr_time - init_time;
+            double bitrate = (double) (counter * 8.0) / (double) ((curr_time - init_time) * 1000000.0);
+            fprintf(stdout, "[INFO] received %d bytes in %d sec (%f Mbps)\n", counter, elapsed_time, bitrate);
             counter = 0;
             init_time = curr_time;
         }
@@ -119,6 +119,10 @@ int main(int argc, char **argv) {
     read_timeout.tv_sec = 2;
     read_timeout.tv_usec = 0;
     setsockopt(ld, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+
+    // set for udp broadcast recv
+    int broadcast=1;
+    setsockopt(ld, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast);
 
     echo(ld);
     exit(0);
