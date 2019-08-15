@@ -4,7 +4,7 @@ ifeq ($(ARCH), mips)
 	CFLAGS := -O2 -Wall -Wno-comment -static
 	# LD := mips-openwrt-linux-musl-ld
 	INC := -I ~/workbench/openwrt/staging_dir/target-mips_24kc_musl-1.1.16/usr/include ~/workbench/openwrt/staging_dir/target-mips_24kc_musl-1.1.16/usr/lib
-else ifeq ($(ARCH), armv)
+else ifeq ($(ARCH), armv7l)
 	CC := arm-openwrt-linux-muslgnueabi-gcc
 	CFLAGS := -O2 -Wall -Wno-comment -std=c11 -static
 	# LD := arm-openwrt-linux-muslgnueabi-ld

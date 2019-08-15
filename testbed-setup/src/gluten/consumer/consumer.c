@@ -46,7 +46,7 @@ void consumer_recv(int sd) {
             double bitrate = (double) (byte_cntr * 8.0) / (double) ((elapsed_time) * 1000000.0);
             // csv-like stdout syntax : 
             // timestamp,pckt_cntr (recvd),byte_cntr (recvd),elapsed time,bitrate (recvd)
-            fprintf(stdout, "%ld,%lu,%lu,%ld,%f\n", (long int) curr_time, pckt_cntr, byte_cntr, (long int) elapsed_time, bitrate);
+            fprintf(stdout, "%ld,%lu,%lu,%ld,%.3f\n", (long int) curr_time, pckt_cntr, byte_cntr, (long int) elapsed_time, bitrate);
 
             byte_cntr = 0;
             pckt_cntr = 0;
