@@ -1,7 +1,7 @@
 # set compiler here
 ifeq ($(ARCH), mips)
 	CC := mips-openwrt-linux-musl-gcc
-	CFLAGS := -O2 -Wall -Wno-comment -std=c11 -static
+	CFLAGS := -O2 -Wall -Wno-comment -static
 	# LD := mips-openwrt-linux-musl-ld
 	INC := -I ~/workbench/openwrt/staging_dir/target-mips_24kc_musl-1.1.16/usr/include ~/workbench/openwrt/staging_dir/target-mips_24kc_musl-1.1.16/usr/lib
 else ifeq ($(ARCH), armv)

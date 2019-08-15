@@ -2,7 +2,7 @@
 
 #include <stdio.h>      /* standard C i/o facilities */
 #include <stdlib.h>     /* needed for atoi() and atof() */
-#include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
+//#include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
 #include <sys/types.h>  /* system data type definitions */
 #include <sys/socket.h> /* socket specific definitions */
 #include <netinet/in.h> /* INET constants and stuff */
@@ -17,6 +17,7 @@
 
 #define MAXBUF 2*1024*1024
 #define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + 1472)
+#define SKIP_SLEEP (int) 10
 
 static volatile int carry_on = 1;
 
@@ -31,7 +32,7 @@ int main(int argc, char **argv) {
     struct hostent * hp;
 
     if (argc != 4) {
-        fprintf(stderr, "[ERROR] usage : %s <consumer-ip> <consumer-port> <bps>\n", argv[0]);
+        fprintf(stderr, "[ERROR] usage : %s <consumer-ip> <consumer-port> <Mbps>\n", argv[0]);
         exit(1);
     }
 
@@ -73,13 +74,14 @@ int main(int argc, char **argv) {
     // setsockopt(sk, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
     // calculate interval for sleep in-between sendto() calls, so that target bitrate is achieved
-    double interval = (((double) (PACKET_SIZE * 8.0)) / ((double) atof(argv[3]))) * 1000000.0;
-    fprintf(stderr, "[INFO] sleep interval for bw %.3f bps : %.3f us\n", atof(argv[3]), interval);
+    // unsigned int interval = (unsigned int) (((double) ((PACKET_SIZE * 8.0) / 1000000.0)) / ((double) atof(argv[3]))) + 1;
+    // fprintf(stderr, "[INFO] sleep interval for bw %.3f Mbps : %lu us\n", atof(argv[3]), interval);
 
     int n_bytes_sent = 0;
     unsigned long byte_cntr = 0, pckt_cntr = 0;
     time_t init_time, curr_time;
 
+    int skip_sleep = SKIP_SLEEP;
     init_time = time(NULL);
     while (carry_on) {
         curr_time = time(NULL);
@@ -98,7 +100,7 @@ int main(int argc, char **argv) {
         n_bytes_sent = sendto(sk, payload, 1472, MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
 
         // check for problems in send()
-        // if ((n_bytes_sent < 0) && (init_time != curr_time)) {
+        // if (n_bytes_sent < 0) {
         //     perror("[ERROR] sendto() returned < 0");
         // }
 
@@ -107,7 +109,14 @@ int main(int argc, char **argv) {
             pckt_cntr++;
         }
 
-        usleep(interval);
+        // FIXME : send at max rate
+	//if (skip_sleep < 0) {
+        //    usleep(1);
+        //    skip_sleep = SKIP_SLEEP;
+        //} else {
+        //    skip_sleep--;
+        //}
+        //nanosleep(&sleep_intrvl, &rem);
     }
 
     exit(0);
