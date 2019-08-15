@@ -1,4 +1,4 @@
-/* producer.c */
+/* producer.c : produces udp packets to be consumed by consumer app */
 
 #include <stdio.h>      /* standard C i/o facilities */
 #include <stdlib.h>     /* needed for atoi() and atof() */
@@ -53,8 +53,12 @@ int main(int argc, char **argv) {
     }
     
     memcpy(&server.sin_addr.s_addr, hp->h_addr, hp->h_length);
-    // set port in sockaddr_in struct
     server.sin_port = htons(atoi(argv[2]));
+
+    char ipv4_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(server.sin_addr), ipv4_str, INET_ADDRSTRLEN);
+    fprintf(stderr, "[INFO] producer sending to %s:%d\n", ipv4_str, ntohs(server.sin_port));
+
     // empty payload to send over udp
     unsigned char payload[1472];
 
@@ -68,9 +72,9 @@ int main(int argc, char **argv) {
     // int broadcast = 1;
     // setsockopt(sk, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
-    unsigned long int bytes_sent = 0;
+    // calculate interval for sleep in-between sendto() calls, so that target bitrate is achieved
     double interval = (((double) (PACKET_SIZE * 8.0)) / ((double) std::stof(argv[3]))) * 1000000.0;
-    fprintf(stdout, "[INFO] sleep interval for bw %.3f bps : %.3f us\n", atof(argv[3]), interval);
+    fprintf(stderr, "[INFO] sleep interval for bw %.3f bps : %.3f us\n", atof(argv[3]), interval);
 
     unsigned long byte_cntr = 0, pckt_cntr = 0;
     time_t init_time, curr_time;
@@ -79,7 +83,10 @@ int main(int argc, char **argv) {
     while (carry_on) {
         curr_time = time(NULL);
         if (curr_time > init_time) {
-            double bitrate = (double) (byte_cntr * 8.0) / (double) ((curr_time - init_time) * 1000000.0);
+
+            time_t elapsed_time = curr_time - init_time;
+            double bitrate = (double) (byte_cntr * 8.0) / (double) ((elapsed_time) * 1000000.0);
+            // csv-like stdout syntax : 
             fprintf(stdout, "%d,%d,%d,%d,%.3f\n", curr_time, pckt_cntr, byte_cntr, elapsed_time, bitrate);
             
             byte_cntr = 0;
@@ -87,15 +94,15 @@ int main(int argc, char **argv) {
             init_time = curr_time;
         }
 
-        n_sent = sendto(sk, payload, 1472, MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
+        n_bytes_sent = sendto(sk, payload, 1472, MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
 
         // check for problems in send()
-        if ((n_sent < 0) && (init_time != curr_time)) {
-            perror("[ERROR] sendto() returned < 0");
-        }
+        // if ((n_bytes_sent < 0) && (init_time != curr_time)) {
+        //     perror("[ERROR] sendto() returned < 0");
+        // }
 
-        if (n_sent > 0) {
-            counter += n_sent;
+        if (n_bytes_sent > 0) {
+            byte_cntr += n_bytes_sent;
             pckt_cntr++;
         }
 

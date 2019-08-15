@@ -1,8 +1,20 @@
 # set compiler here
-ifeq ($())
+ifeq ($(ARCH), mips)
+	CC := mips-openwrt-linux-musl-gcc
+	CFLAGS := -O2 -Wall -Wno-comment -std=c11 -static
+	# LD := mips-openwrt-linux-musl-ld
+	INC := -I ~/workbench/openwrt/staging_dir/target-mips_24kc_musl-1.1.16/usr/include ~/workbench/openwrt/staging_dir/target-mips_24kc_musl-1.1.16/usr/lib
+else ifeq ($(ARCH), armv)
+	CC := arm-openwrt-linux-muslgnueabi-gcc
+	CFLAGS := -O2 -Wall -Wno-comment -std=c11 -static
+	# LD := arm-openwrt-linux-muslgnueabi-ld
+	INC := -I ~/workbench/lede-ad7200/staging_dir/target-arm_cortex-a15+neon-vfpv4_musl-1.1.16_eabi/usr/include ~/workbench/lede-ad7200/staging_dir/target-arm_cortex-a15+neon-vfpv4_musl-1.1.16_eabi/usr/lib
+else
+	CC := gcc
+	CFLAGS := -g -ggdb -gdwarf-2 -O2 -Wall -Wno-comment -std=c11 -static
+	INC := -Iinclude
+endif
 
-#CC := arm-openwrt-linux-uclibcgnueabi-c++
-CC := g++
 # directories
 SRCDIR := .
 BUILDDIR := build
@@ -11,14 +23,6 @@ TARGET := producer
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-
-# use -ggdb for GNU debugger
-# CFLAGS := -g -ggdb -gdwarf-2 -Wall -Wno-comment -std=c++11
-#LD := arm-openwrt-linux-muslgnueabi-ld
-#INC := -I ~/workbench/openwrt/staging_dir/target-arm_arm1176jzf-s+vfp_uClibc-0.9.33.2_eabi/usr/include ~/workbench/openwrt/staging_dir/target-arm_arm1176jzf-s+vfp_uClibc-0.9.33.2_eabi/usr/lib
-CFLAGS := -O2 -Wall -Wno-comment -std=c++11
-#LIB := -lm
-INC := -Iinclude
 
 #all: $(TARGET) $(TARGET)
 all: $(TARGET)
