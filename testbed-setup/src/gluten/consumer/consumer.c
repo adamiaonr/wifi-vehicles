@@ -26,18 +26,19 @@ void handler(int dummy) {
     carry_on = 0;
 }
 
-void echo(int sd) {
+void consumer_recv(int sd) {
 
     int len, n;
     char bufin[MAXBUF];
     struct sockaddr_in remote;
 
     len = sizeof(remote);
-    unsigned long counter = 0;
+    unsigned long byte_cntr = 0, pckt_cntr = 0;
 
     time_t init_time, curr_time;
     init_time = time(NULL);
 
+    // FIXME : non-blocking socket modifications
     // int flags = fcntl(sd, F_GETFL, 0);
     // fcntl(sd, F_SETFL, flags | O_NONBLOCK);
 
@@ -46,11 +47,14 @@ void echo(int sd) {
         curr_time = time(NULL);
         if (curr_time > init_time) {
 
-            // std::cout << "[INFO] received " << counter << " bytes in " << curr_time - init_time << "sec (" << (double) (counter * 8.0) / (double) ((curr_time - init_time) * 1000000.0) << " Mbps)" << std::endl;
             time_t elapsed_time = curr_time - init_time;
-            double bitrate = (double) (counter * 8.0) / (double) ((curr_time - init_time) * 1000000.0);
-            fprintf(stdout, "[INFO] received %d bytes in %d sec (%f Mbps)\n", counter, elapsed_time, bitrate);
-            counter = 0;
+            double bitrate = (double) (byte_cntr * 8.0) / (double) ((curr_time - init_time) * 1000000.0);
+
+            // timestamp,pckt_cntr (recvd),byte_cntr (recvd),elapsed time,bitrate (recvd)
+            fprintf(stdout, "%d,%d,%d,%d,%f\n", curr_time, pckt_cntr, byte_cntr, elapsed_time, bitrate);
+
+            byte_cntr = 0;
+            pckt_cntr = 0;
             init_time = curr_time;
         }
 
@@ -58,7 +62,8 @@ void echo(int sd) {
         // n = read(sd, bufin, MAXBUF);
 
         if (n > 0) {
-            counter += n;
+            byte_cntr += n;
+            pckt_cntr++;
         } 
         // else {
         //     perror("[ERROR] server");
@@ -82,13 +87,11 @@ int main(int argc, char **argv) {
 
     if (argc != 2) {
         fprintf(stderr, "echo_server::main() : [ERROR] usage : %s <port-number>\n", argv[0]);
-        // std::cerr << "echo_server::main() : [ERROR] usage : " << argv[0] << " <port-number>" << std::endl;
         exit(1);
     }
 
     // create udp 'listen' socket
     if ((ld = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-        // std::cerr << "echo_server::main() : [ERROR] problem creating socket" << std::endl;
         fprintf(stderr, "echo_server::main() : [ERROR] problem creating socket\n");
         exit(1);
     }
@@ -99,19 +102,16 @@ int main(int argc, char **argv) {
 
     // bind listen socket to a fixed <ip>:<port> pair
     if (bind(ld, (struct sockaddr *) &skaddr, sizeof(skaddr)) < 0) {
-        // std::cerr << "echo_server::main() : [ERROR] problem binding socket" << std::endl;
         fprintf(stderr, "echo_server::main() : [ERROR] problem binding socket\n");
         exit(1);
     }
 
     length = sizeof(skaddr);
     if (getsockname(ld, (struct sockaddr *) &skaddr, (socklen_t *) &length) < 0) {
-        // std::cerr << "echo_server::main() : [ERROR] getsockname() error" << std::endl;
         fprintf(stderr, "echo_server::main() : [ERROR] getsockname() error\n");
         exit(1);
     }
 
-    // std::cout << "echo_server::main() : [INFO] echo server listening on port " << ntohs(skaddr.sin_port) << std::endl;
     fprintf(stdout, "echo_server::main() : [INFO] echo server listening on port %d\n", ntohs(skaddr.sin_port));
 
     // set a recv timeout on sk
@@ -119,11 +119,11 @@ int main(int argc, char **argv) {
     read_timeout.tv_sec = 2;
     read_timeout.tv_usec = 0;
     setsockopt(ld, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+    // // set for broadcast recv
+    // int broadcast=1;
+    // setsockopt(ld, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast);
 
-    // set for udp broadcast recv
-    int broadcast=1;
-    setsockopt(ld, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast);
+    consumer_recv(ld);
 
-    echo(ld);
     exit(0);
 }
