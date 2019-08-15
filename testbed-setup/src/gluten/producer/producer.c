@@ -17,7 +17,9 @@
 
 #define MAXBUF 2*1024*1024
 #define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + 1472)
-#define SKIP_SLEEP (int) 10
+#ifdef ARCH_MIPS
+#define SKIP_SLEEP (int) 50
+#endif
 
 static volatile int carry_on = 1;
 
@@ -81,7 +83,9 @@ int main(int argc, char **argv) {
     unsigned long byte_cntr = 0, pckt_cntr = 0;
     time_t init_time, curr_time;
 
+#ifdef ARCH_MIPS
     int skip_sleep = SKIP_SLEEP;
+#endif
     init_time = time(NULL);
     while (carry_on) {
         curr_time = time(NULL);
@@ -110,13 +114,21 @@ int main(int argc, char **argv) {
         }
 
         // FIXME : send at max rate
-	//if (skip_sleep < 0) {
-        //    usleep(1);
-        //    skip_sleep = SKIP_SLEEP;
-        //} else {
-        //    skip_sleep--;
-        //}
-        //nanosleep(&sleep_intrvl, &rem);
+#ifdef ARCH_MIPS
+        // FIXME : why this?
+        // the unifi ac lite (mips arch) doesn't handle usleep(1) as desired.
+        // instead of sleeping for 1 us, it sleeps for longer, thus limiting throughput to 50 Mbps.
+        // as such, we let it usleep for whatever period the unifi follows, but only every SKIP_SLEEP iterations.
+        // this is helpful, as it doesn't keep the CPU at 100% at all times.
+        if (skip_sleep < 0) {
+           usleep(1);
+           skip_sleep = SKIP_SLEEP;
+        } else {
+           skip_sleep--;
+        }
+#else
+        usleep(1);
+#endif
     }
 
     exit(0);
