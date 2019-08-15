@@ -9,10 +9,14 @@
 #include <arpa/inet.h>  /* IP address conversion stuff */
 #include <netdb.h>      /* gethostbyname */
 #include <string.h>
-#include <sys/time.h>
+#include <time.h>
+#include <sys/time.h>   /* struct timeval */
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
+
+#define MAXBUF 2*1024*1024
+#define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + 1472)
 
 static volatile int carry_on = 1;
 
@@ -25,10 +29,6 @@ int main(int argc, char **argv) {
     int sk;
     struct sockaddr_in server;
     struct hostent * hp;
-    char buf[MAXBUF];
-    int buf_len;
-    int n_sent;
-    int n_read;
 
     if (argc != 4) {
         fprintf(stderr, "[ERROR] usage : %s <consumer-ip> <consumer-port> <bps>\n", argv[0]);
@@ -73,9 +73,10 @@ int main(int argc, char **argv) {
     // setsockopt(sk, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
     // calculate interval for sleep in-between sendto() calls, so that target bitrate is achieved
-    double interval = (((double) (PACKET_SIZE * 8.0)) / ((double) std::stof(argv[3]))) * 1000000.0;
+    double interval = (((double) (PACKET_SIZE * 8.0)) / ((double) atof(argv[3]))) * 1000000.0;
     fprintf(stderr, "[INFO] sleep interval for bw %.3f bps : %.3f us\n", atof(argv[3]), interval);
 
+    int n_bytes_sent = 0;
     unsigned long byte_cntr = 0, pckt_cntr = 0;
     time_t init_time, curr_time;
 
@@ -87,7 +88,7 @@ int main(int argc, char **argv) {
             time_t elapsed_time = curr_time - init_time;
             double bitrate = (double) (byte_cntr * 8.0) / (double) ((elapsed_time) * 1000000.0);
             // csv-like stdout syntax : 
-            fprintf(stdout, "%d,%d,%d,%d,%.3f\n", curr_time, pckt_cntr, byte_cntr, elapsed_time, bitrate);
+            fprintf(stdout, "%ld,%lu,%lu,%ld,%.3f\n", (long int) curr_time, pckt_cntr, byte_cntr, (long int) elapsed_time, bitrate);
             
             byte_cntr = 0;
             pckt_cntr = 0;

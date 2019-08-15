@@ -10,7 +10,8 @@
 #include <arpa/inet.h>  /* IP address conversion stuff */
 #include <netdb.h>      /* gethostbyname */
 #include <signal.h>
-#include <sys/time.h>
+#include <time.h>
+#include <sys/time.h>   /* struct timeval */
 
 #define MAXBUF 2*1024*1024
 
@@ -45,7 +46,7 @@ void consumer_recv(int sd) {
             double bitrate = (double) (byte_cntr * 8.0) / (double) ((elapsed_time) * 1000000.0);
             // csv-like stdout syntax : 
             // timestamp,pckt_cntr (recvd),byte_cntr (recvd),elapsed time,bitrate (recvd)
-            fprintf(stdout, "%d,%d,%d,%d,%f\n", curr_time, pckt_cntr, byte_cntr, elapsed_time, bitrate);
+            fprintf(stdout, "%ld,%lu,%lu,%ld,%f\n", (long int) curr_time, pckt_cntr, byte_cntr, (long int) elapsed_time, bitrate);
 
             byte_cntr = 0;
             pckt_cntr = 0;
@@ -95,7 +96,7 @@ int main(int argc, char **argv) {
 
     // bind listen socket to a fixed <port-number> (given as arg)
     if (bind(ld, (struct sockaddr *) &skaddr, sizeof(skaddr)) < 0) {
-        fprintf(stderr, "[ERROR] problem binding socket to port %d\n", argv[1]);
+        fprintf(stderr, "[ERROR] problem binding socket to port %d\n", ntohs(skaddr.sin_port));
         exit(1);
     }
 
