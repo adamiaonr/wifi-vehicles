@@ -236,6 +236,7 @@ def iperf_status(status, logdir, timestamp, args):
             base_dir = '/'.join(base_dir)
 
         filename = get_latest_file(base_dir, args['args'])
+        print(filename)
         if not filename:
             status['iperf'] = 'none'
             return
@@ -248,7 +249,7 @@ def iperf_status(status, logdir, timestamp, args):
 
             with open(filename, 'r') as f:
                 line = f.readlines()[-1]
-                if (timestamp - int(float(os.path.getmtime(filename))) < 10) and ('/sec' in line):
+                if (timestamp - int(float(os.path.getmtime(filename))) < 10):
                     status['iperf'] = str([filename.split('/')[-1].split('.')[1][3]])
 
         except Exception:
