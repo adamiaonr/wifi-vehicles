@@ -2,6 +2,6 @@
 
 pkill -f get-cbt
 pkill -f get-cpu
-pkill -f iperf3
+pkill -f producer
 
 exit 0

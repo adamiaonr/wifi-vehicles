@@ -9,5 +9,6 @@ pkill -f get-cbt
 pkill -f get-gps
 /usr/local/bin/kill-server "it@10.10.10.113"
 pkill -f iperf3
+pkill -f consumer
 
 exit 0

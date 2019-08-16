@@ -7,19 +7,19 @@ ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
 ps -ef | grep restart-remote-client | awk '{print $2}' | sudo xargs -r kill -9
 #	- any outstanding tcpdumps
 pkill -f tcpdump
-ssh -i ~/.ssh/id_rpi_rsa "pi@10.10.11.104" "sudo kill-monitor"
+#ssh -i ~/.ssh/id_rpi_rsa "pi@10.10.11.104" "sudo kill-monitor"
 #	- general var collection scripts
 pkill -f get-ntp-accuracy
 pkill -f bitrate-adapt-stats
 pkill -f get-cpu
 pkill -f get-cbt
 
-ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f iperf3"
+ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "pkill -f producer"
 # 	- monitoring sessions & iperf3 clients running on talon ad7200 routers
 ssh -i $HOME/.ssh/it "root@10.10.11.102" "kill-monitor"
 ssh -i $HOME/.ssh/it "root@10.10.11.103" "kill-client"
 /usr/local/bin/kill-server "it@10.10.10.113"
 #	- any outstanding iperf3 sessions
-pkill -f iperf3
+pkill -f consumer
 
 exit 0

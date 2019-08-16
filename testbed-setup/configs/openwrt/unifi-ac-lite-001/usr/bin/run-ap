@@ -19,7 +19,8 @@ ip_addr="$(ifconfig eth0 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".
 # nfs mount
 if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
 then
-	mount -t nfs "$ip_addr".1:/exports/users /tmp/vehicular-traces -o nolock
+	mkdir -p /tmp/vehicular-traces/$HOSTNAME
+	mount -t nfs "$ip_addr".1:/exports/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock,sync
 fi
 
 # create trace directory
@@ -38,7 +39,7 @@ iw phy $wiphy set retry short 10 long 7
 if [ -z "$(ps | grep get-cbt | grep -v grep | awk '{print $1}')" ]
 then
 	/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
-	/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan1" &
+	# /root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan1" &
 fi
 
 # extract cpu stats

@@ -14,14 +14,17 @@ proto=$1
 trace_nr=$2
 # handle bitrate arg
 bitrate=$3
-if [ "$1" == "udp" ]
-then
 
+if [ "$proto" == "udp" ]
+then
 	if [ $# -lt 3 ]
 	then
 		echo "usage : $0 <protocol> <trace-nr> <udp-bitrate>"
 		exit 1
 	fi
+else
+	echo "unsupported protocol : $proto"
+	exit 1
 fi
 
 # create dirs (if not available already)
@@ -70,7 +73,7 @@ python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor
 #	- removed the '-s0' option
 tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
 # a restart-client script, which re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
-/usr/local/bin/restart-client "$trace_nr" "root@10.10.13.1" 10.10.13.1 5201 $proto $bitrate &
+/usr/local/bin/restart-client "$trace_nr" "root@10.10.13.1" 5201 &
 
 # extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &

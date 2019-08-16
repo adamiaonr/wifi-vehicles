@@ -2,7 +2,7 @@
 
 if [ $# -lt 4 ]
 then
-    echo "usage : $0 <remote-login> <server-ip> <server-port> <trace-nr>"
+    echo "usage : $0 <remote-login> <ip> <port> <trace-nr>"
     exit 1
 fi
 
@@ -11,7 +11,7 @@ ip=$2
 port=$3
 trace_nr=$4
 
-# restart iperf3 servers
-ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9; iperf3-tweaked -s -B $ip -p $port &> /dev/null < /dev/null &"
+# restart producer
+ssh -i $HOME/.ssh/it "$login" "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9; producer $ip $port 1000 &> /dev/null < /dev/null &"
 
 exit 0

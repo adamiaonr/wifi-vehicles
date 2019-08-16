@@ -25,8 +25,8 @@ echo "$output_dir" > $HOME/workbench/vehicular-experiments/output-dir.txt
 # this run-iperf3 script handles 3 main clients :
 #	- 802.11ac (wave 1) : using local wlan radio & csl dongle for monitoring
 #	- 802.11ac (wave 2) & 802.11ad : via a talon ad7200, accessible via the eth iface
-/usr/local/bin/handle-local-client $output_dir $proto $trace_nr $bitrate &
-/usr/local/bin/handle-remote-client $proto $trace_nr $bitrate &
+/usr/local/bin/handle-local-client $output_dir $trace_nr &
+/usr/local/bin/handle-remote-client $trace_nr &
 
 # extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &

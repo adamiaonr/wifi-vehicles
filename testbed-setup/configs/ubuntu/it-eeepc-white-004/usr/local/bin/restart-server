@@ -11,17 +11,18 @@ ip=$2
 port=$3
 trace_nr=$4
 
-# restart iperf3 servers
+# restart producers
+# FIXME : hardcoded ip address of tp-03 consumer
 if [ "$login" == "adamiaonr@10.10.10.141" ]
 then
-	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs kill -9"
-	ssh -i $HOME/.ssh/it "$login" "iperf3-tweaked -s -B $ip -p $port &> /dev/null < /dev/null &"
+	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs kill -9"
+	ssh -i $HOME/.ssh/it "$login" "producer 192.168.0.188 $port 1000 &> /dev/null < /dev/null &"
 
 elif [ "$login" == "root@10.10.14.1" ]
 then
 	# restart iperf3 servers
-	ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9"
-	ssh -i $HOME/.ssh/it "$login" "iperf3-tweaked -s -B $ip -p $port &> /dev/null < /dev/null &"
+	ssh -i $HOME/.ssh/it "$login" "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9"
+	ssh -i $HOME/.ssh/it "$login" "producer $ip $port 1000 &> /dev/null < /dev/null &"
 fi
 
 exit 0

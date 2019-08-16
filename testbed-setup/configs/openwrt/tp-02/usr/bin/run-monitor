@@ -16,7 +16,8 @@ ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".
 # nfs mount
 if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
 then
-	mount -t nfs "$ip_addr".1:/export/users /tmp/vehicular-traces -o nolock
+	mkdir -p /tmp/vehicular-traces/$HOSTNAME
+	mount -t nfs "$ip_addr".1:/export/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock,sync
 fi
 # create trace directory
 output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
@@ -25,12 +26,12 @@ then
 	mkdir -p $output_dir
 fi
 
-# monitor 802.11ac (wave 2)
+# monitor 802.11ac (wave 1)
 # FIXME : for simplicity we use hardcoded values. this should be changed in the future.
 /sbin/ifconfig wlan0 down 
 /usr/sbin/iw wlan0 set monitor control
 /sbin/ifconfig wlan0 up
-/usr/sbin/iw dev wlan0 set freq 5240 80 5210
+/usr/sbin/iw dev wlan0 set freq 5180 40 5190
 # FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option
 /usr/sbin/tcpdump -i wlan0 -y IEEE802_11_RADIO -w $output_dir/monitor.ac.$(date +"%s").pcap &
 

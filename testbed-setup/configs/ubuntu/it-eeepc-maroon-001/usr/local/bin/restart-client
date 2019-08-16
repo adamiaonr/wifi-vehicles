@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 5 ]
+if [ $# -lt 3 ]
 then
-    echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
+    echo "usage : $0 <trace-nr> <login> <port>"
     exit 1
 fi
 
@@ -15,10 +15,7 @@ then
 fi
 
 login=$2
-ip=$3
-port=$4
-protocol=$5
-bitrate=$6
+port=$3
 
 # trap ctrl-c and call signal_handler()
 stop_loop=false
@@ -32,62 +29,47 @@ signal_handler() {
 
 # create .out files if not ready yet
 i=1
-filename="$output_dir/iperf3.$i.out"
+filename="$output_dir/consumer.$i.out"
 if [ ! -f "$filename" ]
 then
 	touch "$filename"
 fi
 
-# start iperf3 server
-restart-server "$login" "$ip" "$port" "$trace_nr"
+# start remote app
+consumer_ip=$(ifconfig wlan-txrx | awk '/inet addr:/{print $2}' | sed 's/addr://')
+restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
 # start ap scripts
 ap_ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ap_ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
 
-# start iperf3 client for 1st time
-if [ "$protocol" == "udp" ]
-then
-
-	if [ $# -lt 6 ]
-	then
-		echo "usage : $0 <trace-nr> <login> <server-ip> <server-port> <protocol> <bitrate>"
-		exit 1
-	fi
-
-	# FIXME : use stdbuf w/ -oL and -eL options to force line buffering, i.e. force the application to output at every newline
-	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
-else
-	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
-fi
+# start consumer for 1st time
+# FIXME : use stdbuf w/ -oL and -eL options to force line buffering, i.e. force the application to output at every newline
+stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &
 
 while [ "$stop_loop" = false ]; do
 
-	server=$(ssh -i $HOME/.ssh/it root@10.10.13.1 "ps | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
-	client=$(ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print $2}')
+	server=$(ssh -i $HOME/.ssh/it root@10.10.13.1 "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
+	client=$(ps -ef | grep consumer | grep $port | grep -v ssh | grep -v grep | awk '{print $2}')
 
-	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $filename | awk '/error/') ]]
+	if [[ -z $server ]] || [[ -z $client ]]
 	then
 
-		# restart iperf3 server
-		restart-server "$login" "$ip" "$port" "$trace_nr"
-		# kill current iperf3 client
-		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
+		# restart producer
+		restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
+		# kill current consumer
+		ps -ef | grep consumer | grep "$port" | awk '{print $2}' | xargs -r kill -9		
 		# update filename
 		i=$((i+1))
-		filename="$output_dir/iperf3.$i.out"
+		filename="$output_dir/consumer.$i.out"
 		if [ ! -f "$filename" ]
 		then
 			touch "$filename"
 		fi
-		# restart iperf3 client
-		if [ "$protocol" == "udp" ]
-		then
-			stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
-		else
-			stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
-		fi
 
-		echo -e "restarted iperf3 client ("$((i-1))")"
+		# restart consumer
+		stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &
+
+		echo -e "restarted producer / consumer pair ("$((i-1))")"
 	fi
 
 	sleep 5

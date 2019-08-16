@@ -95,22 +95,10 @@ report_profiles = {
                 'gps' : '',
             }
         },
-        'rpi' : {
-            'section' : 'main-client',
-            'fields' : {
-                'iperf' : {'type' : 'ps', 'args' : '10.10.14.1:5202'},
-                'tcpdump' : {'type' : 'file', 'subdir' : 'raspberrypi', 'args' : 'monitor.ac.*.pcap'},
-                'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
-                'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
-                'battery' : '',
-                'cpu' : {'type' : 'file', 'args' : 'cpu.*.csv'},
-                'gps' : '',
-            }
-        },
         'tp3 (ac)' : {
             'section' : 'main-client',
             'fields' : {
-                'iperf' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'iperf3.5201.*.out'},
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'consumer.5201.*.out'},
                 'tcpdump' : {'type' : 'file', 'subdir' : 'tp-02', 'args' : 'monitor.ac.*.pcap'},
                 'cbt' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'cbt.wlan0.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
@@ -122,7 +110,7 @@ report_profiles = {
         'tp3 (ad)' : {
             'section' : 'main-client',
             'fields' : {
-                'iperf' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'iperf3.5202.*.out'},
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-03', 'args' : 'consumer.5202.*.out'},
                 'tcpdump' : {'type' : 'file', 'subdir' : 'tp-02', 'args' : 'monitor.ad.*.pcap'},
                 'cbt' : '',
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
@@ -221,14 +209,20 @@ def iperf_status(status, logdir, timestamp, args):
             return
 
         output = output.splitlines()
-        lines = [s for s in output if (('iperf3' in s) and ('grep' not in s) and ('ssh' not in s))]
+        lines = [s for s in output if ((('iperf3' in s) or ('consumer' in s)) and ('grep' not in s) and ('ssh' not in s))]
         print(lines)
         if not lines:
             status['iperf'] = 'none'
             return
 
         # list last digits of all active port numbers as status
-        ports = [l.replace(' ', '').split('-p')[-1][3] for l in lines]
+        ports = []
+        for line in lines:
+            if 'iperf3' in line:
+                ports.append(line.replace(' ', '').split('-p')[-1][3])
+            elif 'consumer' in line:
+                ports.append(line.split('consumer')[-1].split()[1])
+
         status['iperf'] = str(ports)
 
     elif args['type'] == 'file':
