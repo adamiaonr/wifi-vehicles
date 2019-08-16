@@ -221,7 +221,8 @@ def iperf_status(status, logdir, timestamp, args):
             if 'iperf3' in line:
                 ports.append(line.replace(' ', '').split('-p')[-1][3])
             elif 'consumer' in line:
-                ports.append(line.split('consumer')[-1].split()[1])
+                print(line)
+                ports.append(line.split('consumer')[-1].split()[0])
 
         status['iperf'] = str(ports)
 
