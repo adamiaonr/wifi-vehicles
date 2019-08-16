@@ -72,8 +72,8 @@ report_profiles = {
         'unifi-1 (n)' : {
             'section' : 'ap',
             'fields' : {
-                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cbt.wlan1.*.csv'},
-                'cpu' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-001', 'args' : 'cpu.*.csv'},
+                'cbt' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-003', 'args' : 'cbt.wlan1.*.csv'},
+                'cpu' : {'type' : 'file', 'subdir' : 'it-unifi-ac-lite-003', 'args' : 'cpu.*.csv'},
             },
         },
         'unifi-1 (ac)' : {
@@ -87,7 +87,7 @@ report_profiles = {
             'section' : 'main-client',
             'fields' : {
                 'iperf' : {'type' : 'ps', 'args' : '10.10.14.1:5202'},
-                'tcpdump' : {'type' : 'file', 'args' : 'monitor.*.pcap'},
+                'tcpdump' : {'type' : 'file', 'subdir' : 'tp-02', 'args' : 'monitor.ac.*.pcap'},
                 'cbt' : {'type' : 'file', 'args' : 'cbt.wlan-monitor.*.csv'},
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
