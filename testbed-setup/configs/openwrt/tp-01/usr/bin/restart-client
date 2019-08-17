@@ -13,6 +13,6 @@ filename=$3
 # trace directory
 output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
 # restart consumer
-stdbuf -oL -eL consumer "$port" > "$output_dir/$filename" &> /dev/null &
+stdbuf -oL -eL consumer "$port" > "$output_dir/$filename" 2> /dev/null &
 
 exit 0
