@@ -37,7 +37,7 @@ then
 fi
 
 # start remote producer
-consumer_ip=$(ifconfig wlan-txrx | awk '/inet addr:/{print $2}' | sed 's/addr://')
+consumer_ip=$(ifconfig $iface_name | awk '/inet addr:/{print $2}' | sed 's/addr://')
 restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
 # start ap scripts
 ap_ip=$(ifconfig $iface_name | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
