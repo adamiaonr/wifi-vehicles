@@ -36,7 +36,7 @@ iw phy $wiphy set retry short 7 long 4
 # add route to server
 # ip route add 10.10.12.0/24 via 10.10.14.1 dev wlan-txrx
 # change channel on the monitoring iface to that of the comm. iface
-python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
+#python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
 # tcpdump on monitor iface (and raspberry pi for ac capabilities)
 # FIXME : 
 #	- no filters for smaller .pcap files? 
