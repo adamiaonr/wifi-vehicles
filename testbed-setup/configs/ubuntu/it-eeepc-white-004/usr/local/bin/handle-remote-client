@@ -13,10 +13,9 @@ trace_nr=$1
 ssh -i $HOME/.ssh/it "root@10.10.11.102" "kill-monitor; (run-monitor $trace_nr > /dev/null 2>&1)&"
 
 # tp-03
-# 	- start iperf3 clients in tp-03
+# 	- start consumer in tp-03
 # FIXME : harcoded login uses eth iface
 ssh -i $HOME/.ssh/it "root@10.10.11.103" "(init-client $trace_nr > /dev/null 2>&1)&"
-# /usr/local/bin/restart-remote-client $trace_nr "root@10.10.11.103" 192.168.0.145 5201 $proto $bitrate &
 /usr/local/bin/restart-remote-client $trace_nr "root@10.10.11.103" 5202 &
 
 exit 0

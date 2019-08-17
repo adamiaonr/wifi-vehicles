@@ -22,9 +22,9 @@ fi
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > $HOME/workbench/vehicular-experiments/output-dir.txt
 
-# this run-iperf3 script handles 3 main clients :
-#	- 802.11ac (wave 1) : using local wlan radio & csl dongle for monitoring
-#	- 802.11ac (wave 2) & 802.11ad : via a talon ad7200, accessible via the eth iface
+# this script handles 2 main clients :
+#	- 802.11ac (wave 1) : using tp-link wlan radio
+#	- 802.11ad : via a talon ad7200, accessible via the eth iface
 /usr/local/bin/handle-local-client $output_dir $trace_nr &
 /usr/local/bin/handle-remote-client $trace_nr &
 

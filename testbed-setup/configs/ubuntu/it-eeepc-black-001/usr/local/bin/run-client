@@ -23,12 +23,6 @@ fi
 # update output-dir.txt w/ the current output_dir
 echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
-# # FIXME : 300 Mbps remote bitrate if proto is udp
-# remote_bitrate=$bitrate
-# if [ "$proto" == "udp" ]
-# then
-# 	remote_bitrate=300
-# fi
-/usr/local/bin/handle-remote-client $proto $trace_nr $bitrate &
+/usr/local/bin/handle-remote-client $trace_nr &
 
 exit 0

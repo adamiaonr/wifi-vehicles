@@ -44,7 +44,7 @@ iw phy $wiphy set retry short 7 long 4
 # FIXME 2 : monitoring task done by tp-02 now
 # tcpdump -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
 # ssh -i ~/.ssh/id_rpi_rsa "pi@10.10.11.102" "sudo kill-monitor; (sudo run-monitor $trace_nr > /dev/null 2>&1)&"
-# re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
+# re-starts an consumer / producer pair every time either consumer or producer is detected to crash
 /usr/local/bin/restart-client "$trace_nr" "root@10.10.14.1" 5202 &
 
 exit 0

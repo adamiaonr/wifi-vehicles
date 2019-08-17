@@ -24,7 +24,7 @@ mkdir -p "$output_dir"
 echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
 # start background clients as, specified
-python $HOME/workbench/wifi-vehicles/data-collection/run-bckgrnd-client.py --nr-clients "$nc" --proto "$proto" --trace-nr "$trace_nr" &
+python $HOME/workbench/wifi-vehicles/data-collection/run-bckgrnd-client.py --nr-clients "$nc" --trace-nr "$trace_nr" &
 # extract accuracy of time synch via ntp w/ local server
 python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
 # extract bitrate adaptation algorithm stats

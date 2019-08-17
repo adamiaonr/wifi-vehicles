@@ -10,7 +10,7 @@ iface=$1
 login=$2
 
 # kill server-side scripts
-ssh -i $HOME/.ssh/it "$login" "ps -ef | grep iperf3 | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
+ssh -i $HOME/.ssh/it "$login" "ps -ef | grep producer | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
 ssh -i $HOME/.ssh/it "$login" "sudo kill-servers"
 # kill ap-side scripts
 ip=$(ifconfig $iface | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')

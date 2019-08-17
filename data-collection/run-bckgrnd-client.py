@@ -21,8 +21,8 @@ iface_addr_map = {
     }
 }
 
-def run_client(iface_name, trace_nr, proto, bitrate, iperf3_info):
-    cmd = ["/usr/local/bin/restart-client", iface_name, trace_nr, iperf3_info['login'], iperf3_info['server-ip'], iperf3_info['server-port'], proto, bitrate]
+def run_client(iface_name, trace_nr, client_info):
+    cmd = ["/usr/local/bin/restart-client", iface_name, trace_nr, client_info['login'], client_info['server-port']]
     # FIXME : this starts the process on the background (i.e., equivalent to using '&')
     subprocess.Popen(cmd)
 
@@ -39,9 +39,9 @@ if __name__ == "__main__":
          help = """nr. of background clients, per 802.11 std.
          format : <802.11-type>:<nr>,<802.11-type>:<nr>,... e.g.: --nr-clients 'ac:2,n:1'""")
 
-    parser.add_argument(
-        "--proto", 
-         help = """tcp or udp""")
+    # parser.add_argument(
+    #     "--proto", 
+    #      help = """tcp or udp""")
 
     parser.add_argument(
         "--trace-nr", 
@@ -52,10 +52,10 @@ if __name__ == "__main__":
     if not args.nr_clients:
         args.nr_clients = 'ac:1,n:1'
 
-    # FIXME : if proto is udp, fix (max) bitrate to 10M
-    bitrate = '10'
-    if not args.proto:
-        args.proto = 'udp'
+    # # FIXME : if proto is udp, fix (max) bitrate to 10M
+    # bitrate = '10'
+    # if not args.proto:
+    #     args.proto = 'udp'
 
     if not args.trace_nr:
         sys.stderr.write("""%s: [ERROR] please provide a trace nr\n""" % sys.argv[0]) 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
         for i in range(client_nr):
             iface_name = ('wlan-bk-%s%d' % (client_type, i))
-            add_route(iface_name, iface_addr_map[hostname][client_type][i])
-            run_client(iface_name, args.trace_nr, args.proto, bitrate, iface_addr_map[hostname][client_type][i])
+            # add_route(iface_name, iface_addr_map[hostname][client_type][i])
+            run_client(iface_name, args.trace_nr, iface_addr_map[hostname][client_type][i])
             
     sys.exit(0)

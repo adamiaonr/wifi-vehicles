@@ -46,34 +46,4 @@ ssh -i $HOME/.ssh/it root@$ap_ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
 # FIXME : use stdbuf w/ -oL and -eL options to force line buffering, i.e. force the application to output at every newline
 stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &
 
-while [ "$stop_loop" = false ]; do
-
-	server=$(ssh -i $HOME/.ssh/it root@10.10.13.1 "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
-	client=$(ps -ef | grep consumer | grep $port | grep -v ssh | grep -v grep | awk '{print $2}')
-
-	if [[ -z $server ]] || [[ -z $client ]]
-	then
-
-		# restart producer
-		restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
-		# kill current consumer
-		ps -ef | grep consumer | grep "$port" | awk '{print $2}' | xargs -r kill -9		
-		# update filename
-		i=$((i+1))
-		filename="$output_dir/consumer.$i.out"
-		if [ ! -f "$filename" ]
-		then
-			touch "$filename"
-		fi
-
-		# restart consumer
-		stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &
-
-		echo -e "restarted producer / consumer pair ("$((i-1))")"
-	fi
-
-	sleep 5
-
-done
-
 exit 0

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 3 ]
+if [ $# -lt 4 ]
 then
-    echo "usage : $0 <remote-login> <server-ip> <server-port> <trace-nr>"
+    echo "usage : $0 <remote-login> <ip> <port> <trace-nr>"
     exit 1
 fi
 
@@ -16,11 +16,11 @@ trace_nr=$4
 if [ "$login" == "adamiaonr@10.10.10.119" ]
 then
 	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs kill -9"
-	ssh -i $HOME/.ssh/it "$login" "producer 192.168.0.188 $port 1000 &> /dev/null < /dev/null &"
+	ssh -i $HOME/.ssh/it "$login" "producer $ip $port 1000 &> /dev/null < /dev/null &"
 
 elif [ "$login" == "root@10.10.14.1" ]
 then
-	# restart iperf3 servers
+	# restart producer
 	ssh -i $HOME/.ssh/it "$login" "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9"
 	ssh -i $HOME/.ssh/it "$login" "producer $ip $port 1000 &> /dev/null < /dev/null &"
 fi

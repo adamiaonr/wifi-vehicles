@@ -28,47 +28,9 @@ i=1
 filename="consumer.$port.$i.out"
 
 # FIXME : hardcoded values. this must be changed in the future.
-# start iperf3 server
-restart-server "adamiaonr@10.10.10.119" "$ip" "$port"
-# start iperf3 client for 1st time
-#ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
+# start remote producer
+restart-server "adamiaonr@10.10.10.119" "192.168.0.188" "$port" "$trace_nr"
+# start consumer
 ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $port $filename"
-
-exit 0
-
-# check output regularly and restart if iperf3 client is found 'hanging' 
-# 'hanging' results in the iperf3 client producing output like: 
-# 	'[  5]   0.00-1.00   sec  0.00 Bytes  0.00 bits/sec  0.000 ms  0/0 (-nan%)'
-# as such, we look for the 'nan' pattern in all of the last n lines of iperf's output
-# FIXME: for now, n is fixed to 3
-n=3
-while [ "$stop_loop" = false ]; do
-
-	server=$(ssh -i $HOME/.ssh/it adamiaonr@10.10.10.141 "ps -ef | grep producer | grep -v ssh | grep -v grep | grep $port | awk '{print \$2}'")
-	client=$(ssh -i $HOME/.ssh/it "$login" "ps | grep consumer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}'")
-
-	if [[ -z $server ]] || [[ -z $client ]]
-	then
-
-		# restart iperf3 server
-		restart-server "adamiaonr@10.10.10.119" "$ip" "$port"
-		# update filename
-		i=$((i+1))
-		filename="consumer.$port.$i.out"
-		if [ ! -f "$output_dir/$filename" ]
-		then
-			touch "$output_dir/$filename"
-		fi
-
-		# restart remote iperf3 client
-		ssh -i $HOME/.ssh/it "$login" "ps | grep consumer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9"
-		ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $port $filename"
-
-		echo -e "restarted producer / consumer pair ("$((i-1))")"
-	fi
-
-	sleep 5
-
-done
 
 exit 0
