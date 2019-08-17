@@ -15,6 +15,7 @@ trace_nr=$4
 if [ "$login" == "adamiaonr@10.10.10.119" ]
 then
 	ssh -i $HOME/.ssh/it "$login" "ps -ef | grep producer-bckgrnd | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs kill -9"
+	ssh -i $HOME/.ssh/it "$login" "sudo route -n add 192.168.0.116/32 192.168.0.1"
 	ssh -i $HOME/.ssh/it "$login" "producer-bckgrnd 192.168.0.116 $port 1000 &> /dev/null < /dev/null &"
 fi
 
