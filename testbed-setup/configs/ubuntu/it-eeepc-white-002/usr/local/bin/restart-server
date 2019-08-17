@@ -13,6 +13,6 @@ trace_nr=$4
 
 # FIXME : do we really need a separate script to run this command?
 ssh -i $HOME/.ssh/it "$login" "ps -ef | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}' | sudo xargs -r kill -9"
-ssh -i $HOME/.ssh/it "producer $ip $port 1000 &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "producer $ip $port 1000 &> /dev/null < /dev/null &"
 
 exit 0
