@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 6 ]
+if [ $# -lt 4 ]
 then
-    echo "usage : $0 <iface-name> <trace-nr> <login> <server-ip> <server-port> <protocol> (if protocol = 'udp': <udp-bitrate>)"
+    echo "usage : $0 <iface-name> <trace-nr> <login> <port>"
     exit 1
 fi
 
@@ -16,10 +16,7 @@ then
 fi
 
 login=$3
-ip=$4
-port=$5
-protocol=$6
-bitrate=$7
+port=$4
 
 # trap ctrl-c and call signal_handler()
 stop_loop=false
@@ -33,68 +30,21 @@ signal_handler() {
 
 # create .out files if not ready yet
 i=1
-filename="$output_dir/iperf3.$port.$i.out"
+filename="$output_dir/consumer.$port.$i.out"
 if [ ! -f "$filename" ]
 then
 	touch "$filename"
 fi
 
-# start iperf3 server
-restart-server "$login" "$ip" "$port" "$trace_nr"
+# start remote producer
+consumer_ip=$(ifconfig $iface_name | awk '/inet addr:/{print $2}' | sed 's/addr://')
+restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
 # start ap scripts
 ap_ip=$(ifconfig $iface_name | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ap_ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
 
-# start iperf3 client for 1st time
-if [ "$protocol" == "udp" ]
-then
-
-	if [ $# -lt 7 ]
-	then
-		echo "usage : $0 <iface-name> <trace-nr> <login> <server-ip> <server-port> <protocol> <bitrate>"
-		exit 1
-	fi
-
-	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
-else
-	stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
-fi
-
-while [ "$stop_loop" = false ]; do
-
-	server=$(ssh -i $HOME/.ssh/it $login "ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print \$2}'")
-	client=$(ps -ef | grep iperf3 | grep $port | grep -v ssh | grep -v grep | awk '{print $2}')
-
-	if [[ -z $server ]] || [[ -z $client ]] || [[ ! -z $(tail -5 $filename | awk '/error/') ]]
-	then
-
-		# restart iperf3 server
-		restart-server "$login" "$ip" "$port" "$trace_nr"
-		# kill current iperf3 client
-		# FIXME : both iperf3 server and port are unique, so we only need to use one. eliminate redundancy in the future.
-		ps -ef | grep iperf3 | grep "$port" | awk '{print $2}' | xargs -r kill -9		
-		# update filename
-		i=$((i+1))
-		filename="$output_dir/iperf3.$port.$i.out"
-		if [ ! -f "$filename" ]
-		then
-			touch "$filename"
-		fi
-		# restart iperf3 client
-		if [ "$protocol" == "udp" ]
-		then
-			stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -u -b "$bitrate"M -R -i 2 &> "$filename" &
-		else
-			stdbuf -oL -eL iperf3 -V -t 3600 -c "$ip" -p "$port" -R -i 2 &> "$filename" &
-		fi
-
-		echo -e "restarted iperf3 client ("$((i-1))")"
-	fi
-
-	# sleep for 5 sec before checking again
-	# this means the iperf client can be left hanging for 5 sec
-	sleep 5
-
-done
+# start consumer for 1st time
+# FIXME : use stdbuf w/ -oL and -eL options to force line buffering, i.e. force the application to output at every newline
+stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &
 
 exit 0
