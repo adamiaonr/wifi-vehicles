@@ -39,7 +39,7 @@ echo "timestamp,freq,cat,cbt" > $output_file
 while [ "$stop_loop" = false ]; do
 
 	# gather survey dump from active channel
-	survey="$(iw $wiface survey dump | grep "in use" -A 2)"
+	survey="$(iw $wiface survey dump | grep "in use" -A 5)"
 
 	# extract cbt survey components
 	freq=$(echo "$survey" | awk '/frequency/ {print $2}')
