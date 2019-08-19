@@ -62,7 +62,7 @@ report_profiles = {
         'tp1 (ad)' : {
             'section' : 'bck-client',
             'fields' : {
-                'iperf' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'iperf3.5204.*.out'},
+                'iperf' : {'type' : 'file', 'subdir' : 'tp-01', 'args' : 'consumer.5204.*.out'},
                 'cbt' : '',
                 'ntp' : {'type' : 'file', 'args' : 'ntpstat.*.csv'},
                 'battery' : '',
