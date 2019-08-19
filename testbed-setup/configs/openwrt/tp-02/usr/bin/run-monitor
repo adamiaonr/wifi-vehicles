@@ -14,10 +14,12 @@ trace_nr=$1
 # first 3 octects of ip addr on eth* iface
 ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
 # nfs mount
+# FIXME : don't use the sync option : tcpdump captures less packets as a result. 
+# why? not sure, but may have to do with memory of tcpdump buffers
 if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
 then
 	mkdir -p /tmp/vehicular-traces/$HOSTNAME
-	mount -t nfs "$ip_addr".1:/export/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock,sync
+	mount -t nfs "$ip_addr".1:/export/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock
 fi
 # create trace directory
 output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
@@ -28,19 +30,28 @@ fi
 
 # monitor 802.11ac (wave 1)
 # FIXME : for simplicity we use hardcoded values. this should be changed in the future.
-/sbin/ifconfig wlan0 down 
-/usr/sbin/iw wlan0 set monitor control
-/sbin/ifconfig wlan0 up
+iface_mode="$(iw dev wlan0 info | awk '/type/ {print $2}')"
+if [ "$iface_mode" != "monitor" ]
+then
+	/sbin/ifconfig wlan0 down 
+	/usr/sbin/iw wlan0 set monitor control
+	/sbin/ifconfig wlan0 up
+fi
 /usr/sbin/iw dev wlan0 set freq 5180 40 5190
 # FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option
-/usr/sbin/tcpdump -i wlan0 -y IEEE802_11_RADIO -w $output_dir/monitor.ac.$(date +"%s").pcap &
+/usr/sbin/tcpdump -B 100000 -s96 -i wlan0 -y IEEE802_11_RADIO -w $output_dir/monitor.ac.$(date +"%s").pcap &
 
 # monitor 802.11ad
-/sbin/ifconfig wlan2 down 
-/usr/sbin/iw wlan2 set monitor control
-/sbin/ifconfig wlan2 up
+iface_mode="$(iw dev wlan2 info | awk '/type/ {print $2}')"
+if [ "$iface_mode" != "monitor" ]
+then
+	/sbin/ifconfig wlan2 down 
+	/usr/sbin/iw wlan2 set monitor control
+	/sbin/ifconfig wlan2 up
+fi
 /usr/sbin/iw dev wlan2 set freq 60480
-/usr/sbin/tcpdump -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
+# FIXME : using same parameters as in previous tp-link talon ad7200 experiments
+/usr/sbin/tcpdump -B 100000 -s80 -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
 
 # log channel utilization & cpu usage
 if [ -z "$(ps | grep get-cbt | grep -v grep | awk '{print $1}')" ]
