@@ -12,6 +12,6 @@ port=$3
 trace_nr=$4
 
 # restart producer
-ssh -i $HOME/.ssh/it "$login" "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9; producer $ip $port 1000 &> /dev/null < /dev/null &"
+ssh -i $HOME/.ssh/it "$login" "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9; producer $ip $port 1000 > /tmp/vehicular-traces/\$HOSTNAME/trace-$trace_nr/producer.out 2> /dev/null < /dev/null &"
 
 exit 0
