@@ -35,13 +35,14 @@ then
 	touch "$filename"
 fi
 
-# start remote app
 consumer_ip=$(ifconfig wlan-txrx | awk '/inet addr:/{print $2}' | sed 's/addr://')
-restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
+
 # start ap scripts
 ap_ip=$(ifconfig wlan-txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 ssh -i $HOME/.ssh/it root@$ap_ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
 
+# start remote app
+restart-server "$login" "$consumer_ip" "$port" "$trace_nr"
 # start consumer for 1st time
 # FIXME : use stdbuf w/ -oL and -eL options to force line buffering, i.e. force the application to output at every newline
 stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &

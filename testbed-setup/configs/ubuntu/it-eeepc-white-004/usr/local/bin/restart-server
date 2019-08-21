@@ -25,7 +25,7 @@ elif [ "$login" == "root@10.10.14.1" ]
 then
 	# restart producer
 	ssh -i $HOME/.ssh/it "$login" "ps | grep producer | grep $port | grep -v ssh | grep -v grep | awk '{print \$1}' | xargs -r kill -9"
-	ssh -i $HOME/.ssh/it "$login" "producer $ip $port 1000 > /tmp/vehicular-traces/\$HOSTNAME/trace-$trace_nr/producer.out 2> /dev/null < /dev/null &"
+	ssh -i $HOME/.ssh/it "$login" "stdbuf -oL -eL producer $ip $port 1000 > /tmp/vehicular-traces/\$HOSTNAME/trace-$trace_nr/producer.out 2> /dev/null < /dev/null &"
 fi
 
 exit 0
