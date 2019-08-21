@@ -29,7 +29,7 @@ filename="consumer.$port.$i.out"
 
 # FIXME : hardcoded values. this must be changed in the future.
 # start iperf3 server
-restart-server "adamiaonr@10.10.10.119" "$ip" "$port"
+restart-server "adamiaonr@10.10.10.141" "$ip" "$port"
 # start iperf3 client for 1st time
 #ssh -i $HOME/.ssh/it "$login" "ps | grep iperf3 | grep $port | awk '{print \$1}' | xargs -r kill -9"
 ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $port $filename"
