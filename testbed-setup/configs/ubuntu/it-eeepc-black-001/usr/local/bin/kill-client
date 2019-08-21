@@ -4,7 +4,7 @@
 #	- restart-remote-client
 ps -ef | grep restart-remote-client | awk '{print $2}' | sudo xargs -r kill -9
 #	- kill remote producers
-ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.119" "sudo pkill -f producer-bckgrnd"
+ssh -i $HOME/.ssh/it "adamiaonr@10.10.10.141" "sudo pkill -f producer-bckgrnd"
 # 	- monitoring sessions & iperf3 clients running on talon ad7200 routers
 ssh -i $HOME/.ssh/it "root@10.10.12.101" "kill-client"
 
