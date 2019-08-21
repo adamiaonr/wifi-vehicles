@@ -29,7 +29,7 @@ filename="consumer.$port.$i.out"
 
 # FIXME : hardcoded values. this must be changed in the future.
 # start remote producer
-restart-server "adamiaonr@10.10.10.119" "192.168.0.188" "$port" "$trace_nr"
+restart-server "adamiaonr@10.10.10.141" "192.168.0.188" "$port" "$trace_nr"
 # start consumer
 ssh -i $HOME/.ssh/it "$login" "restart-client $trace_nr $port $filename"
 
