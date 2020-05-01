@@ -2,7 +2,7 @@
 
 #include <stdio.h>      /* standard C i/o facilities */
 #include <stdlib.h>     /* needed for atoi() and atof() */
-//#include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
+//#include <unistd.h>     /* defines STDIN_FILENO, system calls, etc */
 #include <sys/types.h>  /* system data type definitions */
 #include <sys/socket.h> /* socket specific definitions */
 #include <netinet/in.h> /* INET constants and stuff */
@@ -16,10 +16,13 @@
 #include <errno.h>
 
 #define MAXBUF 2*1024*1024
-#define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + 1472)
+#define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + sizeof(struct timeval))
 #ifdef ARCH_MIPS
 #define SKIP_SLEEP (int) 50
 #endif
+
+// backward compatibility fix for compile error: ‘struct hostent’ has no member named ‘h_addr’
+#define h_addr h_addr_list[0]
 
 static volatile int carry_on = 1;
 
@@ -62,22 +65,8 @@ int main(int argc, char **argv) {
     inet_ntop(AF_INET, &(server.sin_addr), ipv4_str, INET_ADDRSTRLEN);
     fprintf(stderr, "[INFO] producer sending to %s:%d\n", ipv4_str, ntohs(server.sin_port));
 
-    // empty payload to send over udp
-    unsigned char payload[1472];
-
-    // // set a 1 sec recv timeout on send socket
-    // FIXME : this would only 
-    // struct timeval read_timeout, s, e;
-    // read_timeout.tv_sec = 1;
-    // read_timeout.tv_usec = 0;
-    // setsockopt(sk, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
-    // // set broadcast mode on send socket
-    // int broadcast = 1;
-    // setsockopt(sk, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
-
-    // calculate interval for sleep in-between sendto() calls, so that target bitrate is achieved
-    // unsigned int interval = (unsigned int) (((double) ((PACKET_SIZE * 8.0) / 1000000.0)) / ((double) atof(argv[3]))) + 1;
-    // fprintf(stderr, "[INFO] sleep interval for bw %.3f Mbps : %lu us\n", atof(argv[3]), interval);
+    // payload buffer to send over udp
+    unsigned char payload[sizeof(struct timeval)] = {0};
 
     int n_bytes_sent = 0;
     unsigned long byte_cntr = 0, pckt_cntr = 0;
@@ -101,7 +90,10 @@ int main(int argc, char **argv) {
             init_time = curr_time;
         }
 
-        n_bytes_sent = sendto(sk, payload, 1472, MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
+        // read current timestamp into udp packet's payload
+        gettimeofday((struct timeval *) payload, NULL);
+        // send packet
+        n_bytes_sent = sendto(sk, payload, sizeof(struct timeval), MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
 
         // check for problems in send()
         // if (n_bytes_sent < 0) {
