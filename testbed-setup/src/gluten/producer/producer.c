@@ -16,7 +16,8 @@
 #include <errno.h>
 
 #define MAXBUF 2*1024*1024
-#define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + sizeof(struct timeval))
+#define PAYLOAD_SIZE (unsigned int) 1472
+#define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + PAYLOAD_SIZE)
 #ifdef ARCH_MIPS
 #define SKIP_SLEEP (int) 50
 #endif
@@ -28,6 +29,30 @@ static volatile int carry_on = 1;
 
 void handler(int dummy) {
     carry_on = 0;
+}
+
+void add_timestamp2payload(unsigned char * payload)
+{
+    // read current timestamp into udp packet's payload
+    gettimeofday((struct timeval *) payload, NULL);
+    // write payload in binary and string format, so that it shows up in wireshark, i.e. 'tv_sec.tv_usec'
+    struct timeval * t = (struct timeval *) payload;
+    // write tv_usec part
+    unsigned int tv_usec = t->tv_usec;
+    for (unsigned i = 6; i > 0; i--)
+    {
+        payload[i + (sizeof(struct timeval) + 10 + 1) - 1] = (tv_usec % 10) + 48;
+        tv_usec /= 10;
+    }
+    // write dot 
+    payload[sizeof(struct timeval) + 10] = ((unsigned) '.');
+    // write tv_sec part
+    unsigned int tv_sec = t->tv_sec;    
+    for (unsigned i = 10; i > 0; i--)
+    {
+        payload[i + sizeof(struct timeval) - 1] = (tv_sec % 10) + 48;
+        tv_sec /= 10;
+    }
 }
 
 int main(int argc, char **argv) {
@@ -66,7 +91,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "[INFO] producer sending to %s:%d\n", ipv4_str, ntohs(server.sin_port));
 
     // payload buffer to send over udp
-    unsigned char payload[sizeof(struct timeval)] = {0};
+    unsigned char payload[PAYLOAD_SIZE] = {0};
 
     int n_bytes_sent = 0;
     unsigned long byte_cntr = 0, pckt_cntr = 0;
@@ -82,7 +107,7 @@ int main(int argc, char **argv) {
 
             time_t elapsed_time = curr_time - init_time;
             double bitrate = (double) (byte_cntr * 8.0) / (double) ((elapsed_time) * 1000000.0);
-            // csv-like stdout syntax : 
+            // csv like stdout syntax : 
             fprintf(stdout, "%ld,%lu,%lu,%ld,%.3f\n", (long int) curr_time, pckt_cntr, byte_cntr, (long int) elapsed_time, bitrate);
             
             byte_cntr = 0;
@@ -90,10 +115,12 @@ int main(int argc, char **argv) {
             init_time = curr_time;
         }
 
-        // read current timestamp into udp packet's payload
-        gettimeofday((struct timeval *) payload, NULL);
+        // clear payload
+        memset(payload, 0, PAYLOAD_SIZE);
+        // add current timestamp to payload, in both binary and string format
+        add_timestamp2payload(payload);
         // send packet
-        n_bytes_sent = sendto(sk, payload, sizeof(struct timeval), MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
+        n_bytes_sent = sendto(sk, payload, PAYLOAD_SIZE, MSG_DONTWAIT, (struct sockaddr*) &server, sizeof(server));
 
         // check for problems in send()
         // if (n_bytes_sent < 0) {
@@ -119,7 +146,7 @@ int main(int argc, char **argv) {
            skip_sleep--;
         }
 #else
-        usleep(1);
+        usleep(10);
 #endif
     }
 
