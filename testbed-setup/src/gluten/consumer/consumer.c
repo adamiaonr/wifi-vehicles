@@ -10,8 +10,7 @@
 #include <arpa/inet.h>  /* IP address conversion stuff */
 #include <netdb.h>      /* gethostbyname */
 #include <signal.h>
-#include <time.h>       /* nanosleep() */
-#include <error.h>
+#include <time.h>
 #include <sys/time.h>   /* struct timeval */
 
 #define MAXBUF 2*1024*1024
