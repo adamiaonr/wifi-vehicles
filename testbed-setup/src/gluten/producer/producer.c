@@ -16,8 +16,14 @@
 #include <errno.h>
 
 #define MAXBUF 2*1024*1024
-#define PAYLOAD_SIZE (unsigned int) 1472
-#define PACKET_SIZE (unsigned int) ((16 + 20 + 8) + PAYLOAD_SIZE)
+#define PAYLOAD_SIZE 1472
+#define PACKET_SIZE ((16 + 20 + 8) + PAYLOAD_SIZE)
+
+#define TV_USEC_STR_SIZE 6
+#define TV_SEC_STR_SIZE 10
+// binary timestamp after str representation : 17 chars + 1 null terminating char '\0'
+#define TV_BINARY_OFFSET TV_SEC_STR_SIZE + TV_USEC_STR_SIZE + 2
+
 #ifdef ARCH_MIPS
 #define SKIP_SLEEP (int) 50
 #endif
@@ -31,28 +37,36 @@ void handler(int dummy) {
     carry_on = 0;
 }
 
+// add timestamp to udp packet's payload:
+//  - bytes [0, 16] : timestamp in str format, <tv_sec>.<tv_usec>
+//  - bytes [17, 17 + sizeof(struct timeval) - 1] : timestamp in binary format, struct timeval
 void add_timestamp2payload(unsigned char * payload)
 {
-    // read current timestamp into udp packet's payload
-    gettimeofday((struct timeval *) payload, NULL);
-    // write payload in binary and string format, so that it shows up in wireshark, i.e. 'tv_sec.tv_usec'
-    struct timeval * t = (struct timeval *) payload;
-    // write tv_usec part
-    unsigned int tv_usec = t->tv_usec;
-    for (unsigned i = 6; i > 0; i--)
+    // get current timestamp
+    struct timeval snd_timestamp;
+    gettimeofday(&snd_timestamp, NULL);
+
+    // write payload in binary and string format, so that it shows up in wireshark, i.e. '<tv_sec>.<tv_usec>'
+    // - tv_usec part : 6 digits, [11, 16]
+    unsigned int tv_usec = snd_timestamp.tv_usec;
+    for (unsigned i = TV_USEC_STR_SIZE; i > 0; i--)
     {
-        payload[i + (sizeof(struct timeval) + 10 + 1) - 1] = (tv_usec % 10) + 48;
+        payload[i + TV_SEC_STR_SIZE] = (tv_usec % 10) + 48;
         tv_usec /= 10;
     }
-    // write dot 
-    payload[sizeof(struct timeval) + 10] = ((unsigned) '.');
-    // write tv_sec part
-    unsigned int tv_sec = t->tv_sec;    
-    for (unsigned i = 10; i > 0; i--)
+    // - dot '.' : 1 char, [10]
+    payload[TV_SEC_STR_SIZE] = ((unsigned) '.');
+    
+    // - tv_sec part : 10 digits, [0, 9]
+    unsigned int tv_sec = snd_timestamp.tv_sec;    
+    for (unsigned i = TV_SEC_STR_SIZE; i > 0; i--)
     {
-        payload[i + sizeof(struct timeval) - 1] = (tv_sec % 10) + 48;
+        payload[i - 1] = (tv_sec % 10) + 48;
         tv_sec /= 10;
     }
+
+    // copy timestamp in binary format to payload
+    memcpy(&payload[TV_BINARY_OFFSET], &snd_timestamp, sizeof(struct timeval));
 }
 
 int main(int argc, char **argv) {

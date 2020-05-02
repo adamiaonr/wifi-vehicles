@@ -15,6 +15,11 @@
 
 #define MAXBUF 2*1024*1024
 
+#define TV_USEC_STR_SIZE 6
+#define TV_SEC_STR_SIZE 10
+// binary timestamp after str representation : 17 chars + 1 null terminating char '\0'
+#define TV_BINARY_OFFSET TV_SEC_STR_SIZE + TV_USEC_STR_SIZE + 2
+
 static volatile int carry_on = 1;
 
 void handler(int dummy) {
@@ -98,7 +103,7 @@ void consumer_recv(int sd) {
 
         if (n > 0) {
             // read send timestamp from udp packet's payload
-            struct timeval * snd_timestamp = (struct timeval *) recv_buffer;
+            struct timeval * snd_timestamp = (struct timeval *) &recv_buffer[TV_BINARY_OFFSET];
             if (pckt_cntr > 0)
             {
                 // inter-arrival time
