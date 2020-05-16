@@ -28,19 +28,6 @@ then
 	mkdir -p $output_dir
 fi
 
-# monitor 802.11ac (wave 1)
-# FIXME : for simplicity we use hardcoded values. this should be changed in the future.
-iface_mode="$(iw dev wlan0 info | awk '/type/ {print $2}')"
-if [ "$iface_mode" != "monitor" ]
-then
-	/sbin/ifconfig wlan0 down 
-	/usr/sbin/iw wlan0 set monitor control
-	/sbin/ifconfig wlan0 up
-fi
-/usr/sbin/iw dev wlan0 set freq 5180 40 5190
-# FIXME : shouldn't we use filters here? also, note that we've removed the '-s0' option
-/usr/sbin/tcpdump -B 100000 -s96 -i wlan0 -y IEEE802_11_RADIO -w $output_dir/monitor.ac.$(date +"%s").pcap &
-
 # monitor 802.11ad
 iface_mode="$(iw dev wlan2 info | awk '/type/ {print $2}')"
 if [ "$iface_mode" != "monitor" ]
@@ -51,17 +38,17 @@ then
 fi
 /usr/sbin/iw dev wlan2 set freq 60480
 # FIXME : using same parameters as in previous tp-link talon ad7200 experiments
-/usr/sbin/tcpdump -B 100000 -s80 -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
+/usr/sbin/tcpdump -B 100000 -s92 -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
 
-# log channel utilization & cpu usage
-if [ -z "$(ps | grep get-cbt | grep -v grep | awk '{print $1}')" ]
-then
-	/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
-fi
-
+# log cpu usage & ntp status
 if [ -z "$(ps | grep get-cpu | grep -v grep | awk '{print $1}')" ]
 then
 	/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+fi
+
+if [ -z "$(ps | grep get-ntp | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-ntp.sh $trace_nr "$output_dir" &
 fi
 
 exit 0

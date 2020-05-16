@@ -1,51 +1,18 @@
 #!/bin/bash
 
-if [ $# -lt 3 ]
+if [ $# -lt 1 ]
 then
-    echo "usage : $0 <trace-nr> <protocol> <num-background>"
+    echo "usage : $0 <trace-nr>"
     exit 1
 fi
 
 trace_nr=$1
-proto=$2
-bckgrnd=$3
 
 # start server on b1
 ssh -i ~/.ssh/it it@10.10.10.113 "sudo run-servers $trace_nr &> /dev/null < /dev/null &"
-
-# start main clients:
-#	- ac 1, ac 2 & ad
-bitrate_ac_ad=""
-if [ "$proto" == "udp" ]
-then
-	bitrate_ac_ad=300
-fi
-ssh -i ~/.ssh/it it@10.10.10.111 "sudo run-client $proto $trace_nr $bitrate_ac_ad &> /dev/null &"
-
-#	- n (local)
-bitrate_n=""
-if [ "$proto" == "udp" ]
-then
-	bitrate_n=100
-fi
-run-client $proto $trace_nr $bitrate_n &> /dev/null &
-
-# start background clients (if applicable)
-#	- n & ac 1
-if [ $bckgrnd -gt 0 ]
-then
-
-	#	- ac 2 & ad : FIXME : default 50 Mbps
-	ssh -i ~/.ssh/it it@10.10.10.113 "sudo run-client $proto $trace_nr 200 &> /dev/null &"
-
-	if [ $bckgrnd -lt 2 ]
-	then
-		ssh -i ~/.ssh/it it@10.10.10.122 "sudo run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
-	elif [ $bckgrnd -lt 3 ]
-	then
-		ssh -i ~/.ssh/it it@10.10.10.122 "sudo run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
-		ssh -i ~/.ssh/it it@10.10.10.114 "sudo run-bckgrnd-client ac:1,n:1 $proto $trace_nr &> /dev/null &"
-	fi
-fi
+# start main client and monitor on tp-0x and tp-0y via w4
+# 1 Gbps bitrate by default
+BITRATE=1000
+ssh -i ~/.ssh/it it@10.10.10.111 "sudo run-client $trace_nr $BITRATE &> /dev/null &"
 
 exit 0

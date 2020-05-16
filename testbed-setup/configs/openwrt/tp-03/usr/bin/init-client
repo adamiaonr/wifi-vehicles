@@ -26,20 +26,19 @@ then
 	mkdir -p $output_dir
 fi
 
-# add specific routes to divide traffic between 802.11ac and 802.11ad interfaces
-#ip route add 192.168.0.145/32 via 192.168.0.1 dev wlan0
+# add specific routes to divide traffic between 802.11ac and 802.11ad interfaces ???
 ifconfig wlan0 down
 ip route add 192.168.0.146/32 via 192.168.0.1 dev wlan2
 
-# log channel utilization & cpu usage
-if [ -z "$(ps | grep get-cbt | grep -v grep | awk '{print $1}')" ]
-then
-	/root/workbench/get-cbt.sh $trace_nr "$output_dir" "wlan0" &
-fi
-
+# log cpu usage & ntp accuracy
 if [ -z "$(ps | grep get-cpu | grep -v grep | awk '{print $1}')" ]
 then
 	/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+fi
+
+if [ -z "$(ps | grep get-ntp | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-ntp.sh $trace_nr "$output_dir" &
 fi
 
 exit 0
