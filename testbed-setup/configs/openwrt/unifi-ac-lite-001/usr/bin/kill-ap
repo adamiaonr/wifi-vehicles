@@ -1,7 +1,0 @@
-#!/bin/sh
-
-pkill -f get-cbt
-pkill -f get-cpu
-pkill -f producer
-
-exit 0

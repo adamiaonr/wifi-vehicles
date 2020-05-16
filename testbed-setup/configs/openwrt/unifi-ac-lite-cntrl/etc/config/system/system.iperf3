@@ -1,9 +1,0 @@
-config system
-	option hostname	it-unifi-ac-lite-cntrl
-	option timezone	WET0WEST
-	option ttylogin	0
-
-config timeserver ntp
-	list server	10.10.13.130
-	option enabled 1
-	option enable_server 0

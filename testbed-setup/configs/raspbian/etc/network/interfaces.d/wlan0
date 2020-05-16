@@ -1,7 +1,0 @@
-auto wlan0
-iface wlan0 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-dns-nameservers 1.1.1.1 8.8.8.8
-wireless-power off
-iface default inet dhcp
-
