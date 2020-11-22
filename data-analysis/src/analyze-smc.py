@@ -133,17 +133,17 @@ if __name__ == "__main__":
 
             # create tables:
             #   - roads
-            utils.mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            #utils.mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
             #   - roads cells 'link' table
-            utils.mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            #utils.mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
             #   - operator
-            analysis.smc.database.create_operator_table(db_eng = db_eng)
+            #analysis.smc.database.create_operator_table(db_eng = db_eng)
             #   - session data
             analysis.smc.database.insert_sessions(args.input_dir, db_eng = db_eng)
 
         if args.populate == 'road-stats':
 
-            analysis.smc.database.create_road_stats_table(db_eng = db_eng)
+            analysis.smc.database.create_road_stats_table(db_eng = db_eng, db_name = args.db_name)
 
             queries = {
                 'road-stats' : {
@@ -159,9 +159,15 @@ if __name__ == "__main__":
                     ON r.id = rrs.road_id""",
                     'filename' :  os.path.join(args.output_dir, 'road-stats.csv')
                 },
+
+                'road-sessions' : {
+                    'query' : """SELECT *
+                    FROM road_session_stats""",
+                    'filename' :  os.path.join(args.output_dir, 'road-sessions.csv')
+                },
             }
             
-            analysis.smc.database.to_csv(queries, db_eng = db_eng)
+            analysis.smc.database.to_csv(queries, db_eng = db_eng, db_name = args.db_name)
 
     if args.analyze_roads:
 

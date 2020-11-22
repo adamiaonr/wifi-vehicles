@@ -185,10 +185,26 @@ def create_road_stats_table(db_eng = None, db_name = 'smf'):
                 count(distinct cell_id) as num_cells
             FROM road_cell_stats
             GROUP BY road_id""")},
+
+        'road_session_stats' : {
+            'name' : 'road_session_stats',
+            'query' : ("""CREATE TABLE IF NOT EXISTS road_session_stats
+                SELECT road_id, 
+                    count(distinct session_id) as sessions
+                FROM(
+                    SELECT road_id, 
+                        session_id
+                    FROM roads_cells r
+                    INNER JOIN sessions s
+                    ON r.cell_id = s.cell_id
+                    WHERE in_road = 1
+                    GROUP BY road_id, session_id
+                    ) as T
+                GROUP BY road_id""")},
     }
 
     # make 'raw' sql query, to be saved in another table
-    analysis.smc.database.exec_query(queries)
+    analysis.smc.database.exec_query(queries, db_name = db_name)
 
     return 0
 
@@ -389,7 +405,7 @@ def insert_sessions(
             chunk['bssid'] = chunk['bssid'].apply(lambda x : x.encode('utf-8'))
             # FIXME : due to an encoding error, we cannot 
             # chunk['essid'] = chunk['essid'].apply(lambda x : x.encode('utf-8'))
-            chunk['essid_hash'] = chunk['essid'].apply(lambda x : hashlib.md5(str(x)).hexdigest())
+            chunk['essid_hash'] = chunk['essid'].apply(lambda x : hashlib.md5(str(x).encode('utf-8')).hexdigest())
             chunk['essid'] = chunk['essid_hash']
 
             # fill *_dscr nan w/ 'unknown'
@@ -398,8 +414,8 @@ def insert_sessions(
             chunk['hw_descr'] = chunk['hw_descr'].apply(lambda x : x.encode('utf-8'))
             chunk['sw_descr'] = chunk['sw_descr'].apply(lambda x : x.encode('utf-8'))
             # create hashes
-            chunk['hw_hash'] = chunk['hw_descr'].apply(lambda x : hashlib.md5(str(x)).hexdigest())
-            chunk['sw_hash'] = chunk['sw_descr'].apply(lambda x : hashlib.md5(str(x)).hexdigest())
+            chunk['hw_hash'] = chunk['hw_descr'].apply(lambda x : hashlib.md5(str(x).encode('utf-8')).hexdigest())
+            chunk['sw_hash'] = chunk['sw_descr'].apply(lambda x : hashlib.md5(str(x).encode('utf-8')).hexdigest())
 
             # extra capabilities processing
             chunk['extra'] = chunk['extra'].fillna('{}')

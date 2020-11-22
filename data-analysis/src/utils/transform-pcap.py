@@ -59,24 +59,26 @@ if __name__ == "__main__":
 
     for wifi_type in tshark_config:
 
-        base_dir = os.path.join(args.input_dir, tshark_config[wifi_type]['folder'])
+        base_dir = args.input_dir
+
         for pcap_file in sorted(glob.glob(os.path.join(base_dir, ('trace-*/monitor.%s.*.pcap' % (wifi_type))))):
             for mode in tshark_config[wifi_type]:
 
-                if mode not in ['mgmt', 'data', 'sweep']:
-                    continue
-
                 output_file = '.'.join(pcap_file.split('.')[:-2]) + ('.%s.csv' % (mode))
-                move_loc = os.path.join(os.path.join(args.output_dir, tshark_config[wifi_type]['folder']), '/'.join(output_file.split('/')[-2:]))
+                move_loc = os.path.join(args.output_dir, '/'.join(output_file.split('/')[-2:]))
 
-                if os.path.isfile(move_loc):
-                    print('%s: %s already exists. skipping processing.' % (sys.argv[0], move_loc))
-                    continue
+                # if os.path.isfile(move_loc):
+                #     print('%s: %s already exists. skipping processing.' % (sys.argv[0], move_loc))
+                #     continue
 
                 print('processing %s' % (pcap_file))
 
                 # fields (-e) & filter (-Y) arguments of the tshark command, as str, built from the configs dict
+                print(mode)
+                print(wifi_type)
+
                 fields = "-e " + " -e ".join(tshark_config[wifi_type][mode]['fields'])
+                print(fields)
                 filtr = tshark_config[wifi_type][mode]['filter']
 
                 cmd = 'tshark -r %s -2 -T fields %s -Y "%s" -E header=y -E separator=, -E quote=d -E occurrence=f > %s' % (pcap_file, fields, filtr, output_file)

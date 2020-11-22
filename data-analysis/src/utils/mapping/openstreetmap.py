@@ -60,6 +60,9 @@ LONW = LON - 0.06
 
 CELL_SIZE = 20.0
 
+#DEFAULT_HIGHWAY = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']
+DEFAULT_HIGHWAY = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary']
+
 def get_road_hash(bbox, tags):
     return hashlib.md5((','.join([str(c) for c in bbox]) + ',' + ','.join(tags)).encode('utf-8')).hexdigest()
 
@@ -75,7 +78,7 @@ def create_cells_table(data, db_eng = None):
     start = timeit.default_timer()
 
     try:
-        data.to_sql(con = db_eng, name = 'cells', if_exists = 'fail', index = False)
+        data.to_sql(con = db_eng, name = 'cells', if_exists = 'append', index = False)
     except Exception:
         sys.stderr.write("""%s::create_cells_table() : [WARNING] %s table exists. skipping.\n""" % (sys.argv[0], 'cells'))
 
@@ -83,7 +86,7 @@ def create_cells_table(data, db_eng = None):
 
 def create_roads_cells_table(output_dir, 
     bbox = [LONW, LATS, LONE, LATN], 
-    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential'],
+    tags = DEFAULT_HIGHWAY,
     cell_size = CELL_SIZE, 
     db_eng = None):
 
@@ -121,7 +124,7 @@ def create_roads_cells_table(output_dir,
 
 def create_roads_table(output_dir, 
     bbox = [LONW, LATS, LONE, LATN], 
-    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential'],
+    tags = DEFAULT_HIGHWAY,
     db_eng = None):
 
     road_hash = get_road_hash(bbox, tags)
@@ -157,7 +160,7 @@ def create_roads_table(output_dir,
     start = timeit.default_timer()
 
     try:
-        lengths.to_sql(con = db_eng, name = 'roads', if_exists = 'fail', index_label = 'id')
+        lengths.to_sql(con = db_eng, name = 'roads', if_exists = 'append', index_label = 'id')
     except Exception:
         sys.stderr.write("""%s::create_roads_table() : [WARNING] %s table exists. skipping.\n""" % (sys.argv[0], 'roads'))
 
@@ -165,7 +168,7 @@ def create_roads_table(output_dir,
 
 def extract_roads(output_dir, 
     bbox = [LONW, LATS, LONE, LATN], 
-    tags = ['highway=motorway', 'highway=trunk', 'highway=primary', 'highway=secondary', 'highway=tertiary', 'highway=residential']):
+    tags = DEFAULT_HIGHWAY):
 
     # check if road information is already extracted. return road_hash if it is.
     road_hash = get_road_hash(bbox, tags)

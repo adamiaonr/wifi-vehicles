@@ -1,0 +1,9 @@
+#!/bin/sh
+
+pkill -f tcpdump
+pkill -f get-cbt
+pkill -f get-cpu
+pkill -f get-sweep-dump
+pkill -f get-ntp
+
+exit 0

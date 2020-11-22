@@ -296,7 +296,7 @@ def render_ways(nodes, waynodes, waytags):
     node_points = nodes[['id', 'lon', 'lat']]
 
     def wayline(df):
-        df = df.sort_index(by='index')[['lon', 'lat']]
+        df = df.sort_values(by='index')[['lon', 'lat']]
         return LineString(df.values)
 
     # Group the ways and create a LineString for each one.  way_lines is a

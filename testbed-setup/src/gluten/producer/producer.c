@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
     int n_bytes_sent = 0;
     unsigned long byte_cntr = 0, pckt_cntr = 0;
-    time_t init_time, curr_time;
+    time_t init_time, curr_time, session_time;
 
 #ifdef ARCH_MIPS
     int skip_sleep = SKIP_SLEEP;
@@ -118,7 +118,6 @@ int main(int argc, char **argv) {
     while (carry_on) {
         curr_time = time(NULL);
         if (curr_time > init_time) {
-
             time_t elapsed_time = curr_time - init_time;
             double bitrate = (double) (byte_cntr * 8.0) / (double) ((elapsed_time) * 1000000.0);
             // csv like stdout syntax : 
@@ -146,6 +145,33 @@ int main(int argc, char **argv) {
             pckt_cntr++;
         }
 
+        if ((curr_time - session_time) > 5)
+        {
+            close(sk);
+            session_time = curr_time;
+
+            // create a new udp socket
+            if ((sk = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
+                perror("[ERROR] problem creating socket");
+                exit(1);
+            }
+
+            // get address of server from hostname passed as arg
+            // FIXME: does gethostbyname() work w/ ip addresses? shouldn't it be getaddrinfo()?
+            server.sin_family = AF_INET;
+            if ((hp = gethostbyname(argv[1])) == 0) {
+                fprintf(stderr, "[ERROR] couldn't get host for %s\n", argv[1]);
+                exit(1);
+            }
+            
+            memcpy(&server.sin_addr.s_addr, hp->h_addr, hp->h_length);
+            server.sin_port = htons(atoi(argv[2]));
+
+            char ipv4_str[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &(server.sin_addr), ipv4_str, INET_ADDRSTRLEN);
+            fprintf(stderr, "[INFO] producer sending to %s:%d\n", ipv4_str, ntohs(server.sin_port));
+        }
+
         // FIXME : send at max rate
 #ifdef ARCH_MIPS
         // FIXME : why this?
@@ -160,7 +186,7 @@ int main(int argc, char **argv) {
            skip_sleep--;
         }
 #else
-        usleep(10);
+        usleep(50);
 #endif
     }
 

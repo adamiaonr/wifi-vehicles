@@ -16,7 +16,7 @@ trap signal_handler INT
 
 # set stop_loop to true after catching CTRL-C signal
 signal_handler() {
-    echo "** received CTRL-C : quitting ntp script"
+    echo "** received CTRL-C : quitting cpu script"
     stop_loop=true
 }
 

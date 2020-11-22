@@ -1,0 +1,37 @@
+#!/bin/sh
+
+if [ $# -lt 2 ]
+then
+	echo "usage : $0 <peer-mac-addr> <sector-nr>"
+	echo "options : "
+	echo "    <peer-mac-addr>   : mac addr of 802.11ad peer, e.g.: '70:4f:57:72:b2:52'"	
+	echo "    <sector-nr>       : sector nr. to set. valid range : [1-31] or [61-63]"
+	exit 1
+fi
+
+# check if iw vendor command .bin files exist for <peer-mac-addr>
+if [ ! -d "/usr/bin/$1" ]
+then
+	echo "please generate iw vendor command .bin files for peer $1"
+	exit 1
+fi
+
+# check if sector nr. is valid
+if [[ $2 -lt 1 || $2 -gt 31 ]] && [[ $2 -lt 61 || $2 -gt 63 ]]
+then
+	echo "$2 is not a valid sector nr"
+	exit 1
+fi
+
+SET_SECTOR_FILE="/usr/bin/$1/set-tx-sector-$2.bin"
+GET_SECTOR_FILE="/usr/bin/$1/get-tx-sector.bin"
+
+# send iw vendor command
+iw --debug dev wlan2 vendor recv 0x001374 0x8e $SET_SECTOR_FILE
+# send iw vendor command to get tx current sector
+sector="$(iw --debug dev wlan2 vendor recv 0x001374 0x8d $GET_SECTOR_FILE)"
+sector=$(echo $sector | awk '/vendor response/ {print $21}')
+
+printf 'sector set to %d\n' 0x$sector
+
+exit 0

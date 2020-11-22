@@ -1,0 +1,55 @@
+#!/bin/sh
+
+if [ $# -lt 1 ]
+then
+	echo "usage : $0 <trace-nr>"
+	echo "options : "
+	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
+	exit 1
+fi
+
+trace_nr=$1
+
+# check if nfs mount is necessary
+# first 3 octects of ip addr on eth* iface
+ip_addr="$(ifconfig eth1 | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')"
+# nfs mount
+# FIXME : don't use the sync option : tcpdump captures less packets as a result. 
+# why? not sure, but may have to do with memory of tcpdump buffers
+if [ ! -d "/tmp/vehicular-traces/$HOSTNAME" ]
+then
+	mkdir -p /tmp/vehicular-traces/$HOSTNAME
+	mount -t nfs "$ip_addr".1:/export/users/$HOSTNAME /tmp/vehicular-traces/$HOSTNAME -o nolock
+fi
+# create trace directory
+output_dir="/tmp/vehicular-traces/$HOSTNAME/trace-$trace_nr"
+if [ ! -d "$output_dir" ]
+then
+	mkdir -p $output_dir
+fi
+
+# monitor 802.11ad
+iface_mode="$(iw dev wlan2 info | awk '/type/ {print $2}')"
+if [ "$iface_mode" != "monitor" ]
+then
+	/sbin/ifconfig wlan2 down 
+	/usr/sbin/iw wlan2 set monitor control
+	/sbin/ifconfig wlan2 up
+fi
+/usr/sbin/iw dev wlan2 set freq 60480
+# FIXME : using same parameters as in previous tp-link talon ad7200 experiments
+/usr/sbin/tcpdump not tcp -B 100000 -s92 -i wlan2 -y IEEE802_11_RADIO -w $output_dir/monitor.ad.$(date +"%s").pcap &
+
+# log cpu usage & ntp status
+if [ -z "$(ps | grep get-cpu | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-cpu.sh $trace_nr "$output_dir" &
+fi
+
+if [ -z "$(ps | grep get-ntpdate | grep -v grep | awk '{print $1}')" ]
+then
+	/root/workbench/get-ntpdate.sh $trace_nr "$output_dir" &
+fi
+
+exit 0
+
