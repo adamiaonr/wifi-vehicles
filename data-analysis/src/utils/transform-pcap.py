@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--output-dir", 
-         help = """dir to hold final """)
+         help = """dir to hold final .csv data""")
 
     parser.add_argument(
         "--tshark-config", 
@@ -67,18 +67,14 @@ if __name__ == "__main__":
                 output_file = '.'.join(pcap_file.split('.')[:-2]) + ('.%s.csv' % (mode))
                 move_loc = os.path.join(args.output_dir, '/'.join(output_file.split('/')[-2:]))
 
-                # if os.path.isfile(move_loc):
-                #     print('%s: %s already exists. skipping processing.' % (sys.argv[0], move_loc))
-                #     continue
+                if os.path.isfile(move_loc):
+                    print('%s: %s already exists. skipping processing.' % (sys.argv[0], move_loc))
+                    continue
 
                 print('processing %s' % (pcap_file))
 
                 # fields (-e) & filter (-Y) arguments of the tshark command, as str, built from the configs dict
-                print(mode)
-                print(wifi_type)
-
                 fields = "-e " + " -e ".join(tshark_config[wifi_type][mode]['fields'])
-                print(fields)
                 filtr = tshark_config[wifi_type][mode]['filter']
 
                 cmd = 'tshark -r %s -2 -T fields %s -Y "%s" -E header=y -E separator=, -E quote=d -E occurrence=f > %s' % (pcap_file, fields, filtr, output_file)

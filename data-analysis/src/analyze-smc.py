@@ -133,11 +133,11 @@ if __name__ == "__main__":
 
             # create tables:
             #   - roads
-            #utils.mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            utils.mapping.openstreetmap.create_roads_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
             #   - roads cells 'link' table
-            #utils.mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
+            utils.mapping.openstreetmap.create_roads_cells_table(args.output_dir, bbox, osm_tags, db_eng = db_eng)
             #   - operator
-            #analysis.smc.database.create_operator_table(db_eng = db_eng)
+            analysis.smc.database.create_operator_table(db_eng = db_eng)
             #   - session data
             analysis.smc.database.insert_sessions(args.input_dir, db_eng = db_eng)
 
