@@ -1,91 +1,51 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-	echo "usage : $0 <protocol> <trace-nr> (if protocol = 'udp': <udp-bitrate>)"
-	echo "options : "
-	echo "    <protocol> : 'tcp' or 'udp'"
-	echo "    <trace-nr> : nr. of trace to use in logs. 3 digit number w/ leading zeroes, e.g.: '041'"
-	echo "    <udp-bitrate> : target bitrate in Mbps, if 'udp' is chosen as <protocol>, e.g. '50' for 50 Mbps."
-	exit 1
+    echo "usage : $0 <trace-nr> <login> <port>"
+    exit 1
 fi
 
-proto=$1
-trace_nr=$2
-# handle bitrate arg
-bitrate=$3
+trace_nr=$1
+login=$2
+port=$3
 
-if [ "$proto" == "udp" ]
-then
-	if [ $# -lt 3 ]
-	then
-		echo "usage : $0 <protocol> <trace-nr> <udp-bitrate>"
-		exit 1
-	fi
-else
-	echo "unsupported protocol : $proto"
-	exit 1
-fi
+iface_txrx="wlan-txrx"
+# get consumer and ap ips
+consumer_ip=$(ifconfig $iface_txrx | awk '/inet addr:/{print $2}' | sed 's/addr://')
+ap_ip=$(ifconfig $iface_txrx | awk -F ':' '/inet addr/{print $2}' | awk -F. '{OFS=".";NF--;print $0;}')
 
-# create dirs (if not available already)
 output_dir=$HOME/workbench/range-tests/vehicular-traces/trace-$trace_nr
 if [ ! -d "$output_dir" ]
 then
 	mkdir -p "$output_dir"
 fi
-# update output-dir.txt w/ the current output_dir
-echo "$output_dir" > $HOME/workbench/range-tests/vehicular-traces/output-dir.txt
 
-# get comm. iface channel & width
-channel=$(iw dev wlan-txrx info | awk '/channel/ {print $2}')
-bw=$(iw dev wlan-txrx info | awk '/channel/ {print $6}')
-# get the right signal next to HT40 or HT80 ('+' or '-')
-#	- HT40- : if center1 < freq
-#	- HT40+ : if center1 > freq
-if [ "$bw" == "40" ]
+# trap ctrl-c and call signal_handler()
+stop_loop=false
+trap signal_handler INT
+
+# set stop_loop to true after catching CTRL-C signal
+signal_handler() {
+    echo "** received CTRL-C : quitting $0 script"
+    stop_loop=true
+}
+
+# create .out files if not ready yet
+i=1
+filename="$output_dir/consumer.$i.out"
+if [ ! -f "$filename" ]
 then
-    if [ "$channel" == "36" ]
-    then
-        bw=$bw+
-    else
-        bw=$bw-
-    fi
+	touch "$filename"
 fi
 
-# set wlan short and long retry options
-# FIXME : why do we do this?
-wiphy="phy"$(iw dev wlan-txrx info | awk '/wiphy/ {print $2}')
-iw phy $wiphy set retry short 7 long 4
+# start ap scripts
+ssh -i $HOME/.ssh/it root@$ap_ip.1 "(run-ap $trace_nr > /dev/null 2>&1)&"
 
-# add route to server
-# FIXME : we don't need this anymore since we're now iperfing directly w/ ap, to avoid the following bottlenecks:
-#	- unifi's PoE injector, which adds as lot of packet losses in the downlink direction, i.e. b1 > ap > client (why only this direction?)
-#	- DC PoE injector used in vehicle setup, limited to 100 Mbps Ethernet (we need 1 Gbps, but can't afford it)
-#	- b1's 100 Mbps Ethernet
-# ip route add 10.10.12.0/24 via 10.10.13.1 dev wlan-txrx
-
-# change channel on the monitoring iface to that of the comm. iface
-python $HOME/workbench/wifi-vehicles/data-collection/cbt.py --iface wlan-monitor --set-monitor-mode "$channel:HT$bw"
-# tcpdump on monitor iface
-# FIXME : 
-#	- no filters for smaller .pcap files? 
-#	- removed the '-s0' option
-tcpdump -B 100000 -s96 -i wlan-monitor -y IEEE802_11_RADIO -w "$output_dir"/monitor.$(date +"%s").pcap &
-# a restart-client script, which re-starts an iperf3 client / server pair every time iperf3 is detected to 'hang'
-/usr/local/bin/restart-client "$trace_nr" "root@10.10.13.1" 5201 &
-
-# extract accuracy of time synch via ntp w/ local server
-python $HOME/workbench/wifi-vehicles/data-collection/get-ntp-accuracy.py --output-dir "$output_dir" &
-# extract bitrate adaptation algorithm stats
-python $HOME/workbench/wifi-vehicles/data-collection/bitrate-adapt-stats.py --input-dir "/sys/kernel/debug/ieee80211" --output-dir "$output_dir" &
-# extract cbt and cpu stats
-$HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir" "wlan-txrx" &
-$HOME/workbench/wifi-vehicles/data-collection/get-cbt.sh $trace_nr "$output_dir" "wlan-monitor" &
-$HOME/workbench/wifi-vehicles/data-collection/get-cpu.sh $trace_nr "$output_dir" &
-# extract gps
-python $HOME/workbench/wifi-vehicles/data-collection/get-gps.py --output-dir "$output_dir" &
-# run report status daemon
-pkill -f report-status
-python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip 10.10.10.113 --port 8081 --output-dir $HOME/workbench/range-tests/vehicular-traces &> /dev/null &
+# start remote producer
+run-server "$login" "$consumer_ip" "$port" "$trace_nr"
+# start consumer
+# FIXME : use stdbuf w/ -oL and -eL options to force line buffering, i.e. force the application to output at every newline
+stdbuf -oL -eL consumer "$port" > "$filename" 2> /dev/null &
 
 exit 0
