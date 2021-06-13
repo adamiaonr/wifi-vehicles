@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ps -ef | grep run-client | awk '{print $2}' | sudo xargs -r kill -9
+ps -ef | grep restart-client | awk '{print $2}' | sudo xargs -r kill -9
 pkill -f tcpdump
 pkill -f get-cpu
 pkill -f get-ntpdate

@@ -73,7 +73,7 @@ python $HOME/workbench/wifi-vehicles/data-collection/get-gps.py --output-dir "$o
 pkill -f report-status
 python $HOME/workbench/wifi-vehicles/data-collection/report-status.py --ip $status_server_ip --port $status_server_port --output-dir $HOME/workbench/range-tests/vehicular-traces &> /dev/null &
 
-# call run-client script (starts producer > consumer flow, ap scripts, etc.)
-/usr/local/bin/run-client "$trace_nr" "root@10.10.13.1" 5201 &
+# call restart-client script (starts producer > consumer flow, ap scripts, etc.)
+/usr/local/bin/restart-client "$trace_nr" "root@10.10.13.1" 5201 &
 
 exit 0
