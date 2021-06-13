@@ -98,6 +98,7 @@ def table_exists(table_name, db_eng = None, db_name = 'smf'):
 
     query = ("""SELECT COUNT(*) as cnt FROM %s""" % (table_name))
     data = pd.read_sql(query, con = db_eng)
+
     return (data.iloc[0]['cnt'] > 0)
 
 def create_road_stats_table(db_eng = None, db_name = 'smf'):
@@ -402,7 +403,7 @@ def insert_sessions(
             chunk = analysis.smc.utils.rebrand_auth(chunk).reset_index(drop = True)
 
             # deal w/ str encodings
-            chunk['bssid'] = chunk['bssid'].apply(lambda x : x.encode('utf-8'))
+            chunk['bssid'] = chunk['bssid'].apply(lambda x : x.encode('utf-8').decode('utf-8'))
             # FIXME : due to an encoding error, we cannot 
             # chunk['essid'] = chunk['essid'].apply(lambda x : x.encode('utf-8'))
             chunk['essid_hash'] = chunk['essid'].apply(lambda x : hashlib.md5(str(x).encode('utf-8')).hexdigest())

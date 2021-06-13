@@ -23,6 +23,11 @@ import sys
 import timeit
 import geopandas as gp
 
+import folium
+from folium.plugins import HeatMap
+from folium.plugins import MarkerCluster
+import branca
+
 # custom imports
 #   - mapping
 import utils.mapping
@@ -65,6 +70,18 @@ auth_types = {
     2 : {'name' : 'comm.', 'types' : [1], 'operators' : ['meo', 'vodafone', 'zon']},
     3 : {'name' : 'WPA-x', 'types' : [2, 3, 4], 'operators' : []},
     4 : {'name' : '802.11x', 'types' : [5], 'operators' : []}}
+
+def coverage(input_dir, output_dir):
+
+    ap_map = folium.Map(location = [LAT, LON], zoom_start = 14, tiles = "Stamen Toner")
+    marker_cluster = MarkerCluster().add_to(ap_map)
+
+    loc = pd.read_csv('~/Downloads/vnc/data/ap-locations.csv')
+    loc = loc[loc['is_public'] == 1].reset_index(drop = True)
+    for index, row in loc.iterrows():
+        folium.Marker(location = [ row['lat'], row['lon'] ]).add_to(marker_cluster)
+
+    ap_map.save(os.path.join(output_dir, 'ap-locations.html'))
 
 def device_scans(input_dir, output_dir, db_name = 'smf',
     limits = {'top-devices' : 5, 'min-session-samples' : 5}):

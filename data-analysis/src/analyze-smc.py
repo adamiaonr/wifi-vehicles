@@ -84,6 +84,11 @@ if __name__ == "__main__":
                 e.g.: --analyze-roads 'Rua da Boavista,Avenida da Boavista'""") 
 
     parser.add_argument(
+        "--analyze-coverage", 
+         help = """high-level smc dataset wifi coverage analysis""",
+                action = 'store_true')
+
+    parser.add_argument(
         "--analyze-sessions", 
          help = """high-level smc dataset analysis""",
                 action = 'store_true') 
@@ -146,25 +151,53 @@ if __name__ == "__main__":
             analysis.smc.database.create_road_stats_table(db_eng = db_eng, db_name = args.db_name)
 
             queries = {
-                'road-stats' : {
-                    'query' : """SELECT 
-                        rs.road_id, name, length,
-                        ap_cnt, ess_cnt, op_cnt, rss_cnt_avg, rss_cnt_std,
-                        rss_1, rss_2, rss_3,
-                        num_cells
-                    FROM road_stats rs
-                    INNER JOIN roads r
-                    ON rs.road_id = r.id
-                    INNER JOIN road_rss_stats rrs
-                    ON r.id = rrs.road_id""",
-                    'filename' :  os.path.join(args.output_dir, 'road-stats.csv')
+                # 'road-stats' : {
+                #     'query' : """SELECT 
+                #         rs.road_id, name, length,
+                #         ap_cnt, ess_cnt, op_cnt, rss_cnt_avg, rss_cnt_std,
+                #         rss_1, rss_2, rss_3,
+                #         num_cells
+                #     FROM road_stats rs
+                #     INNER JOIN roads r
+                #     ON rs.road_id = r.id
+                #     INNER JOIN road_rss_stats rrs
+                #     ON r.id = rrs.road_id""",
+                #     'filename' :  os.path.join(args.output_dir, 'road-stats.csv')
+                # },
+
+                # 'road-sessions' : {
+                #     'query' : """SELECT *
+                #     FROM road_session_stats""",
+                #     'filename' :  os.path.join(args.output_dir, 'road-sessions.csv')
+                # },
+
+                'road-sessions-operator' : {
+                    'query' : """SELECT count(distinct cell_id) as cell_cnt
+                        FROM sessions s
+                        INNER JOIN ap a
+                        ON s.ap_id = a.id
+                        WHERE in_road = 1 AND is_public = 1""",
+                    'filename' :  os.path.join(args.output_dir, 'road-sessions-operator.csv')
                 },
 
-                'road-sessions' : {
-                    'query' : """SELECT *
-                    FROM road_session_stats""",
-                    'filename' :  os.path.join(args.output_dir, 'road-sessions.csv')
-                },
+                'road-operator-stats' : {
+                    'query' : """SELECT 
+                        road_id, 
+                        count(distinct ap_id) as ap_cnt, 
+                        count(distinct ess_id) as ess_cnt,
+                        count(distinct (CASE when is_public = 1 then ap_id END)) as op_cnt
+                    FROM roads_cells r
+                    INNER JOIN sessions s
+                    ON r.cell_id = s.cell_id
+                    INNER JOIN 
+                        (
+                        SELECT a.id, a.is_public
+                        FROM ap AS a
+                        ) AS T
+                    ON s.ap_id = T.id
+                    GROUP BY road_id""",
+                    'filename' :  os.path.join(args.output_dir, 'road-operator-stats.csv')
+                }
             }
             
             analysis.smc.database.to_csv(queries, db_eng = db_eng, db_name = args.db_name)
@@ -188,6 +221,34 @@ if __name__ == "__main__":
 #            strategy = 'raw', 
 #            restriction = {'open' : 'any', 'operator' : 'any', 'label' : 'any', 'threshold' : -80.0})
 
+    if args.analyze_coverage:
+
+        queries = {
+            'ap-locations' : {
+                'query' : """SELECT 
+                    ap_id, 
+                    a.bssid,
+                    E.essid,
+                    a.is_public,
+                    a.operator_id,
+                    AVG(lat) as lat,
+                    AVG(lon) as lon
+                FROM sessions s
+                INNER JOIN ap a
+                ON s.ap_id = a.id
+                INNER JOIN 
+                    (
+                    SELECT e.id, e.essid
+                    FROM ess AS e
+                    ) AS E
+                ON a.ess_id = E.id
+                GROUP BY ap_id, bssid, a.ess_id, operator_id, is_public""",
+                'filename' :  os.path.join(args.output_dir, 'ap-locations.csv')
+            }
+        }
+
+        analysis.smc.database.to_csv(queries, db_eng = db_eng, db_name = args.db_name)
+
     if args.analyze_sessions:
 
         # analysis.smc.sessions.extract.device_scans(args.input_dir, db_eng = db_eng, db_name = args.db_name)
@@ -204,8 +265,9 @@ if __name__ == "__main__":
         # analysis.smc.sessions.extract_auth(args.input_dir)
         # analysis.smc.sessions.extract_operators(args.input_dir)
 
-        plot.smc.sessions.signal_quality(args.input_dir, args.graph_dir, db_name = args.db_name)
-        plot.smc.sessions.esses(args.input_dir, args.graph_dir, draw_map = False)
+        # plot.smc.sessions.signal_quality(args.input_dir, args.graph_dir, db_name = args.db_name)
+        # plot.smc.sessions.esses(args.input_dir, args.graph_dir, draw_map = False)
+        plot.smc.sessions.coverage(args.input_dir, args.graph_dir)
         # plot.smc.sessions.channels(args.input_dir, args.graph_dir)
         # plot.smc.sessions.auth(args.input_dir, args.graph_dir)
         # plot.smc.sessions.operators(args.input_dir, args.graph_dir)

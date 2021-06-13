@@ -69,7 +69,7 @@ def get_road_hash(bbox, tags):
 def create_cells_table(data, db_eng = None):
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smf')
 
     if analysis.smc.database.table_exists('cells', db_eng):
         print("%s::create_cells_table() : [INFO] cells table exists. skipping." % (sys.argv[0]))
@@ -94,7 +94,7 @@ def create_roads_cells_table(output_dir,
     extract_cells(output_dir, bbox, tags, cell_size = cell_size)
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smf')
 
     if analysis.smc.database.table_exists('roads_cells', db_eng):
         print("%s::create_roads_cells_table() : [INFO] roads_cells table exists. skipping." % (sys.argv[0]))
@@ -133,9 +133,10 @@ def create_roads_table(output_dir,
     extract_roads(output_dir, bbox, tags)
 
     if db_eng is None:
-        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smc')
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smf')
+
     if analysis.smc.database.table_exists('roads', db_eng):
-        print("%s::create_roads_table() : [INFO] roads table exists. skipping." % (sys.argv[0]))
+        print("%s::create_roads_table() : [INFO] roads table exists. skipping. value : %s" % (sys.argv[0], analysis.smc.database.table_exists('roads', db_eng)))
         return
 
     # get road information
@@ -193,7 +194,15 @@ def extract_roads(output_dir,
 def extract_cells(
     output_dir, bbox, tags,
     cell_size = CELL_SIZE,
-    force = False):
+    force = False,
+    db_eng = None):
+
+    if db_eng is None:
+        db_eng = sqlalchemy.create_engine('mysql+mysqlconnector://root:xpto12x1@localhost/smf')
+
+    if analysis.smc.database.table_exists('cells', db_eng):
+        print("%s::create_cells_table() : [INFO] cells table exists. skipping." % (sys.argv[0]))
+        return
 
     cells_dir = os.path.join(output_dir, 'cells')
     if not os.path.isdir(cells_dir):
@@ -201,9 +210,6 @@ def extract_cells(
 
     road_hash = get_road_hash(bbox, tags)
     cells_dir = os.path.join(cells_dir, road_hash)
-    if os.path.isdir(cells_dir) and (not force):
-        sys.stderr.write("""[INFO] %s exists. skipping cell intersection.\n""" % (cells_dir))
-        return
 
     # extract nr. of cells in the designated area
     xx, yy = analysis.trace.utils.gps.get_cell_num(cell_size = cell_size, lat = [LATN, LATS], lon = [LONW, LONE])
@@ -230,6 +236,10 @@ def extract_cells(
     # create cells table
     cells = pd.DataFrame(cells)
     create_cells_table(cells)
+
+    if os.path.isdir(cells_dir) and (not force):
+        sys.stderr.write("""[INFO] %s exists. skipping cell intersection.\n""" % (cells_dir))
+        return    
 
     grid = gp.GeoDataFrame({'geometry' : polygons, 'cell_id' : cells['id'].tolist()})
     # the CRS of grid is 4326 (or WGS84), the one used by GPS    
