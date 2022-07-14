@@ -1,6 +1,6 @@
 # WiFi Vehicles
 
-A collect data in vehicular & distributed WiFi environments.
+A framework to collect data in vehicular & distributed WiFi environments.
 
 ## General operation
 
